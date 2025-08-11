@@ -20,31 +20,115 @@ mcp = FastMCP("mcp-airflow-api")
 
 @mcp.tool()
 def list_dags() -> Dict[str, Any]:
-    """List DAGs in the Airflow cluster."""
+    """
+    [Tool Role]: Lists all DAGs registered in the Airflow cluster.
+
+    Returns:
+        List of DAGs with minimal info: dag_id, dag_display_name, is_active, is_paused, owners, tags
+    """
     resp = airflow_request("GET", "/dags")
     resp.raise_for_status()
-    return resp.json()
+    dags = resp.json().get("dags", [])
+    minimal = []
+    for dag in dags:
+        minimal.append({
+            "dag_id": dag.get("dag_id"),
+            "dag_display_name": dag.get("dag_display_name"),
+            "is_active": dag.get("is_active"),
+            "is_paused": dag.get("is_paused"),
+            "owners": dag.get("owners"),
+            "tags": [t.get("name") for t in dag.get("tags", [])]
+        })
+    return {"dags": minimal}
 
 @mcp.tool()
 def running_dags() -> Dict[str, Any]:
-    """List currently running DAGs."""
-    resp = airflow_request("GET", "/dags?state=running")
-    resp.raise_for_status()
-    return resp.json()
+    """
+    [Tool Role]: Lists all currently running DAG runs in the Airflow cluster.
+
+    Returns:
+        List of running DAG runs with minimal info: dag_id, run_id, state, execution_date, start_date, end_date
+    """
+    dags_resp = airflow_request("GET", "/dags")
+    dags_resp.raise_for_status()
+    dags = dags_resp.json().get("dags", [])
+    running = []
+    for dag in dags:
+        dag_id = dag.get("dag_id")
+        if not dag_id:
+            continue
+        runs_resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns")
+        runs_resp.raise_for_status()
+        runs = runs_resp.json().get("dag_runs", [])
+        for run in runs:
+            if run.get("state") == "running":
+                running.append({
+                    "dag_id": dag_id,
+                    "run_id": run.get("run_id"),
+                    "state": run.get("state"),
+                    "execution_date": run.get("execution_date"),
+                    "start_date": run.get("start_date"),
+                    "end_date": run.get("end_date")
+                })
+    return {"dag_runs": running}
 
 @mcp.tool()
 def failed_dags() -> Dict[str, Any]:
-    """List recently failed DAGs."""
-    resp = airflow_request("GET", "/dags?state=failed")
-    resp.raise_for_status()
-    return resp.json()
+    """
+    [Tool Role]: Lists all recently failed DAG runs in the Airflow cluster.
+
+    Returns:
+        List of failed DAG runs with minimal info: dag_id, run_id, state, execution_date, start_date, end_date
+    """
+    dags_resp = airflow_request("GET", "/dags")
+    dags_resp.raise_for_status()
+    dags = dags_resp.json().get("dags", [])
+    failed = []
+    for dag in dags:
+        dag_id = dag.get("dag_id")
+        if not dag_id:
+            continue
+        runs_resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns")
+        runs_resp.raise_for_status()
+        runs = runs_resp.json().get("dag_runs", [])
+        for run in runs:
+            if run.get("state") == "failed":
+                failed.append({
+                    "dag_id": dag_id,
+                    "run_id": run.get("run_id"),
+                    "state": run.get("state"),
+                    "execution_date": run.get("execution_date"),
+                    "start_date": run.get("start_date"),
+                    "end_date": run.get("end_date")
+                })
+    return {"dag_runs": failed}
 
 @mcp.tool()
 def trigger_dag(dag_id: str) -> Dict[str, Any]:
-    """Trigger a DAG run by dag_id."""
-    resp = airflow_request("POST", f"/dags/{dag_id}/dagRuns")
+    """
+    [Tool Role]: Triggers a new DAG run for a specified Airflow DAG.
+
+    Args:
+        dag_id: The DAG ID to trigger
+
+    Returns:
+        Minimal info about triggered DAG run: dag_id, run_id, state, execution_date, start_date, end_date
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    resp = airflow_request("POST", f"/dags/{dag_id}/dagRuns", json={"conf": {}})
     resp.raise_for_status()
-    return resp.json()
+    run = resp.json()
+    return {
+        "dag_id": dag_id,
+        "run_id": run.get("run_id"),
+        "state": run.get("state"),
+        "execution_date": run.get("execution_date"),
+        "start_date": run.get("start_date"),
+        "end_date": run.get("end_date")
+    }
+
+#========================================================================================
 
 def main(argv: Optional[List[str]] = None):
     """Entrypoint for MCP Airflow API server.

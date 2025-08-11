@@ -87,7 +87,7 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 ---
 
-## Example Usage
+## Example Outputs
 
 ### List DAGs
 

@@ -5,8 +5,8 @@ import os
 import requests
 
 def airflow_request(method, url, **kwargs):
-    token = os.getenv("AIRFLOW_API_TOKEN")
+    user = os.getenv("AIRFLOW_API_USER")
+    password = os.getenv("AIRFLOW_API_PASSWORD")
     headers = kwargs.pop("headers", {})
-    if token:
-        headers["Authorization"] = f"Bearer {token}"
-    return requests.request(method, url, headers=headers, **kwargs)
+    auth = (user, password) if user and password else None
+    return requests.request(method, url, headers=headers, auth=auth, **kwargs)

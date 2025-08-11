@@ -1,15 +1,16 @@
-## Smithery configuration for MCP Ambari API server
+
+## Smithery configuration for MCP Airflow API server
 ## Docs: https://smithery.ai/docs/config#smitheryyaml
 ## This file defines how Smithery (and Smithery-compatible MCP client launchers)
-## can start the Ambari MCP server via stdio.
+## can start the Airflow MCP server via stdio.
 
-name: mcp-ambari-api
-description: "MCP server exposing Apache Ambari cluster management & monitoring tools."
-homepage: https://github.com/call518/MCP-Ambari-API
+name: mcp-airflow-api
+description: "MCP server exposing Apache Airflow cluster management & monitoring tools."
+homepage: https://github.com/call518/MCP-Airflow-API
 license: MIT
 tags:
-  - ambari
-  - hadoop
+  - airflow
+  - dag
   - cluster
   - monitoring
   - mcp
@@ -20,71 +21,43 @@ startCommand:
   configSchema:
     type: object
     required:
-      - AMBARI_HOST
-      - AMBARI_PORT
-      - AMBARI_USER
-      - AMBARI_PASS
-      - AMBARI_CLUSTER_NAME
-      - AMBARI_LOG_LEVEL
+      - AIRFLOW_API_URL
+      - AIRFLOW_API_USERNAME
+      - AIRFLOW_API_PASSWORD
     properties:
-      AMBARI_HOST:
+      AIRFLOW_API_URL:
         type: string
-        description: "Ambari server hostname or IP (e.g. host.docker.internal)"
-        default: 127.0.0.1
+        description: "Airflow REST API base URL (e.g. http://localhost:8080/api/v1)"
+        default: http://localhost:8080/api/v1
         secret: true
-      AMBARI_PORT:
+      AIRFLOW_API_USERNAME:
         type: string
-        description: "Ambari server port"
-        default: "8080"
+        description: "Airflow API username"
+        default: airflow
         secret: true
-      AMBARI_USER:
+      AIRFLOW_API_PASSWORD:
         type: string
-        description: "Ambari username"
-        default: admin
-        secret: true
-      AMBARI_PASS:
-        type: string
-        description: "Ambari password"
-        default: admin
-        secret: true
-      AMBARI_CLUSTER_NAME:
-        type: string
-        description: "Ambari cluster name"
-        default: TEST-AMBARI
-        secret: true
-      AMBARI_LOG_LEVEL:
-        type: string
-        description: "Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
-        default: INFO
+        description: "Airflow API password"
+        default: airflow
         secret: true
   commandFunction: |-
     (config) => {
       // Always use the installed console script from PyPI.
-      // (Smithery environment must have already run: pip install mcp-ambari-api[latest|==version])
+      // (Smithery environment must have already run: pip install mcp-airflow-api[latest|==version])
       const env = {
-        AMBARI_HOST: config.AMBARI_HOST,
-        AMBARI_PORT: config.AMBARI_PORT,
-        AMBARI_USER: config.AMBARI_USER,
-        AMBARI_PASS: config.AMBARI_PASS,
-        AMBARI_CLUSTER_NAME: config.AMBARI_CLUSTER_NAME,
-        AMBARI_LOG_LEVEL: config.AMBARI_LOG_LEVEL
+        AIRFLOW_API_URL: config.AIRFLOW_API_URL,
+        AIRFLOW_API_USERNAME: config.AIRFLOW_API_USERNAME,
+        AIRFLOW_API_PASSWORD: config.AIRFLOW_API_PASSWORD
       };
       const args = [];
-      // Also pass as CLI flag for immediate override (env still available inside process)
-      if (config.AMBARI_LOG_LEVEL) {
-        args.push('--log-level', config.AMBARI_LOG_LEVEL);
-      }
-      return { command: 'mcp-ambari-api', args, env };
+      return { command: 'mcp-airflow-api', args, env };
     }
   exampleConfig:
-    AMBARI_HOST: host.docker.internal
-    AMBARI_PORT: "8080"
-    AMBARI_USER: admin
-    AMBARI_PASS: admin
-    AMBARI_CLUSTER_NAME: TEST-AMBARI
-    AMBARI_LOG_LEVEL: DEBUG
+    AIRFLOW_API_URL: http://localhost:8080/api/v1
+    AIRFLOW_API_USERNAME: airflow
+    AIRFLOW_API_PASSWORD: airflow
 
 ## Notes:
-## - Set AMBARI_PASS via Smithery secret storage if available.
-## - Adjust AMBARI_HOST/PORT for your environment.
-## - Ensure the hosting environment installs the package: pip install mcp-ambari-api (optionally pin a version).
+## - Set AIRFLOW_API_PASSWORD via Smithery secret storage if available.
+## - Adjust AIRFLOW_API_URL for your environment.
+## - Ensure the hosting environment installs the package: pip install mcp-airflow-api (optionally pin a version).

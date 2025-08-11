@@ -1,0 +1,13 @@
+{
+  "mcpServers": {
+    "ambar-api": {
+      "command": "uvx",
+      "args": ["--python", "3.11", "mcp-airflow-api"],
+      "env": {
+        "AIRFLOW_API_URL": "http://localhost:8080/api/v1",
+        "AIRFLOW_API_USER": "airflow",
+        "AIRFLOW_API_PASSWORD": "airflow"
+      }
+    }
+  }
+}

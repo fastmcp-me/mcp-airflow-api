@@ -87,45 +87,6 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 ---
 
-## Example Outputs
-
-### List DAGs
-
-```python
-list_dags()
-# Example output:
-{
-	"dags": [
-		{
-			"dag_id": "example_dag",
-			"dag_display_name": "Example DAG",
-			"is_active": true,
-			"is_paused": false,
-			"owners": ["airflow"],
-			"tags": ["example"]
-		},
-		...
-	]
-}
-```
-
-### Trigger a DAG
-
-```python
-trigger_dag(dag_id="example_dag")
-# Example output:
-{
-	"dag_id": "example_dag",
-	"run_id": "manual__2025-08-12T07:00:00+00:00",
-	"state": "queued",
-	"execution_date": "2025-08-12T07:00:00+00:00",
-	"start_date": null,
-	"end_date": null
-}
-```
-
----
-
 ## Logging & Observability
 
 - Structured logs for all tool invocations and HTTP requests

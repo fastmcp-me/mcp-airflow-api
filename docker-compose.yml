@@ -14,7 +14,7 @@ services:
 
   # Optional: MCP Proxy Server for tools
   mcpo-proxy:
-    image: call518/mcpo-proxy:latest
+    image: call518/mcpo-proxy-airflow-api:latest
     container_name: mcp-airflow-api-mcpo-proxy
     ports:
       - "8001:8000"

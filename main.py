@@ -1,6 +1,20 @@
 def main():
-    print("Hello from mcp-airflow-api!")
+    pass
 
 
 if __name__ == "__main__":
-    main()
+    """
+    MCP server entry point
+    """
+    import os
+    from fastapi import FastAPI
+    from dotenv import load_dotenv
+    from src.mcp_airflow_api.airflow_api import router as airflow_router
+
+    load_dotenv(dotenv_path=os.getenv("MCP_CONFIG", "config"))
+
+    app = FastAPI(title="MCP Airflow API Server")
+    app.include_router(airflow_router, prefix="/airflow")
+
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=8000)

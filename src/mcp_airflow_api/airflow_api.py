@@ -128,6 +128,42 @@ def trigger_dag(dag_id: str) -> Dict[str, Any]:
         "end_date": run.get("end_date")
     }
 
+@mcp.tool()
+def pause_dag(dag_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Pauses the specified Airflow DAG (prevents scheduling new runs).
+
+    Args:
+        dag_id: The DAG ID to pause
+
+    Returns:
+        Minimal info about the paused DAG: dag_id, is_paused
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    resp = airflow_request("PATCH", f"/dags/{dag_id}", json={"is_paused": True})
+    resp.raise_for_status()
+    dag = resp.json()
+    return {"dag_id": dag.get("dag_id", dag_id), "is_paused": dag.get("is_paused", True)}
+
+@mcp.tool()
+def unpause_dag(dag_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Unpauses the specified Airflow DAG (allows scheduling new runs).
+
+    Args:
+        dag_id: The DAG ID to unpause
+
+    Returns:
+        Minimal info about the unpaused DAG: dag_id, is_paused
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    resp = airflow_request("PATCH", f"/dags/{dag_id}", json={"is_paused": False})
+    resp.raise_for_status()
+    dag = resp.json()
+    return {"dag_id": dag.get("dag_id", dag_id), "is_paused": dag.get("is_paused", False)}
+
 #========================================================================================
 
 def main(argv: Optional[List[str]] = None):

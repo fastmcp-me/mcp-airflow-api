@@ -1,0 +1,7 @@
+[project]
+name = "mcp-airflow-api"
+version = "0.0.0"
+description = "Model Context Protocol (MCP) server for Apache Airflow API integration. Provides comprehensive tools for managing Airflow clusters including service operations, configuration management, status monitoring, and request tracking."
+readme = "README.md"
+requires-python = ">=3.11"
+dependencies = []

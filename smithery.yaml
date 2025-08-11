@@ -30,12 +30,12 @@ startCommand:
         type: string
         description: "Airflow REST API base URL (e.g. http://localhost:8080/api/v1)"
         default: http://localhost:8080/api/v1
-        secret: true
+        secret: false
       AIRFLOW_API_USERNAME:
         type: string
         description: "Airflow API username"
         default: airflow
-        secret: true
+        secret: false
       AIRFLOW_API_PASSWORD:
         type: string
         description: "Airflow API password"
@@ -45,6 +45,7 @@ startCommand:
         type: string
         description: "Log level for MCP server (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
         default: INFO
+        secret: false
   commandFunction: |-
     (config) => {
       // Always use the installed console script from PyPI.

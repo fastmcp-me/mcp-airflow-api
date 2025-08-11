@@ -104,6 +104,12 @@ This project is licensed under the MIT License.
 
 ---
 
+## Roadmap
+
+This project starts with a minimal set of essential Airflow management tools. Many more useful features and tools for Airflow cluster operations will be added soon, including advanced monitoring, DAG/task analytics, scheduling controls, and more. Contributions and suggestions are welcome!
+
+---
+
 ## Additional Links
 
 - [Code](https://github.com/call518/MCP-Airflow-API)

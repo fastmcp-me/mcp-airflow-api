@@ -2,7 +2,7 @@
   "mcpServers": {
     "airflow-api": {
       "command": "python",
-      "args": ["-m", "mcp_airflow_api.airflow_api", "--log-level", "${AIRFLOW_LOG_LEVEL}"],
+      "args": ["-m", "mcp_airflow_api.airflow_api"],
       "env": {
         "PYTHONPATH": "/app/src",
         "AIRFLOW_API_URL": "http://localhost:8080/api/v1",

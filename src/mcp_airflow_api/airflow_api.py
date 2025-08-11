@@ -3,14 +3,11 @@ Main feature definitions for Airflow MCP.
 """
 import os
 from fastapi import APIRouter, HTTPException
-from dotenv import load_dotenv
 import requests
 from .functions import airflow_request
 
-load_dotenv(dotenv_path=os.getenv("MCP_CONFIG", "config"))
 
 AIRFLOW_API_URL = os.getenv("AIRFLOW_API_URL")
-AIRFLOW_API_TOKEN = os.getenv("AIRFLOW_API_TOKEN")
 
 router = APIRouter()
 

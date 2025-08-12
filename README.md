@@ -10,7 +10,7 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 # MCP-Airflow-API
 
-**Tested and supported Airflow version: 2.10.2 (v1)**
+**Tested and supported Airflow version: 2.10.2 (API Version: v1)**
 
 ## Features
 

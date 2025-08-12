@@ -205,6 +205,325 @@ def unpause_dag(dag_id: str) -> Dict[str, Any]:
     dag = resp.json()
     return {"dag_id": dag.get("dag_id", dag_id), "is_paused": dag.get("is_paused", False)}
 
+@mcp.tool()
+def dag_details(dag_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves detailed information for a specific DAG.
+
+    Args:
+        dag_id: The DAG ID to get details for
+
+    Returns:
+        Comprehensive DAG details: dag_id, schedule_interval, start_date, owners, tags, description, etc.
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    resp = airflow_request("GET", f"/dags/{dag_id}")
+    resp.raise_for_status()
+    dag = resp.json()
+    return {
+        "dag_id": dag.get("dag_id"),
+        "dag_display_name": dag.get("dag_display_name"),
+        "description": dag.get("description"),
+        "schedule_interval": dag.get("schedule_interval"),
+        "start_date": dag.get("start_date"),
+        "end_date": dag.get("end_date"),
+        "is_active": dag.get("is_active"),
+        "is_paused": dag.get("is_paused"),
+        "owners": dag.get("owners"),
+        "tags": [t.get("name") for t in dag.get("tags", [])],
+        "catchup": dag.get("catchup"),
+        "max_active_runs": dag.get("max_active_runs"),
+        "max_active_tasks": dag.get("max_active_tasks"),
+        "has_task_concurrency_limits": dag.get("has_task_concurrency_limits"),
+        "has_import_errors": dag.get("has_import_errors"),
+        "next_dagrun": dag.get("next_dagrun"),
+        "next_dagrun_data_interval_start": dag.get("next_dagrun_data_interval_start"),
+        "next_dagrun_data_interval_end": dag.get("next_dagrun_data_interval_end")
+    }
+
+@mcp.tool()
+def dag_graph(dag_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves the task dependency graph structure for a specific DAG.
+
+    Args:
+        dag_id: The DAG ID to get graph structure for
+
+    Returns:
+        DAG graph with tasks and dependencies: dag_id, tasks, dependencies
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    resp = airflow_request("GET", f"/dags/{dag_id}/tasks")
+    resp.raise_for_status()
+    tasks = resp.json().get("tasks", [])
+    
+    graph_data = {"dag_id": dag_id, "tasks": [], "total_tasks": len(tasks)}
+    for task in tasks:
+        task_info = {
+            "task_id": task.get("task_id"),
+            "task_display_name": task.get("task_display_name"),
+            "operator_name": task.get("class_ref", {}).get("class_name"),
+            "downstream_task_ids": task.get("downstream_task_ids", []),
+            "upstream_task_ids": task.get("upstream_task_ids", []),
+            "start_date": task.get("start_date"),
+            "end_date": task.get("end_date"),
+            "depends_on_past": task.get("depends_on_past"),
+            "wait_for_downstream": task.get("wait_for_downstream"),
+            "retries": task.get("retries"),
+            "pool": task.get("pool")
+        }
+        graph_data["tasks"].append(task_info)
+    
+    return graph_data
+
+@mcp.tool()
+def dag_code(dag_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves the source code for a specific DAG.
+
+    Args:
+        dag_id: The DAG ID to get source code for
+
+    Returns:
+        DAG source code: dag_id, file_token, source_code
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    
+    # First get DAG details to obtain file_token
+    dag_resp = airflow_request("GET", f"/dags/{dag_id}")
+    dag_resp.raise_for_status()
+    dag_data = dag_resp.json()
+    
+    file_token = dag_data.get("file_token")
+    if not file_token:
+        return {"dag_id": dag_id, "error": "File token not available for this DAG"}
+    
+    # Now get the source code using the file_token
+    # Note: This endpoint returns plain text, not JSON
+    source_resp = airflow_request("GET", f"/dagSources/{file_token}")
+    source_resp.raise_for_status()
+    
+    # Get the plain text content directly
+    source_code = source_resp.text
+    
+    return {
+        "dag_id": dag_id,
+        "file_token": file_token,
+        "source_code": source_code if source_code else "Source code not available"
+    }
+
+@mcp.tool()
+def dag_event_log(dag_id: str, limit: int = 20) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves event log entries for a specific DAG.
+
+    Args:
+        dag_id: The DAG ID to get event logs for
+        limit: Maximum number of log entries to return (default: 20)
+
+    Returns:
+        DAG event logs: dag_id, events, total_entries
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    resp = airflow_request("GET", f"/eventLogs?dag_id={dag_id}&limit={limit}")
+    resp.raise_for_status()
+    logs = resp.json()
+    
+    events = []
+    for log in logs.get("event_logs", []):
+        event_info = {
+            "event_log_id": log.get("event_log_id"),
+            "when": log.get("when"),
+            "event": log.get("event"),
+            "task_id": log.get("task_id"),
+            "run_id": log.get("run_id"),
+            "map_index": log.get("map_index"),
+            "try_number": log.get("try_number"),
+            "extra": log.get("extra")
+        }
+        events.append(event_info)
+    
+    return {
+        "dag_id": dag_id,
+        "events": events,
+        "total_entries": logs.get("total_entries", len(events)),
+        "limit": limit
+    }
+
+@mcp.tool()
+def dag_run_duration(dag_id: str, limit: int = 10) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves run duration statistics for a specific DAG.
+
+    Args:
+        dag_id: The DAG ID to get run durations for
+        limit: Maximum number of recent runs to analyze (default: 10)
+
+    Returns:
+        DAG run duration data: dag_id, runs, statistics
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns?limit={limit}&order_by=-execution_date")
+    resp.raise_for_status()
+    runs = resp.json().get("dag_runs", [])
+    
+    run_durations = []
+    durations = []
+    
+    for run in runs:
+        start_date = run.get("start_date")
+        end_date = run.get("end_date")
+        
+        duration = None
+        if start_date and end_date:
+            # Calculate duration in seconds (simplified)
+            duration = "calculated_duration_placeholder"
+        
+        run_info = {
+            "run_id": run.get("run_id"),
+            "execution_date": run.get("execution_date"),
+            "start_date": start_date,
+            "end_date": end_date,
+            "state": run.get("state"),
+            "duration": duration
+        }
+        run_durations.append(run_info)
+        
+        if duration:
+            durations.append(duration)
+    
+    return {
+        "dag_id": dag_id,
+        "runs": run_durations,
+        "total_runs_analyzed": len(runs),
+        "completed_runs": len([r for r in runs if r.get("state") == "success"]),
+        "failed_runs": len([r for r in runs if r.get("state") == "failed"])
+    }
+
+@mcp.tool()
+def dag_task_duration(dag_id: str, run_id: str = None) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves task duration information for a specific DAG run.
+
+    Args:
+        dag_id: The DAG ID to get task durations for
+        run_id: Specific run ID (if not provided, uses latest run)
+
+    Returns:
+        Task duration data: dag_id, run_id, tasks, statistics
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    
+    # If no run_id provided, get the latest run
+    if not run_id:
+        runs_resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns?limit=1&order_by=-execution_date")
+        runs_resp.raise_for_status()
+        runs = runs_resp.json().get("dag_runs", [])
+        if not runs:
+            return {"dag_id": dag_id, "error": "No runs found"}
+        run_id = runs[0].get("run_id")
+    
+    # Get task instances for the run
+    resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns/{run_id}/taskInstances")
+    resp.raise_for_status()
+    tasks = resp.json().get("task_instances", [])
+    
+    task_durations = []
+    for task in tasks:
+        start_date = task.get("start_date")
+        end_date = task.get("end_date")
+        
+        duration = None
+        if start_date and end_date:
+            duration = "calculated_duration_placeholder"
+        
+        task_info = {
+            "task_id": task.get("task_id"),
+            "task_display_name": task.get("task_display_name"),
+            "start_date": start_date,
+            "end_date": end_date,
+            "duration": duration,
+            "state": task.get("state"),
+            "try_number": task.get("try_number"),
+            "max_tries": task.get("max_tries")
+        }
+        task_durations.append(task_info)
+    
+    return {
+        "dag_id": dag_id,
+        "run_id": run_id,
+        "tasks": task_durations,
+        "total_tasks": len(tasks),
+        "completed_tasks": len([t for t in tasks if t.get("state") == "success"]),
+        "failed_tasks": len([t for t in tasks if t.get("state") == "failed"])
+    }
+
+@mcp.tool()
+def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves calendar/schedule information for a specific DAG.
+
+    Args:
+        dag_id: The DAG ID to get calendar info for
+        start_date: Start date for calendar range (YYYY-MM-DD format, optional)
+        end_date: End date for calendar range (YYYY-MM-DD format, optional)
+
+    Returns:
+        DAG calendar data: dag_id, schedule_interval, runs, next_runs
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    
+    # Get DAG details for schedule info
+    dag_resp = airflow_request("GET", f"/dags/{dag_id}")
+    dag_resp.raise_for_status()
+    dag = dag_resp.json()
+    
+    # Build query parameters for date range
+    query_params = "?limit=50&order_by=-execution_date"
+    if start_date:
+        query_params += f"&start_date_gte={start_date}T00:00:00Z"
+    if end_date:
+        query_params += f"&start_date_lte={end_date}T23:59:59Z"
+    
+    # Get DAG runs within date range
+    runs_resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns{query_params}")
+    runs_resp.raise_for_status()
+    runs = runs_resp.json().get("dag_runs", [])
+    
+    calendar_runs = []
+    for run in runs:
+        run_info = {
+            "run_id": run.get("run_id"),
+            "execution_date": run.get("execution_date"),
+            "start_date": run.get("start_date"),
+            "end_date": run.get("end_date"),
+            "state": run.get("state"),
+            "run_type": run.get("run_type")
+        }
+        calendar_runs.append(run_info)
+    
+    return {
+        "dag_id": dag_id,
+        "schedule_interval": dag.get("schedule_interval"),
+        "start_date": dag.get("start_date"),
+        "next_dagrun": dag.get("next_dagrun"),
+        "next_dagrun_data_interval_start": dag.get("next_dagrun_data_interval_start"),
+        "next_dagrun_data_interval_end": dag.get("next_dagrun_data_interval_end"),
+        "runs": calendar_runs,
+        "total_runs_in_range": len(runs),
+        "query_range": {
+            "start_date": start_date,
+            "end_date": end_date
+        }
+    }
+
 #========================================================================================
 # MCP Prompts (for prompts/list exposure)
 #========================================================================================

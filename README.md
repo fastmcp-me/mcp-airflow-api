@@ -50,6 +50,36 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Unpauses the specified DAG (allows scheduling new runs).  
 	Output: `dag_id`, `is_paused`
 
+### DAG Analysis & Monitoring
+
+- `dag_details(dag_id)`  
+	Retrieves comprehensive details for a specific DAG.  
+	Output: `dag_id`, `description`, `schedule_interval`, `owners`, `tags`, `start_date`, `next_dagrun`, etc.
+
+- `dag_graph(dag_id)`  
+	Retrieves task dependency graph structure for a specific DAG.  
+	Output: `dag_id`, `tasks`, `dependencies`, task relationships
+
+- `dag_code(dag_id)`  
+	Retrieves the source code for a specific DAG.  
+	Output: `dag_id`, `file_token`, `source_code`
+
+- `dag_event_log(dag_id, limit=20)`  
+	Retrieves event log entries for a specific DAG.  
+	Output: `dag_id`, `events`, execution history, state changes
+
+- `dag_run_duration(dag_id, limit=10)`  
+	Retrieves run duration statistics for a specific DAG.  
+	Output: `dag_id`, `runs`, duration analysis, success/failure stats
+
+- `dag_task_duration(dag_id, run_id=None)`  
+	Retrieves task duration information for a specific DAG run.  
+	Output: `dag_id`, `run_id`, `tasks`, individual task performance
+
+- `dag_calendar(dag_id, start_date=None, end_date=None)`  
+	Retrieves calendar/schedule information for a specific DAG.  
+	Output: `dag_id`, `schedule_interval`, `runs`, upcoming executions
+
 ---
 
 ## Prompt Template

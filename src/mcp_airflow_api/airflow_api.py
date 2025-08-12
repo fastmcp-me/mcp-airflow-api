@@ -823,6 +823,74 @@ def get_version() -> Dict[str, Any]:
         "api_version": version_data.get("api_version", "2.0.0")
     }
 
+@mcp.tool()
+def list_pools(limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+    """
+    [Tool Role]: List all pools in the Airflow instance.
+    
+    Args:
+        limit: Maximum number of pools to return (default: 100)
+        offset: Number of pools to skip for pagination (default: 0)
+    
+    Returns:
+        List of pools with their configuration and usage information
+    """
+    query_params = f"?limit={limit}&offset={offset}"
+    resp = airflow_request("GET", f"/pools{query_params}")
+    resp.raise_for_status()
+    pools_data = resp.json()
+    
+    pools = []
+    for pool in pools_data.get("pools", []):
+        pool_info = {
+            "name": pool.get("name"),
+            "slots": pool.get("slots"),
+            "occupied_slots": pool.get("occupied_slots"),
+            "running_slots": pool.get("running_slots"),
+            "queued_slots": pool.get("queued_slots"),
+            "open_slots": pool.get("open_slots"),
+            "description": pool.get("description")
+        }
+        pools.append(pool_info)
+    
+    return {
+        "pools": pools,
+        "total_entries": pools_data.get("total_entries", len(pools)),
+        "limit": limit,
+        "offset": offset
+    }
+
+@mcp.tool()
+def get_pool(pool_name: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Get detailed information about a specific pool.
+    
+    Args:
+        pool_name: The name of the pool to retrieve
+    
+    Returns:
+        Detailed pool information including slots usage and description
+    """
+    if not pool_name:
+        raise ValueError("pool_name must not be empty")
+    
+    resp = airflow_request("GET", f"/pools/{pool_name}")
+    resp.raise_for_status()
+    pool_data = resp.json()
+    
+    return {
+        "name": pool_data.get("name"),
+        "slots": pool_data.get("slots"),
+        "occupied_slots": pool_data.get("occupied_slots"),
+        "running_slots": pool_data.get("running_slots"),
+        "queued_slots": pool_data.get("queued_slots"),
+        "open_slots": pool_data.get("open_slots"),
+        "description": pool_data.get("description"),
+        "utilization_percentage": round(
+            (pool_data.get("occupied_slots", 0) / pool_data.get("slots", 1)) * 100, 2
+        ) if pool_data.get("slots", 0) > 0 else 0
+    }
+
 #========================================================================================
 # MCP Prompts (for prompts/list exposure)
 #========================================================================================

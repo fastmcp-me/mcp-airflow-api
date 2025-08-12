@@ -61,6 +61,16 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Get version information of the Airflow instance.  
 	Output: `version`, `git_version`, `build_date`, `api_version`
 
+### Pool Management
+
+- `list_pools(limit=100, offset=0)`  
+	List all pools in the Airflow instance with pagination support.  
+	Output: `pools`, `total_entries`, `limit`, `offset`, pool details with slots usage
+
+- `get_pool(pool_name)`  
+	Get detailed information about a specific pool.  
+	Output: `name`, `slots`, `occupied_slots`, `running_slots`, `queued_slots`, `open_slots`, `description`, `utilization_percentage`
+
 ### DAG Analysis & Monitoring
 
 - `dag_details(dag_id)`  

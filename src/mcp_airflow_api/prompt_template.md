@@ -18,6 +18,10 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - `get_health`: Get the health status of the Airflow webserver instance.
 - `get_version`: Get version information of the Airflow instance.
 
+### Pool Management
+- `list_pools(limit, offset)`: List all pools in the Airflow instance.
+- `get_pool(pool_name)`: Get detailed information about a specific pool.
+
 ### DAG Analysis & Monitoring
 - `dag_details(dag_id)`: Get comprehensive details for a specific DAG.
 - `dag_graph(dag_id)`: Get task dependency graph structure for a DAG.
@@ -47,6 +51,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | **Cluster Management & Health** |                                   |                               |                                      |
 | get_health          | Get health status of webserver            | None                          | metadatabase, scheduler, status      |
 | get_version         | Get version information                   | None                          | version, git_version, build_date, api_version |
+| **Pool Management** |                                           |                               |                                      |
+| list_pools          | List all pools in Airflow                | limit, offset                 | pools, total_entries, slots usage   |
+| get_pool            | Get specific pool details                 | pool_name (str)               | name, slots, occupied_slots, running_slots, queued_slots, open_slots, description, utilization_percentage |
 | **DAG Analysis & Monitoring** |                                   |                               |                                      |
 | dag_details         | Get comprehensive DAG details             | dag_id (str)                  | dag_id, schedule_interval, start_date, owners, tags, description, etc. |
 | dag_graph           | Get task dependency graph                 | dag_id (str)                  | dag_id, tasks, dependencies, total_tasks |
@@ -81,6 +88,12 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ### Cluster Management & Health
 - "Check Airflow cluster health."
 - "Get Airflow version information."
+
+### Pool Management
+- "List all pools."
+- "Show pool usage statistics."
+- "Get details for pool 'default_pool'."
+- "Check pool utilization."
 
 ### DAG Analysis & Monitoring
 - "Get details for DAG 'my_dag'."

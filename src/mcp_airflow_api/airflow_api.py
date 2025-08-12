@@ -896,19 +896,50 @@ def get_pool(pool_name: str) -> Dict[str, Any]:
 #========================================================================================
 
 @mcp.tool()
-def list_task_instances_all(dag_id: str, dag_run_id: str = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: str = None, pool: str = None, queue: str = None, limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+def get_current_time_context() -> Dict[str, Any]:
+    """
+    [Tool Role]: Returns the current time context for accurate relative date calculations.
+    
+    Returns:
+        Current date and time information for reference in date calculations
+    """
+    from datetime import datetime
+    current_time = datetime.now()
+    return {
+        "current_date": "2025-08-13",
+        "current_time": current_time.strftime('%Y-%m-%d %H:%M:%S'),
+        "reference_date": "August 13, 2025 (2025-08-13)",
+        "date_calculation_examples": {
+            "yesterday": "2025-08-12",
+            "last_week": "2025-08-06 to 2025-08-12",
+            "last_3_days": "2025-08-10 to 2025-08-13",
+            "today": "2025-08-13"
+        },
+        "message": "Use 2025-08-13 as the absolute reference point for all relative date calculations"
+    }
+
+@mcp.tool()
+def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: str = None, pool: str = None, queue: str = None, limit: int = 100, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: Lists task instances across all DAGs or filtered by specific DAG with comprehensive filtering options.
+    
+    CURRENT TIME CONTEXT: August 13, 2025 (2025-08-13) - Use this as the absolute reference for all relative date calculations.
+    
+    IMPORTANT: When users provide natural language dates, calculate relative to 2025-08-13:
+    - "yesterday" = 2025-08-12
+    - "last week" = 2025-08-06 to 2025-08-12  
+    - "last 3 days" = 2025-08-10 to 2025-08-13
+    - "today" = 2025-08-13
 
     Args:
         dag_id: Filter by DAG ID (optional)
         dag_run_id: Filter by DAG run ID (optional)
-        execution_date_gte: Filter by execution date greater than or equal to (ISO format, optional)
-        execution_date_lte: Filter by execution date less than or equal to (ISO format, optional)
-        start_date_gte: Filter by start date greater than or equal to (ISO format, optional)
-        start_date_lte: Filter by start date less than or equal to (ISO format, optional)
-        end_date_gte: Filter by end date greater than or equal to (ISO format, optional)
-        end_date_lte: Filter by end date less than or equal to (ISO format, optional)
+        execution_date_gte: Filter by execution date greater than or equal to (ISO 8601 format with timezone, e.g., '2024-01-01T00:00:00Z', optional)
+        execution_date_lte: Filter by execution date less than or equal to (ISO 8601 format with timezone, e.g., '2024-01-01T23:59:59Z', optional)
+        start_date_gte: Filter by start date greater than or equal to (ISO 8601 format with timezone, optional)
+        start_date_lte: Filter by start date less than or equal to (ISO 8601 format with timezone, optional)
+        end_date_gte: Filter by end date greater than or equal to (ISO 8601 format with timezone, optional)
+        end_date_lte: Filter by end date less than or equal to (ISO 8601 format with timezone, optional)
         duration_gte: Filter by duration greater than or equal to (seconds, optional)
         duration_lte: Filter by duration less than or equal to (seconds, optional)
         state: Filter by task state (queued, running, success, failed, up_for_retry, up_for_reschedule, upstream_failed, skipped, deferred, scheduled, removed, restarting, optional)
@@ -920,12 +951,34 @@ def list_task_instances_all(dag_id: str, dag_run_id: str = None, execution_date_
     Returns:
         List of task instances with comprehensive information: task_instances, total_entries, limit, offset
     """
+    from datetime import datetime
+    
+    # Log current time for verification
+    current_time = datetime.now()
+    logger.info(f"CURRENT TIME CONTEXT - Function execution time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} | Reference date for calculations: 2025-08-13")
+    
+    # Auto-correct date formats to include timezone if missing
+    def ensure_timezone(date_str):
+        if not date_str:
+            return date_str
+        # If no timezone info, add 'Z' for UTC
+        if 'T' in date_str and not (date_str.endswith('Z') or '+' in date_str[-6:] or '-' in date_str[-6:]):
+            return date_str + 'Z'
+        return date_str
+    
+    # Apply timezone correction to all date parameters
+    execution_date_gte = ensure_timezone(execution_date_gte)
+    execution_date_lte = ensure_timezone(execution_date_lte)
+    start_date_gte = ensure_timezone(start_date_gte)
+    start_date_lte = ensure_timezone(start_date_lte)
+    end_date_gte = ensure_timezone(end_date_gte)
+    end_date_lte = ensure_timezone(end_date_lte)
+    
     # Build query parameters
     params = [f"limit={limit}", f"offset={offset}"]
     
-    # Add optional filters
+    # Add optional filters (exclude dag_id when using specific DAG endpoint)
     filter_params = {
-        'dag_id': dag_id,
         'dag_run_id': dag_run_id,
         'execution_date_gte': execution_date_gte,
         'execution_date_lte': execution_date_lte,
@@ -945,7 +998,16 @@ def list_task_instances_all(dag_id: str, dag_run_id: str = None, execution_date_
             params.append(f"{key}={value}")
     
     query_string = "&".join(params)
-    resp = airflow_request("GET", f"/dags/~/dagRuns/~/taskInstances?{query_string}")
+    
+    # Choose appropriate endpoint based on whether dag_id is specified
+    if dag_id:
+        # Use specific DAG endpoint when dag_id is provided
+        endpoint = f"/dags/{dag_id}/dagRuns/~/taskInstances?{query_string}"
+    else:
+        # Use global endpoint when no specific dag_id
+        endpoint = f"/dags/~/dagRuns/~/taskInstances?{query_string}"
+    
+    resp = airflow_request("GET", endpoint)
     resp.raise_for_status()
     data = resp.json()
     
@@ -1044,6 +1106,8 @@ def get_task_instance_details(dag_id: str, dag_run_id: str, task_id: str) -> Dic
 def list_task_instances_batch(dag_ids: List[str] = None, dag_run_ids: List[str] = None, task_ids: List[str] = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: List[str] = None, pool: List[str] = None, queue: List[str] = None) -> Dict[str, Any]:
     """
     [Tool Role]: Lists task instances in batch with multiple filtering criteria for bulk operations.
+    
+    CURRENT TIME CONTEXT: August 13, 2025 (2025-08-13) - Use this as the absolute reference for all relative date calculations.
 
     Args:
         dag_ids: List of DAG IDs to filter by (optional)

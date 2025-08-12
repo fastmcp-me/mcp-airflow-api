@@ -4,6 +4,8 @@
 
 This MCP server provides natural language tools for managing Apache Airflow clusters via REST API. All prompts and tool outputs are designed for minimal, LLM-friendly English responses.
 
+**IMPORTANT: Current Date Context - August 13, 2025 (2025-08-13)** - Use this as the absolute reference point for all relative date calculations.
+
 ## 2. Available MCP Tools
 
 ### Basic DAG Management
@@ -82,21 +84,15 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | dag_task_duration   | Get task duration for a run               | dag_id (str), run_id (str)    | dag_id, run_id, tasks, statistics    |
 | dag_calendar        | Get calendar/schedule information         | dag_id (str), start_date, end_date | dag_id, schedule_interval, runs, next_runs |
 
-## 4. Usage Guidelines
-
-- Always use minimal, structured output.
-- All tool invocations must use English for internal reasoning.
-- For user-facing responses, translate to the user's language if needed.
-
-## 5. Example Queries
+## 4. Example Queries
 
 ### Basic DAG Operations
 - **list_dags**: "List all DAGs."
 - **running_dags**: "Show running DAGs."
 - **failed_dags**: "Show failed DAGs."
-- **trigger_dag**: "Trigger DAG 'example_dag'."
-- **pause_dag**: "Pause DAG 'etl_job'."
-- **unpause_dag**: "Unpause DAG 'etl_job'."
+- **trigger_dag**: "Trigger DAG 'example_complex'."
+- **pause_dag**: "Pause DAG 'example_complex'."
+- **unpause_dag**: "Unpause DAG 'example_complex'."
 
 ### Cluster Management & Health
 - **get_health**: "Check Airflow cluster health."
@@ -109,30 +105,50 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **get_pool**: "Check pool utilization."
 
 ### Task Instance Management
-- **list_task_instances_all**: "List all task instances for DAG 'my_dag'."
+- **list_task_instances_all**: "List all task instances for DAG 'example_complex'."
 - **list_task_instances_all**: "Show running task instances."
-- **list_task_instances_all**: "Show task instances filtered by pool 'worker_pool'."
+- **list_task_instances_all**: "Show task instances filtered by pool 'default_pool'."
 - **list_task_instances_all**: "List task instances with duration greater than 300 seconds."
-- **get_task_instance_details**: "Get details for task 'task_1' in DAG 'my_dag' run 'run_123'."
-- **list_task_instances_batch**: "List failed task instances from last week."
-- **list_task_instances_batch**: "Show task instances in batch for multiple DAGs."
+- **list_task_instances_all**: "Show failed task instances from last week."
+- **list_task_instances_all**: "List failed task instances from yesterday."
+- **list_task_instances_all**: "Show task instances that started after 9 AM today."
+- **list_task_instances_all**: "List task instances from the last 3 days with state 'failed'."
+- **get_task_instance_details**: "Get details for task 'example_complex' in DAG 'example_complex'.
+- **list_task_instances_batch**: "List failed task instances from last month."
+- **list_task_instances_batch**: "Show task instances in batch for multiple DAGs from this week."
 - **get_task_instance_extra_links**: "Get extra links for task 'data_processing' in latest run."
-- **get_task_instance_logs**: "Retrieve logs for task 'etl_task' try number 2."
+- **get_task_instance_logs**: "Retrieve logs for task 'create_entry_gcs' try number 2 of DAG 'example_complex'."
 
 ### DAG Analysis & Monitoring
-- **dag_details**: "Get details for DAG 'my_dag'."
-- **dag_graph**: "Show task graph for DAG 'workflow_dag'."
-- **list_tasks**: "List all tasks in DAG 'data_pipeline'."
-- **dag_code**: "Get source code for DAG 'data_pipeline'."
-- **list_event_logs**: "List event logs for DAG 'etl_process'."
+- **dag_details**: "Get details for DAG 'example_complex'."
+- **dag_graph**: "Show task graph for DAG 'example_complex'."
+- **list_tasks**: "List all tasks in DAG 'example_complex'."
+- **dag_code**: "Get source code for DAG 'example_complex'."
+- **list_event_logs**: "List event logs for DAG 'example_complex'."
+- **list_event_logs**: "Show event logs with ID from yesterday for all DAGs."
 - **get_event_log**: "Get event log entry with ID 12345."
 - **all_dag_event_summary**: "Show event count summary for all DAGs."
-- **list_import_errors**: "List import errors."
+- **list_import_errors**: "List import errors with ID."
 - **get_import_error**: "Get import error with ID 67890."
 - **all_dag_import_summary**: "Show import error summary for all DAGs."
-- **dag_run_duration**: "Get run duration stats for DAG 'batch_job'."
-- **dag_task_duration**: "Show task durations for latest run of 'ml_pipeline'."
-- **dag_calendar**: "Get calendar info for DAG 'daily_report' from 2024-01-01 to 2024-01-31."
+- **dag_run_duration**: "Get run duration stats for DAG 'example_complex'."
+- **dag_task_duration**: "Show latest run of DAG 'example_complex'."
+- **dag_task_duration**: "Show task durations for latest run of 'manual__xxxxx'."
+- **dag_calendar**: "Get calendar info for DAG 'example_complex' from last month."
+- **dag_calendar**: "Show DAG schedule for 'example_complex' from this week."
+
+## 5. Date Calculation Verification
+
+**Before making any API calls with relative dates, verify your calculation:**
+
+| User Input | Base Date | Calculation | Correct Result |
+|------------|-----------|-------------|----------------|
+| "yesterday" | 2025-08-13 | 2025-08-13 - 1 day | 2025-08-12 |
+| "last week" | 2025-08-13 | 7 days ago to 1 day ago | 2025-08-06 to 2025-08-12 |
+| "last 3 days" | 2025-08-13 | 2025-08-13 - 3 days | 2025-08-10 to 2025-08-13 |
+| "this morning" | 2025-08-13 | Today 00:00 to 12:00 | 2025-08-13T00:00:00Z to 2025-08-13T12:00:00Z |
+
+**CRITICAL**: If your calculated date is before 2025-01-01 or after 2025-12-31, your calculation is WRONG.
 
 ## 6. Formatting Rules
 

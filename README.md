@@ -73,6 +73,10 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 ### Task Instance Management
 
+- `get_current_time_context()`  
+	Returns the current time context for accurate relative date calculations.  
+	Output: `current_date`, `current_time`, `reference_date`, `date_calculation_examples`, `message`
+
 - `list_task_instances_all(dag_id=None, dag_run_id=None, execution_date_gte=None, execution_date_lte=None, start_date_gte=None, start_date_lte=None, end_date_gte=None, end_date_lte=None, duration_gte=None, duration_lte=None, state=None, pool=None, queue=None, limit=100, offset=0)`  
 	Lists task instances across all DAGs or filtered by specific criteria with comprehensive filtering options.  
 	Output: `task_instances`, `total_entries`, `limit`, `offset`, `applied_filters`
@@ -150,6 +154,60 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 ---
 
+## Example Queries
+
+### Basic DAG Operations
+- **list_dags**: "List all DAGs."
+- **running_dags**: "Show running DAGs."
+- **failed_dags**: "Show failed DAGs."
+- **trigger_dag**: "Trigger DAG 'example_dag'."
+- **pause_dag**: "Pause DAG 'etl_job'."
+- **unpause_dag**: "Unpause DAG 'etl_job'."
+
+### Cluster Management & Health
+- **get_health**: "Check Airflow cluster health."
+- **get_version**: "Get Airflow version information."
+
+### Pool Management
+- **list_pools**: "List all pools."
+- **list_pools**: "Show pool usage statistics."
+- **get_pool**: "Get details for pool 'default_pool'."
+- **get_pool**: "Check pool utilization."
+
+### Task Instance Management
+- **list_task_instances_all**: "List all task instances for DAG 'conditional_dataset_and_time_based_timetable'."
+- **list_task_instances_all**: "Show running task instances."
+- **list_task_instances_all**: "Show task instances filtered by pool 'default_pool'."
+- **list_task_instances_all**: "List task instances with duration greater than 300 seconds."
+- **list_task_instances_all**: "Show failed task instances from last week."
+- **list_task_instances_all**: "List failed task instances from yesterday."
+- **list_task_instances_all**: "Show task instances that started after 9 AM today."
+- **list_task_instances_all**: "List task instances from the last 3 days with state 'failed'."
+- **get_task_instance_details**: "Get details for task 'conditional_dataset_and_time_based_timetable' in DAG 'conditional_dataset_and_time_based_timetable' run 'scheduled__2025-08-06T01:00:00+00:00'."
+- **list_task_instances_batch**: "List failed task instances from last month."
+- **list_task_instances_batch**: "Show task instances in batch for multiple DAGs from this week."
+- **get_task_instance_extra_links**: "Get extra links for task 'data_processing' in latest run."
+- **get_task_instance_logs**: "Retrieve logs for task 'etl_task' try number 2."
+
+### DAG Analysis & Monitoring
+- **dag_details**: "Get details for DAG 'my_dag'."
+- **dag_graph**: "Show task graph for DAG 'workflow_dag'."
+- **list_tasks**: "List all tasks in DAG 'data_pipeline'."
+- **dag_code**: "Get source code for DAG 'data_pipeline'."
+- **list_event_logs**: "List event logs for DAG 'etl_process'."
+- **list_event_logs**: "Show event logs from yesterday for all DAGs."
+- **get_event_log**: "Get event log entry with ID 12345."
+- **all_dag_event_summary**: "Show event count summary for all DAGs."
+- **list_import_errors**: "List import errors."
+- **get_import_error**: "Get import error with ID 67890."
+- **all_dag_import_summary**: "Show import error summary for all DAGs."
+- **dag_run_duration**: "Get run duration stats for DAG 'batch_job'."
+- **dag_task_duration**: "Show task durations for latest run of 'ml_pipeline'."
+- **dag_calendar**: "Get calendar info for DAG 'daily_report' from last month."
+- **dag_calendar**: "Show DAG schedule for 'weekly_report' from this week."
+
+---
+
 ## Prompt Template
 
 The package exposes a tool `get_prompt_template` that returns either the entire template, a specific section, or just the headings. Three MCP prompts (`prompt_template_full`, `prompt_template_headings`, `prompt_template_section`) are also registered for discovery.
@@ -186,6 +244,8 @@ Policy: Only English is stored; LLM는 사용자 질의 언어와 무관하게 �
 - Utility functions: `src/mcp_airflow_api/functions.py`
 
 ---
+
+## Prompt Template
 
 ## How To Use
 

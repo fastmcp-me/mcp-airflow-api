@@ -81,6 +81,18 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Retrieves event count summary for all DAGs.  
 	Output: `dag_summaries`, `total_dags`, `total_events`
 
+- `list_import_errors(limit=20, offset=0)`  
+	Lists import errors with optional filtering.  
+	Output: `import_errors`, `total_entries`, `limit`, `offset`
+
+- `get_import_error(import_error_id)`  
+	Retrieves a specific import error by ID.  
+	Output: `import_error_id`, `filename`, `stacktrace`, `timestamp`
+
+- `all_dag_import_summary()`  
+	Retrieves import error summary for all DAGs.  
+	Output: `import_summaries`, `total_errors`, `affected_files`
+
 - `dag_run_duration(dag_id, limit=10)`  
 	Retrieves run duration statistics for a specific DAG.  
 	Output: `dag_id`, `runs`, duration analysis, success/failure stats

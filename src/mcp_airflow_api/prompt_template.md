@@ -22,6 +22,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - `list_event_logs(dag_id, task_id, run_id, limit, offset)`: List event log entries with filtering.
 - `get_event_log(event_log_id)`: Get a specific event log entry by ID.
 - `all_dag_event_summary()`: Get event count summary for all DAGs.
+- `list_import_errors(limit, offset)`: List import errors with filtering.
+- `get_import_error(import_error_id)`: Get a specific import error by ID.
+- `all_dag_import_summary()`: Get import error summary for all DAGs.
 - `dag_run_duration(dag_id, limit)`: Get run duration statistics for a DAG.
 - `dag_task_duration(dag_id, run_id)`: Get task duration info for a DAG run.
 - `dag_calendar(dag_id, start_date, end_date)`: Get calendar/schedule info for a DAG.
@@ -45,6 +48,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | list_event_logs     | List event log entries with filtering     | dag_id, task_id, run_id, limit, offset | event_logs, total_entries, limit, offset |
 | get_event_log       | Get specific event log entry by ID        | event_log_id (int)            | event_log_id, when, event, dag_id, task_id, run_id, etc. |
 | all_dag_event_summary | Get event count summary for all DAGs    | None                          | dag_summaries, total_dags, total_events |
+| list_import_errors  | List import errors with filtering         | limit, offset                 | import_errors, total_entries, limit, offset |
+| get_import_error    | Get specific import error by ID           | import_error_id (int)         | import_error_id, filename, stacktrace, timestamp |
+| all_dag_import_summary | Get import error summary for all DAGs | None                          | import_summaries, total_errors, affected_files |
 | dag_run_duration    | Get run duration statistics               | dag_id (str), limit (int)     | dag_id, runs, statistics             |
 | dag_task_duration   | Get task duration for a run               | dag_id (str), run_id (str)    | dag_id, run_id, tasks, statistics    |
 | dag_calendar        | Get calendar/schedule information         | dag_id (str), start_date, end_date | dag_id, schedule_interval, runs, next_runs |
@@ -73,6 +79,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - "List event logs for DAG 'etl_process'."
 - "Get event log entry with ID 12345."
 - "Show event count summary for all DAGs."
+- "List import errors."
+- "Get import error with ID 67890."
+- "Show import error summary for all DAGs."
 - "Get run duration stats for DAG 'batch_job'."
 - "Show task durations for latest run of 'ml_pipeline'."
 - "Get calendar info for DAG 'daily_report' from 2024-01-01 to 2024-01-31."

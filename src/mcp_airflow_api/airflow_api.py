@@ -499,6 +499,121 @@ def all_dag_event_summary() -> Dict[str, Any]:
     }
 
 @mcp.tool()
+def list_import_errors(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
+    """
+    [Tool Role]: Lists import errors with optional filtering.
+
+    Args:
+        limit: Maximum number of import errors to return (default: 20)
+        offset: Number of entries to skip (default: 0)
+
+    Returns:
+        List of import errors: import_errors, total_entries, limit, offset
+    """
+    # Build query parameters
+    params = [f"limit={limit}", f"offset={offset}"]
+    query_string = "&".join(params)
+    
+    resp = airflow_request("GET", f"/importErrors?{query_string}")
+    resp.raise_for_status()
+    errors = resp.json()
+    
+    import_errors = []
+    for error in errors.get("import_errors", []):
+        error_info = {
+            "import_error_id": error.get("import_error_id"),
+            "filename": error.get("filename"),
+            "stacktrace": error.get("stacktrace"),
+            "timestamp": error.get("timestamp")
+        }
+        import_errors.append(error_info)
+    
+    return {
+        "import_errors": import_errors,
+        "total_entries": errors.get("total_entries", len(import_errors)),
+        "limit": limit,
+        "offset": offset
+    }
+
+@mcp.tool()
+def get_import_error(import_error_id: int) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves a specific import error by ID.
+
+    Args:
+        import_error_id: The import error ID to retrieve
+
+    Returns:
+        Single import error: import_error_id, filename, stacktrace, timestamp
+    """
+    if not import_error_id:
+        raise ValueError("import_error_id must not be empty")
+    
+    resp = airflow_request("GET", f"/importErrors/{import_error_id}")
+    resp.raise_for_status()
+    error = resp.json()
+    
+    return {
+        "import_error_id": error.get("import_error_id"),
+        "filename": error.get("filename"),
+        "stacktrace": error.get("stacktrace"),
+        "timestamp": error.get("timestamp")
+    }
+
+@mcp.tool()
+def all_dag_import_summary() -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves import error summary for all DAGs.
+
+    Returns:
+        Summary of import errors by filename: import_summaries, total_errors, affected_files
+    """
+    # Get all import errors (using a large limit to get all)
+    try:
+        errors_resp = airflow_request("GET", "/importErrors?limit=1000")
+        errors_resp.raise_for_status()
+        errors_data = errors_resp.json()
+        errors = errors_data.get("import_errors", [])
+    except Exception:
+        # If error occurs, return empty summary
+        return {
+            "import_summaries": [],
+            "total_errors": 0,
+            "affected_files": 0
+        }
+    
+    # Group errors by filename
+    filename_errors = {}
+    for error in errors:
+        filename = error.get("filename", "unknown")
+        if filename not in filename_errors:
+            filename_errors[filename] = {
+                "filename": filename,
+                "error_count": 0,
+                "latest_timestamp": None,
+                "error_ids": []
+            }
+        
+        filename_errors[filename]["error_count"] += 1
+        filename_errors[filename]["error_ids"].append(error.get("import_error_id"))
+        
+        # Track latest timestamp
+        timestamp = error.get("timestamp")
+        if timestamp:
+            if not filename_errors[filename]["latest_timestamp"] or timestamp > filename_errors[filename]["latest_timestamp"]:
+                filename_errors[filename]["latest_timestamp"] = timestamp
+    
+    # Convert to list and sort by error count
+    import_summaries = list(filename_errors.values())
+    import_summaries.sort(key=lambda x: x["error_count"], reverse=True)
+    
+    return {
+        "import_summaries": import_summaries,
+        "total_errors": len(errors),
+        "affected_files": len(import_summaries)
+    }
+
+@mcp.tool()
 def dag_run_duration(dag_id: str, limit: int = 10) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves run duration statistics for a specific DAG.

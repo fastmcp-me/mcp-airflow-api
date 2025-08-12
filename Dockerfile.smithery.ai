@@ -4,9 +4,9 @@ FROM rockylinux:9.3
 
 ARG PYTHON_VERSION=3.11
 
-ADD https://worldtimeapi.org/api/timezone/Etc/UTC.txt /tmp/cachebust
+ADD https://httpbin.org/uuid /tmp/uuid
 
-RUN cat /tmp/cachebust >/dev/null && \
+RUN cat /tmp/uuid >/dev/null && \
     for i in $(seq 120 -1 1); do \
       echo "Waiting... $i seconds remaining"; \
       sleep 1; \

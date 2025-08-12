@@ -364,20 +364,33 @@ def dag_code(dag_id: str) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def dag_event_log(dag_id: str, limit: int = 20) -> Dict[str, Any]:
+def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None, limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     """
-    [Tool Role]: Retrieves event log entries for a specific DAG.
+    [Tool Role]: Lists event log entries with optional filtering.
 
     Args:
-        dag_id: The DAG ID to get event logs for
+        dag_id: Filter by DAG ID (optional)
+        task_id: Filter by task ID (optional)
+        run_id: Filter by run ID (optional)
         limit: Maximum number of log entries to return (default: 20)
+        offset: Number of entries to skip (default: 0)
 
     Returns:
-        DAG event logs: dag_id, events, total_entries
+        List of event logs: event_logs, total_entries, limit, offset
     """
-    if not dag_id:
-        raise ValueError("dag_id must not be empty")
-    resp = airflow_request("GET", f"/eventLogs?dag_id={dag_id}&limit={limit}")
+    # Build query parameters
+    params = []
+    if dag_id:
+        params.append(f"dag_id={dag_id}")
+    if task_id:
+        params.append(f"task_id={task_id}")
+    if run_id:
+        params.append(f"run_id={run_id}")
+    params.append(f"limit={limit}")
+    params.append(f"offset={offset}")
+    
+    query_string = "&".join(params)
+    resp = airflow_request("GET", f"/eventLogs?{query_string}")
     resp.raise_for_status()
     logs = resp.json()
     
@@ -387,19 +400,52 @@ def dag_event_log(dag_id: str, limit: int = 20) -> Dict[str, Any]:
             "event_log_id": log.get("event_log_id"),
             "when": log.get("when"),
             "event": log.get("event"),
+            "dag_id": log.get("dag_id"),
             "task_id": log.get("task_id"),
             "run_id": log.get("run_id"),
             "map_index": log.get("map_index"),
             "try_number": log.get("try_number"),
+            "owner": log.get("owner"),
             "extra": log.get("extra")
         }
         events.append(event_info)
     
     return {
-        "dag_id": dag_id,
-        "events": events,
+        "event_logs": events,
         "total_entries": logs.get("total_entries", len(events)),
-        "limit": limit
+        "limit": limit,
+        "offset": offset
+    }
+
+@mcp.tool()
+def get_event_log(event_log_id: int) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves a specific event log entry by ID.
+
+    Args:
+        event_log_id: The event log ID to retrieve
+
+    Returns:
+        Single event log entry: event_log_id, when, event, dag_id, task_id, run_id, etc.
+    """
+    if not event_log_id:
+        raise ValueError("event_log_id must not be empty")
+    
+    resp = airflow_request("GET", f"/eventLogs/{event_log_id}")
+    resp.raise_for_status()
+    log = resp.json()
+    
+    return {
+        "event_log_id": log.get("event_log_id"),
+        "when": log.get("when"),
+        "event": log.get("event"),
+        "dag_id": log.get("dag_id"),
+        "task_id": log.get("task_id"),
+        "run_id": log.get("run_id"),
+        "map_index": log.get("map_index"),
+        "try_number": log.get("try_number"),
+        "owner": log.get("owner"),
+        "extra": log.get("extra")
     }
 
 @mcp.tool()

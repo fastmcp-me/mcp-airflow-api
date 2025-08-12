@@ -19,7 +19,8 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - `dag_graph(dag_id)`: Get task dependency graph structure for a DAG.
 - `list_tasks(dag_id)`: List all tasks for a specific DAG.
 - `dag_code(dag_id)`: Retrieve source code for a specific DAG.
-- `dag_event_log(dag_id, limit)`: Get event log entries for a DAG.
+- `list_event_logs(dag_id, task_id, run_id, limit, offset)`: List event log entries with filtering.
+- `get_event_log(event_log_id)`: Get a specific event log entry by ID.
 - `dag_run_duration(dag_id, limit)`: Get run duration statistics for a DAG.
 - `dag_task_duration(dag_id, run_id)`: Get task duration info for a DAG run.
 - `dag_calendar(dag_id, start_date, end_date)`: Get calendar/schedule info for a DAG.
@@ -40,7 +41,8 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | dag_graph           | Get task dependency graph                 | dag_id (str)                  | dag_id, tasks, dependencies, total_tasks |
 | list_tasks          | List all tasks for a specific DAG        | dag_id (str)                  | dag_id, tasks, task_configuration_details |
 | dag_code            | Get DAG source code                       | dag_id (str)                  | dag_id, file_token, source_code      |
-| dag_event_log       | Get event log entries                     | dag_id (str), limit (int)     | dag_id, events, total_entries        |
+| list_event_logs     | List event log entries with filtering     | dag_id, task_id, run_id, limit, offset | event_logs, total_entries, limit, offset |
+| get_event_log       | Get specific event log entry by ID        | event_log_id (int)            | event_log_id, when, event, dag_id, task_id, run_id, etc. |
 | dag_run_duration    | Get run duration statistics               | dag_id (str), limit (int)     | dag_id, runs, statistics             |
 | dag_task_duration   | Get task duration for a run               | dag_id (str), run_id (str)    | dag_id, run_id, tasks, statistics    |
 | dag_calendar        | Get calendar/schedule information         | dag_id (str), start_date, end_date | dag_id, schedule_interval, runs, next_runs |
@@ -66,7 +68,8 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - "Show task graph for DAG 'workflow_dag'."
 - "List all tasks in DAG 'data_pipeline'."
 - "Get source code for DAG 'data_pipeline'."
-- "Show event logs for DAG 'etl_process'."
+- "List event logs for DAG 'etl_process'."
+- "Get event log entry with ID 12345."
 - "Get run duration stats for DAG 'batch_job'."
 - "Show task durations for latest run of 'ml_pipeline'."
 - "Get calendar info for DAG 'daily_report' from 2024-01-01 to 2024-01-31."

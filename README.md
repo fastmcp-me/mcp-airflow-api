@@ -69,9 +69,13 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Retrieves the source code for a specific DAG.  
 	Output: `dag_id`, `file_token`, `source_code`
 
-- `dag_event_log(dag_id, limit=20)`  
-	Retrieves event log entries for a specific DAG.  
-	Output: `dag_id`, `events`, execution history, state changes
+- `list_event_logs(dag_id=None, task_id=None, run_id=None, limit=20, offset=0)`  
+	Lists event log entries with optional filtering.  
+	Output: `event_logs`, `total_entries`, `limit`, `offset`
+
+- `get_event_log(event_log_id)`  
+	Retrieves a specific event log entry by ID.  
+	Output: `event_log_id`, `when`, `event`, `dag_id`, `task_id`, `run_id`, etc.
 
 - `dag_run_duration(dag_id, limit=10)`  
 	Retrieves run duration statistics for a specific DAG.  

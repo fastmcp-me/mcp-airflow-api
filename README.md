@@ -302,6 +302,9 @@ To install Airflow API Integration Server for Claude Desktop automatically via [
 npx -y @smithery/cli install @call518/mcp-airflow-api --client claude
 ```
 
+- [Issues](https://github.com/call518/MCP-Airflow-API/issues)
+- [Smithery Deployment](https://smithery.ai/server/@call518/mcp-airflow-api)
+
 ---
 
 ## Roadmap
@@ -313,8 +316,6 @@ This project starts with a minimal set of essential Airflow management tools. Ma
 ## Additional Links
 
 - [Code](https://github.com/call518/MCP-Airflow-API)
-- [Issues](https://github.com/call518/MCP-Airflow-API/issues)
-- [Smithery Deployment](https://smithery.ai/server/@call518/mcp-airflow-api)
 
 ---
 

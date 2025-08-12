@@ -17,7 +17,7 @@ RUN pip install \
         'mcpo>=0.0.17' \
         'fastmcp>=2.11.1' \
         'aiohttp>=3.12.0' \
-        'mcp-airflow-api>=0.1.5'
+        'mcp-airflow-api'
 
 COPY mcp-config.json.pypi /app/config/mcp-config.json
 

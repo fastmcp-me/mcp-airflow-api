@@ -22,6 +22,13 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - `list_pools(limit, offset)`: List all pools in the Airflow instance.
 - `get_pool(pool_name)`: Get detailed information about a specific pool.
 
+### Task Instance Management
+- `list_task_instances_all(dag_id, dag_run_id, execution_date_gte, execution_date_lte, start_date_gte, start_date_lte, end_date_gte, end_date_lte, duration_gte, duration_lte, state, pool, queue, limit, offset)`: List task instances across all DAGs with comprehensive filtering.
+- `get_task_instance_details(dag_id, dag_run_id, task_id)`: Get detailed information about a specific task instance.
+- `list_task_instances_batch(dag_ids, dag_run_ids, task_ids, execution_date_gte, execution_date_lte, start_date_gte, start_date_lte, end_date_gte, end_date_lte, duration_gte, duration_lte, state, pool, queue)`: List task instances in batch for bulk operations.
+- `get_task_instance_extra_links(dag_id, dag_run_id, task_id)`: List extra links for a specific task instance.
+- `get_task_instance_logs(dag_id, dag_run_id, task_id, try_number, full_content, token)`: Get logs for a specific task instance and try number.
+
 ### DAG Analysis & Monitoring
 - `dag_details(dag_id)`: Get comprehensive details for a specific DAG.
 - `dag_graph(dag_id)`: Get task dependency graph structure for a DAG.
@@ -54,6 +61,12 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | **Pool Management** |                                           |                               |                                      |
 | list_pools          | List all pools in Airflow                | limit, offset                 | pools, total_entries, slots usage   |
 | get_pool            | Get specific pool details                 | pool_name (str)               | name, slots, occupied_slots, running_slots, queued_slots, open_slots, description, utilization_percentage |
+| **Task Instance Management** |                               |                               |                                      |
+| list_task_instances_all | List task instances with filtering    | dag_id, dag_run_id, dates, state, pool, queue, limit, offset | task_instances, total_entries, applied_filters |
+| get_task_instance_details | Get detailed task instance info     | dag_id, dag_run_id, task_id   | Comprehensive task details, execution info, state, timing |
+| list_task_instances_batch | Batch list task instances           | dag_ids, dag_run_ids, task_ids, dates, state, pool, queue | task_instances, total_entries, applied_filters |
+| get_task_instance_extra_links | List extra links for task       | dag_id, dag_run_id, task_id   | task_id, dag_id, dag_run_id, extra_links, total_links |
+| get_task_instance_logs | Get logs for task instance           | dag_id, dag_run_id, task_id, try_number, full_content, token | content, continuation_token, metadata |
 | **DAG Analysis & Monitoring** |                                   |                               |                                      |
 | dag_details         | Get comprehensive DAG details             | dag_id (str)                  | dag_id, schedule_interval, start_date, owners, tags, description, etc. |
 | dag_graph           | Get task dependency graph                 | dag_id (str)                  | dag_id, tasks, dependencies, total_tasks |
@@ -94,6 +107,17 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - "Show pool usage statistics."
 - "Get details for pool 'default_pool'."
 - "Check pool utilization."
+
+### Task Instance Management
+- "List all task instances for DAG 'my_dag'."
+- "Show running task instances."
+- "Get details for task 'task_1' in DAG 'my_dag' run 'run_123'."
+- "List failed task instances from last week."
+- "Show task instances in batch for multiple DAGs."
+- "Get extra links for task 'data_processing' in latest run."
+- "Retrieve logs for task 'etl_task' try number 2."
+- "Show task instances filtered by pool 'worker_pool'."
+- "List task instances with duration greater than 300 seconds."
 
 ### DAG Analysis & Monitoring
 - "Get details for DAG 'my_dag'."

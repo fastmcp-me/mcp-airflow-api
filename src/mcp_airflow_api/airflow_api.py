@@ -892,6 +892,352 @@ def get_pool(pool_name: str) -> Dict[str, Any]:
     }
 
 #========================================================================================
+# Task Instance Management Functions
+#========================================================================================
+
+@mcp.tool()
+def list_task_instances_all(dag_id: str, dag_run_id: str = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: str = None, pool: str = None, queue: str = None, limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+    """
+    [Tool Role]: Lists task instances across all DAGs or filtered by specific DAG with comprehensive filtering options.
+
+    Args:
+        dag_id: Filter by DAG ID (optional)
+        dag_run_id: Filter by DAG run ID (optional)
+        execution_date_gte: Filter by execution date greater than or equal to (ISO format, optional)
+        execution_date_lte: Filter by execution date less than or equal to (ISO format, optional)
+        start_date_gte: Filter by start date greater than or equal to (ISO format, optional)
+        start_date_lte: Filter by start date less than or equal to (ISO format, optional)
+        end_date_gte: Filter by end date greater than or equal to (ISO format, optional)
+        end_date_lte: Filter by end date less than or equal to (ISO format, optional)
+        duration_gte: Filter by duration greater than or equal to (seconds, optional)
+        duration_lte: Filter by duration less than or equal to (seconds, optional)
+        state: Filter by task state (queued, running, success, failed, up_for_retry, up_for_reschedule, upstream_failed, skipped, deferred, scheduled, removed, restarting, optional)
+        pool: Filter by pool name (optional)
+        queue: Filter by queue name (optional)
+        limit: Maximum number of task instances to return (default: 100)
+        offset: Number of task instances to skip for pagination (default: 0)
+
+    Returns:
+        List of task instances with comprehensive information: task_instances, total_entries, limit, offset
+    """
+    # Build query parameters
+    params = [f"limit={limit}", f"offset={offset}"]
+    
+    # Add optional filters
+    filter_params = {
+        'dag_id': dag_id,
+        'dag_run_id': dag_run_id,
+        'execution_date_gte': execution_date_gte,
+        'execution_date_lte': execution_date_lte,
+        'start_date_gte': start_date_gte,
+        'start_date_lte': start_date_lte,
+        'end_date_gte': end_date_gte,
+        'end_date_lte': end_date_lte,
+        'duration_gte': duration_gte,
+        'duration_lte': duration_lte,
+        'state': state,
+        'pool': pool,
+        'queue': queue
+    }
+    
+    for key, value in filter_params.items():
+        if value is not None:
+            params.append(f"{key}={value}")
+    
+    query_string = "&".join(params)
+    resp = airflow_request("GET", f"/dags/~/dagRuns/~/taskInstances?{query_string}")
+    resp.raise_for_status()
+    data = resp.json()
+    
+    task_instances = []
+    for task in data.get("task_instances", []):
+        task_info = {
+            "task_id": task.get("task_id"),
+            "task_display_name": task.get("task_display_name"),
+            "dag_id": task.get("dag_id"),
+            "dag_run_id": task.get("dag_run_id"),
+            "execution_date": task.get("execution_date"),
+            "start_date": task.get("start_date"),
+            "end_date": task.get("end_date"),
+            "duration": task.get("duration"),
+            "state": task.get("state"),
+            "try_number": task.get("try_number"),
+            "max_tries": task.get("max_tries"),
+            "hostname": task.get("hostname"),
+            "unixname": task.get("unixname"),
+            "pool": task.get("pool"),
+            "pool_slots": task.get("pool_slots"),
+            "queue": task.get("queue"),
+            "priority_weight": task.get("priority_weight"),
+            "operator": task.get("operator"),
+            "queued_dttm": task.get("queued_dttm"),
+            "pid": task.get("pid"),
+            "executor_config": task.get("executor_config"),
+            "sla_miss": task.get("sla_miss"),
+            "rendered_fields": task.get("rendered_fields"),
+            "trigger": task.get("trigger"),
+            "triggerer_job": task.get("triggerer_job"),
+            "note": task.get("note")
+        }
+        task_instances.append(task_info)
+    
+    return {
+        "task_instances": task_instances,
+        "total_entries": data.get("total_entries", len(task_instances)),
+        "limit": limit,
+        "offset": offset,
+        "applied_filters": {k: v for k, v in filter_params.items() if v is not None}
+    }
+
+@mcp.tool()
+def get_task_instance_details(dag_id: str, dag_run_id: str, task_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves detailed information about a specific task instance.
+
+    Args:
+        dag_id: The DAG ID containing the task
+        dag_run_id: The DAG run ID containing the task instance
+        task_id: The task ID to retrieve details for
+
+    Returns:
+        Detailed task instance information including execution details, state, timing, and configuration
+    """
+    if not dag_id or not dag_run_id or not task_id:
+        raise ValueError("dag_id, dag_run_id, and task_id must not be empty")
+    
+    resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}")
+    resp.raise_for_status()
+    task = resp.json()
+    
+    return {
+        "task_id": task.get("task_id"),
+        "task_display_name": task.get("task_display_name"),
+        "dag_id": task.get("dag_id"),
+        "dag_run_id": task.get("dag_run_id"),
+        "execution_date": task.get("execution_date"),
+        "start_date": task.get("start_date"),
+        "end_date": task.get("end_date"),
+        "duration": task.get("duration"),
+        "state": task.get("state"),
+        "try_number": task.get("try_number"),
+        "max_tries": task.get("max_tries"),
+        "hostname": task.get("hostname"),
+        "unixname": task.get("unixname"),
+        "pool": task.get("pool"),
+        "pool_slots": task.get("pool_slots"),
+        "queue": task.get("queue"),
+        "priority_weight": task.get("priority_weight"),
+        "operator": task.get("operator"),
+        "queued_dttm": task.get("queued_dttm"),
+        "pid": task.get("pid"),
+        "executor_config": task.get("executor_config"),
+        "sla_miss": task.get("sla_miss"),
+        "rendered_fields": task.get("rendered_fields"),
+        "trigger": task.get("trigger"),
+        "triggerer_job": task.get("triggerer_job"),
+        "note": task.get("note"),
+        "map_index": task.get("map_index"),
+        "rendered_map_index": task.get("rendered_map_index")
+    }
+
+@mcp.tool()
+def list_task_instances_batch(dag_ids: List[str] = None, dag_run_ids: List[str] = None, task_ids: List[str] = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: List[str] = None, pool: List[str] = None, queue: List[str] = None) -> Dict[str, Any]:
+    """
+    [Tool Role]: Lists task instances in batch with multiple filtering criteria for bulk operations.
+
+    Args:
+        dag_ids: List of DAG IDs to filter by (optional)
+        dag_run_ids: List of DAG run IDs to filter by (optional)
+        task_ids: List of task IDs to filter by (optional)
+        execution_date_gte: Filter by execution date greater than or equal to (ISO format, optional)
+        execution_date_lte: Filter by execution date less than or equal to (ISO format, optional)
+        start_date_gte: Filter by start date greater than or equal to (ISO format, optional)
+        start_date_lte: Filter by start date less than or equal to (ISO format, optional)
+        end_date_gte: Filter by end date greater than or equal to (ISO format, optional)
+        end_date_lte: Filter by end date less than or equal to (ISO format, optional)
+        duration_gte: Filter by duration greater than or equal to (seconds, optional)
+        duration_lte: Filter by duration less than or equal to (seconds, optional)
+        state: List of task states to filter by (optional)
+        pool: List of pool names to filter by (optional)
+        queue: List of queue names to filter by (optional)
+
+    Returns:
+        Batch list of task instances with filtering results: task_instances, total_entries, applied_filters
+    """
+    # Prepare request body for POST batch request
+    request_body = {}
+    
+    # Add list filters
+    list_filters = {
+        'dag_ids': dag_ids,
+        'dag_run_ids': dag_run_ids,
+        'task_ids': task_ids,
+        'state': state,
+        'pool': pool,
+        'queue': queue
+    }
+    
+    for key, value in list_filters.items():
+        if value is not None:
+            request_body[key] = value if isinstance(value, list) else [value]
+    
+    # Add date/duration filters
+    scalar_filters = {
+        'execution_date_gte': execution_date_gte,
+        'execution_date_lte': execution_date_lte,
+        'start_date_gte': start_date_gte,
+        'start_date_lte': start_date_lte,
+        'end_date_gte': end_date_gte,
+        'end_date_lte': end_date_lte,
+        'duration_gte': duration_gte,
+        'duration_lte': duration_lte
+    }
+    
+    for key, value in scalar_filters.items():
+        if value is not None:
+            request_body[key] = value
+    
+    # Make POST request for batch operation
+    resp = airflow_request("POST", "/dags/~/dagRuns/~/taskInstances/list", json=request_body)
+    resp.raise_for_status()
+    data = resp.json()
+    
+    task_instances = []
+    for task in data.get("task_instances", []):
+        task_info = {
+            "task_id": task.get("task_id"),
+            "task_display_name": task.get("task_display_name"),
+            "dag_id": task.get("dag_id"),
+            "dag_run_id": task.get("dag_run_id"),
+            "execution_date": task.get("execution_date"),
+            "start_date": task.get("start_date"),
+            "end_date": task.get("end_date"),
+            "duration": task.get("duration"),
+            "state": task.get("state"),
+            "try_number": task.get("try_number"),
+            "max_tries": task.get("max_tries"),
+            "hostname": task.get("hostname"),
+            "pool": task.get("pool"),
+            "queue": task.get("queue"),
+            "priority_weight": task.get("priority_weight"),
+            "operator": task.get("operator"),
+            "note": task.get("note")
+        }
+        task_instances.append(task_info)
+    
+    return {
+        "task_instances": task_instances,
+        "total_entries": data.get("total_entries", len(task_instances)),
+        "applied_filters": {k: v for k, v in {**list_filters, **scalar_filters}.items() if v is not None}
+    }
+
+@mcp.tool()
+def get_task_instance_extra_links(dag_id: str, dag_run_id: str, task_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Lists extra links for a specific task instance (e.g., monitoring dashboards, logs, external resources).
+
+    Args:
+        dag_id: The DAG ID containing the task
+        dag_run_id: The DAG run ID containing the task instance
+        task_id: The task ID to get extra links for
+
+    Returns:
+        List of extra links with their URLs and descriptions: task_id, dag_id, dag_run_id, extra_links
+    """
+    if not dag_id or not dag_run_id or not task_id:
+        raise ValueError("dag_id, dag_run_id, and task_id must not be empty")
+    
+    resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}/links")
+    resp.raise_for_status()
+    links_data = resp.json()
+    
+    # The response typically contains a dictionary of link names to URLs
+    extra_links = []
+    for link_name, link_url in links_data.items():
+        if link_name != "total_entries":  # Skip metadata
+            link_info = {
+                "link_name": link_name,
+                "link_url": link_url,
+                "description": f"Extra link for {task_id}: {link_name}"
+            }
+            extra_links.append(link_info)
+    
+    return {
+        "task_id": task_id,
+        "dag_id": dag_id,
+        "dag_run_id": dag_run_id,
+        "extra_links": extra_links,
+        "total_links": len(extra_links)
+    }
+
+@mcp.tool()
+def get_task_instance_logs(dag_id: str, dag_run_id: str, task_id: str, try_number: int = 1, full_content: bool = False, token: str = None) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves logs for a specific task instance and its try number with content and metadata.
+
+    Args:
+        dag_id: The DAG ID containing the task
+        dag_run_id: The DAG run ID containing the task instance
+        task_id: The task ID to get logs for
+        try_number: The try number for the task instance (default: 1)
+        full_content: Whether to return full log content or just metadata (default: False)
+        token: Pagination token for large logs (optional)
+
+    Returns:
+        Task instance logs with content and metadata: task_id, dag_id, dag_run_id, try_number, content, metadata
+    """
+    if not dag_id or not dag_run_id or not task_id:
+        raise ValueError("dag_id, dag_run_id, and task_id must not be empty")
+    
+    # Build query parameters
+    params = [f"full_content={str(full_content).lower()}"]
+    if token:
+        params.append(f"token={token}")
+    
+    query_string = "&".join(params)
+    resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}/logs/{try_number}?{query_string}")
+    resp.raise_for_status()
+    
+    # The response might be plain text for logs or JSON with metadata
+    content_type = resp.headers.get('content-type', '')
+    
+    if 'application/json' in content_type:
+        log_data = resp.json()
+        return {
+            "task_id": task_id,
+            "dag_id": dag_id,
+            "dag_run_id": dag_run_id,
+            "try_number": try_number,
+            "content": log_data.get("content", ""),
+            "continuation_token": log_data.get("continuation_token"),
+            "metadata": {
+                "full_content_requested": full_content,
+                "has_more": bool(log_data.get("continuation_token")),
+                "content_length": len(log_data.get("content", "")),
+                "content_type": "json_wrapped"
+            }
+        }
+    else:
+        # Plain text response
+        log_content = resp.text
+        return {
+            "task_id": task_id,
+            "dag_id": dag_id,
+            "dag_run_id": dag_run_id,
+            "try_number": try_number,
+            "content": log_content,
+            "continuation_token": None,
+            "metadata": {
+                "full_content_requested": full_content,
+                "has_more": False,
+                "content_length": len(log_content),
+                "content_type": "plain_text"
+            }
+        }
+
+#========================================================================================
+
+#========================================================================================
 # MCP Prompts (for prompts/list exposure)
 #========================================================================================
 

@@ -71,6 +71,28 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Get detailed information about a specific pool.  
 	Output: `name`, `slots`, `occupied_slots`, `running_slots`, `queued_slots`, `open_slots`, `description`, `utilization_percentage`
 
+### Task Instance Management
+
+- `list_task_instances_all(dag_id=None, dag_run_id=None, execution_date_gte=None, execution_date_lte=None, start_date_gte=None, start_date_lte=None, end_date_gte=None, end_date_lte=None, duration_gte=None, duration_lte=None, state=None, pool=None, queue=None, limit=100, offset=0)`  
+	Lists task instances across all DAGs or filtered by specific criteria with comprehensive filtering options.  
+	Output: `task_instances`, `total_entries`, `limit`, `offset`, `applied_filters`
+
+- `get_task_instance_details(dag_id, dag_run_id, task_id)`  
+	Retrieves detailed information about a specific task instance.  
+	Output: Comprehensive task instance details including execution info, state, timing, configuration, and metadata
+
+- `list_task_instances_batch(dag_ids=None, dag_run_ids=None, task_ids=None, execution_date_gte=None, execution_date_lte=None, start_date_gte=None, start_date_lte=None, end_date_gte=None, end_date_lte=None, duration_gte=None, duration_lte=None, state=None, pool=None, queue=None)`  
+	Lists task instances in batch with multiple filtering criteria for bulk operations.  
+	Output: `task_instances`, `total_entries`, `applied_filters`, batch processing results
+
+- `get_task_instance_extra_links(dag_id, dag_run_id, task_id)`  
+	Lists extra links for a specific task instance (e.g., monitoring dashboards, logs, external resources).  
+	Output: `task_id`, `dag_id`, `dag_run_id`, `extra_links`, `total_links`
+
+- `get_task_instance_logs(dag_id, dag_run_id, task_id, try_number=1, full_content=False, token=None)`  
+	Retrieves logs for a specific task instance and its try number with content and metadata.  
+	Output: `task_id`, `dag_id`, `dag_run_id`, `try_number`, `content`, `continuation_token`, `metadata`
+
 ### DAG Analysis & Monitoring
 
 - `dag_details(dag_id)`  

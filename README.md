@@ -42,6 +42,44 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Immediately triggers the specified DAG.  
 	Output: `dag_id`, `run_id`, `state`, `execution_date`, `start_date`, `end_date`
 
+- `pause_dag(dag_id)`  
+	Pauses the specified DAG (prevents scheduling new runs).  
+	Output: `dag_id`, `is_paused`
+
+- `unpause_dag(dag_id)`  
+	Unpauses the specified DAG (allows scheduling new runs).  
+	Output: `dag_id`, `is_paused`
+
+---
+
+## Prompt Template
+
+The package exposes a tool `get_prompt_template` that returns either the entire template, a specific section, or just the headings. Three MCP prompts (`prompt_template_full`, `prompt_template_headings`, `prompt_template_section`) are also registered for discovery.
+
+### MCP Prompts
+
+For easier discoverability in MCP clients (so `prompts/list` is not empty), the server now registers three prompts:
+
+• `prompt_template_full` – returns the full canonical template  
+• `prompt_template_headings` – returns only the section headings  
+• `prompt_template_section` – takes a `section` argument (number or keyword) and returns that section
+
+You can still use the `get_prompt_template` tool for programmatic access or when you prefer tool invocation over prompt retrieval.
+
+Single canonical English prompt template guides safe and efficient tool selection.
+
+Files:
+• Packaged: `src/mcp_airflow_api/prompt_template.md` (distributed with PyPI)  
+• (Optional workspace root copy `PROMPT_TEMPLATE.md` may exist for editing; packaged copy is the one loaded at runtime.)
+
+Retrieve dynamically via MCP tool:
+• `get_prompt_template()` – full template  
+• `get_prompt_template("tool map")` – only the tool mapping section  
+• `get_prompt_template("3")` – section 3 (tool map)  
+• `get_prompt_template(mode="headings")` – list all section headings
+
+Policy: Only English is stored; LLM는 사용자 질의 언어와 무관하게 영어 지침을 내부 추론용으로 사용하고, 사용자 응답은 필요 시 다국어로 생성한다.
+
 ---
 
 ## Main Tool Files

@@ -14,6 +14,10 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - `pause_dag(dag_id)`: Pause a DAG (prevent scheduling).
 - `unpause_dag(dag_id)`: Unpause a DAG (allow scheduling).
 
+### Cluster Management & Health
+- `get_health`: Get the health status of the Airflow webserver instance.
+- `get_version`: Get version information of the Airflow instance.
+
 ### DAG Analysis & Monitoring
 - `dag_details(dag_id)`: Get comprehensive details for a specific DAG.
 - `dag_graph(dag_id)`: Get task dependency graph structure for a DAG.
@@ -40,6 +44,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | trigger_dag         | Trigger a DAG run                         | dag_id (str)                  | dag_id, run_id, state, execution_date, start_date, end_date |
 | pause_dag           | Pause a DAG                               | dag_id (str)                  | dag_id, is_paused                    |
 | unpause_dag         | Unpause a DAG                             | dag_id (str)                  | dag_id, is_paused                    |
+| **Cluster Management & Health** |                                   |                               |                                      |
+| get_health          | Get health status of webserver            | None                          | metadatabase, scheduler, status      |
+| get_version         | Get version information                   | None                          | version, git_version, build_date, api_version |
 | **DAG Analysis & Monitoring** |                                   |                               |                                      |
 | dag_details         | Get comprehensive DAG details             | dag_id (str)                  | dag_id, schedule_interval, start_date, owners, tags, description, etc. |
 | dag_graph           | Get task dependency graph                 | dag_id (str)                  | dag_id, tasks, dependencies, total_tasks |
@@ -70,6 +77,10 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - "Trigger DAG 'example_dag'."
 - "Pause DAG 'etl_job'."
 - "Unpause DAG 'etl_job'."
+
+### Cluster Management & Health
+- "Check Airflow cluster health."
+- "Get Airflow version information."
 
 ### DAG Analysis & Monitoring
 - "Get details for DAG 'my_dag'."

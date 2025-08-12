@@ -15,8 +15,9 @@ This project provides natural language MCP tools for essential Airflow cluster o
 ## Features
 
 - List all DAGs in the Airflow cluster
-- Monitor running/failed DAG runs
+- Monitor running/failed DAG runs  
 - Trigger DAG runs on demand
+- Check cluster health and version information
 - Minimal, LLM-friendly output for all tools
 - Easy integration with MCP Inspector, OpenWebUI, Smithery, etc.
 
@@ -49,6 +50,16 @@ This project provides natural language MCP tools for essential Airflow cluster o
 - `unpause_dag(dag_id)`  
 	Unpauses the specified DAG (allows scheduling new runs).  
 	Output: `dag_id`, `is_paused`
+
+### Cluster Management & Health
+
+- `get_health`  
+	Get the health status of the Airflow webserver instance.  
+	Output: `metadatabase`, `scheduler`, overall health `status`
+
+- `get_version`  
+	Get version information of the Airflow instance.  
+	Output: `version`, `git_version`, `build_date`, `api_version`
 
 ### DAG Analysis & Monitoring
 

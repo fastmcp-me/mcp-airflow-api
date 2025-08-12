@@ -783,6 +783,46 @@ def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None) -> D
         }
     }
 
+@mcp.tool()
+def get_health() -> Dict[str, Any]:
+    """
+    [Tool Role]: Get the health status of the Airflow webserver instance.
+    
+    Returns:
+        Health status information including metadatabase and scheduler status
+    """
+    resp = airflow_request("GET", "/health")
+    resp.raise_for_status()
+    health_data = resp.json()
+    
+    return {
+        "metadatabase": health_data.get("metadatabase", {}),
+        "scheduler": health_data.get("scheduler", {}),
+        "status": "healthy" if all([
+            health_data.get("metadatabase", {}).get("status") == "healthy",
+            health_data.get("scheduler", {}).get("status") == "healthy"
+        ]) else "unhealthy"
+    }
+
+@mcp.tool()
+def get_version() -> Dict[str, Any]:
+    """
+    [Tool Role]: Get version information of the Airflow instance.
+    
+    Returns:
+        Version information including Airflow version, Git version, and build info
+    """
+    resp = airflow_request("GET", "/version")
+    resp.raise_for_status()
+    version_data = resp.json()
+    
+    return {
+        "version": version_data.get("version"),
+        "git_version": version_data.get("git_version"),
+        "build_date": version_data.get("build_date"),
+        "api_version": version_data.get("api_version", "2.0.0")
+    }
+
 #========================================================================================
 # MCP Prompts (for prompts/list exposure)
 #========================================================================================

@@ -279,6 +279,54 @@ def dag_graph(dag_id: str) -> Dict[str, Any]:
     return graph_data
 
 @mcp.tool()
+def list_tasks(dag_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Lists all tasks for a specific DAG.
+
+    Args:
+        dag_id: The DAG ID to get tasks for
+
+    Returns:
+        List of tasks with detailed task information: dag_id, tasks, total_tasks
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    resp = airflow_request("GET", f"/dags/{dag_id}/tasks")
+    resp.raise_for_status()
+    tasks = resp.json().get("tasks", [])
+    
+    task_list = []
+    for task in tasks:
+        task_info = {
+            "task_id": task.get("task_id"),
+            "task_display_name": task.get("task_display_name"),
+            "operator_name": task.get("class_ref", {}).get("class_name"),
+            "operator_module": task.get("class_ref", {}).get("module_path"),
+            "start_date": task.get("start_date"),
+            "end_date": task.get("end_date"),
+            "depends_on_past": task.get("depends_on_past"),
+            "wait_for_downstream": task.get("wait_for_downstream"),
+            "retries": task.get("retries"),
+            "retry_delay": task.get("retry_delay"),
+            "max_retry_delay": task.get("max_retry_delay"),
+            "pool": task.get("pool"),
+            "pool_slots": task.get("pool_slots"),
+            "execution_timeout": task.get("execution_timeout"),
+            "email_on_retry": task.get("email_on_retry"),
+            "email_on_failure": task.get("email_on_failure"),
+            "trigger_rule": task.get("trigger_rule"),
+            "weight_rule": task.get("weight_rule"),
+            "priority_weight": task.get("priority_weight")
+        }
+        task_list.append(task_info)
+    
+    return {
+        "dag_id": dag_id,
+        "tasks": task_list,
+        "total_tasks": len(tasks)
+    }
+
+@mcp.tool()
 def dag_code(dag_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves the source code for a specific DAG.

@@ -17,6 +17,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ### DAG Analysis & Monitoring
 - `dag_details(dag_id)`: Get comprehensive details for a specific DAG.
 - `dag_graph(dag_id)`: Get task dependency graph structure for a DAG.
+- `list_tasks(dag_id)`: List all tasks for a specific DAG.
 - `dag_code(dag_id)`: Retrieve source code for a specific DAG.
 - `dag_event_log(dag_id, limit)`: Get event log entries for a DAG.
 - `dag_run_duration(dag_id, limit)`: Get run duration statistics for a DAG.
@@ -37,6 +38,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | **DAG Analysis & Monitoring** |                                   |                               |                                      |
 | dag_details         | Get comprehensive DAG details             | dag_id (str)                  | dag_id, schedule_interval, start_date, owners, tags, description, etc. |
 | dag_graph           | Get task dependency graph                 | dag_id (str)                  | dag_id, tasks, dependencies, total_tasks |
+| list_tasks          | List all tasks for a specific DAG        | dag_id (str)                  | dag_id, tasks, task_configuration_details |
 | dag_code            | Get DAG source code                       | dag_id (str)                  | dag_id, file_token, source_code      |
 | dag_event_log       | Get event log entries                     | dag_id (str), limit (int)     | dag_id, events, total_entries        |
 | dag_run_duration    | Get run duration statistics               | dag_id (str), limit (int)     | dag_id, runs, statistics             |
@@ -62,6 +64,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ### DAG Analysis & Monitoring
 - "Get details for DAG 'my_dag'."
 - "Show task graph for DAG 'workflow_dag'."
+- "List all tasks in DAG 'data_pipeline'."
 - "Get source code for DAG 'data_pipeline'."
 - "Show event logs for DAG 'etl_process'."
 - "Get run duration stats for DAG 'batch_job'."

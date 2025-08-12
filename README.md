@@ -60,6 +60,11 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Retrieves task dependency graph structure for a specific DAG.  
 	Output: `dag_id`, `tasks`, `dependencies`, task relationships
 
+- `list_tasks(dag_id)`  
+	Lists all tasks for a specific DAG.  
+	Output: `dag_id`, `tasks`, task configuration details  
+	Output: `dag_id`, `tasks`, `dependencies`, task relationships
+
 - `dag_code(dag_id)`  
 	Retrieves the source code for a specific DAG.  
 	Output: `dag_id`, `file_token`, `source_code`

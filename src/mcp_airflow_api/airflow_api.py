@@ -449,6 +449,56 @@ def get_event_log(event_log_id: int) -> Dict[str, Any]:
     }
 
 @mcp.tool()
+def all_dag_event_summary() -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves event count summary for all DAGs.
+
+    Returns:
+        Summary of event counts by DAG: dag_summaries, total_dags, total_events
+    """
+    # First get all DAGs
+    dags_resp = airflow_request("GET", "/dags")
+    dags_resp.raise_for_status()
+    dags = dags_resp.json().get("dags", [])
+    
+    dag_summaries = []
+    total_events = 0
+    
+    for dag in dags:
+        dag_id = dag.get("dag_id")
+        if not dag_id:
+            continue
+            
+        # Get event count for this DAG (using limit=1 and checking total_entries)
+        try:
+            events_resp = airflow_request("GET", f"/eventLogs?dag_id={dag_id}&limit=1")
+            events_resp.raise_for_status()
+            events_data = events_resp.json()
+            event_count = events_data.get("total_entries", 0)
+        except Exception:
+            # If error occurs, set count to 0
+            event_count = 0
+        
+        dag_summary = {
+            "dag_id": dag_id,
+            "dag_display_name": dag.get("dag_display_name"),
+            "is_active": dag.get("is_active"),
+            "is_paused": dag.get("is_paused"),
+            "event_count": event_count
+        }
+        dag_summaries.append(dag_summary)
+        total_events += event_count
+    
+    # Sort by event count (descending)
+    dag_summaries.sort(key=lambda x: x["event_count"], reverse=True)
+    
+    return {
+        "dag_summaries": dag_summaries,
+        "total_dags": len(dag_summaries),
+        "total_events": total_events
+    }
+
+@mcp.tool()
 def dag_run_duration(dag_id: str, limit: int = 10) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves run duration statistics for a specific DAG.

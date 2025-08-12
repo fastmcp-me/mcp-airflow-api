@@ -77,6 +77,10 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Retrieves a specific event log entry by ID.  
 	Output: `event_log_id`, `when`, `event`, `dag_id`, `task_id`, `run_id`, etc.
 
+- `all_dag_event_summary()`  
+	Retrieves event count summary for all DAGs.  
+	Output: `dag_summaries`, `total_dags`, `total_events`
+
 - `dag_run_duration(dag_id, limit=10)`  
 	Retrieves run duration statistics for a specific DAG.  
 	Output: `dag_id`, `runs`, duration analysis, success/failure stats

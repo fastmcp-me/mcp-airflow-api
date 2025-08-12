@@ -234,9 +234,13 @@ Policy: Only English is stored; LLM는 사용자 질의 언어와 무관하게 �
 
 ---
 
-## License
+## Installing via Smithery
 
-This project is licensed under the MIT License.
+To install Airflow API Integration Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@call518/mcp-airflow-api):
+
+```bash
+npx -y @smithery/cli install @call518/mcp-airflow-api --client claude
+```
 
 ---
 
@@ -252,3 +256,8 @@ This project starts with a minimal set of essential Airflow management tools. Ma
 - [Issues](https://github.com/call518/MCP-Airflow-API/issues)
 - [Smithery Deployment](https://smithery.ai/server/@call518/mcp-airflow-api)
 
+---
+
+## License
+
+This project is licensed under the MIT License.

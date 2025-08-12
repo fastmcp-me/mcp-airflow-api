@@ -1,5 +1,5 @@
 #!/bin/bash
-set -o
+set -e
 
 Dockerfile_PATH="./Dockerfile.for-OpenWebUI-MCPO-Proxy"
 IMAGE_NAME="call518/mcpo-proxy-airflow-api"

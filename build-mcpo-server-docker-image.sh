@@ -1,7 +1,7 @@
 #!/bin/bash
 set -euo pipefail
 
-Dockerfile_PATH="./Dockerfile.for-OpenWebUI-MCPO-Proxy"
+Dockerfile_PATH="./Dockerfile.OpenWebUI-MCPO-Proxy"
 IMAGE_NAME="call518/mcpo-proxy-airflow-api"
 
 # CUSTOM_TAG="${1:-latest}"

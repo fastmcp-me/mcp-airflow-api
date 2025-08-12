@@ -6,7 +6,8 @@ import logging
 from typing import Any, Dict, List, Optional
 import mcp
 from mcp.server.fastmcp import FastMCP
-from .functions import airflow_request
+import os
+from .functions import airflow_request, read_prompt_template, parse_prompt_sections
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -15,8 +16,48 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
+
 # MCP server instance for registering tools
 mcp = FastMCP("mcp-airflow-api")
+
+PROMPT_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "prompt_template.md")
+
+
+
+@mcp.tool()
+def get_prompt_template(section: Optional[str] = None, mode: Optional[str] = None) -> str:
+    """
+    Returns the MCP prompt template (full, headings, or specific section).
+    Args:
+        section: Section number or keyword (optional)
+        mode: 'full', 'headings', or None (optional)
+    """
+    template = read_prompt_template(PROMPT_TEMPLATE_PATH)
+    
+    if mode == "headings":
+        headings, _ = parse_prompt_sections(template)
+        lines = ["Section Headings:"]
+        for idx, title in enumerate(headings, 1):
+            lines.append(f"{idx}. {title}")
+        return "\n".join(lines)
+    
+    if section:
+        headings, sections = parse_prompt_sections(template)
+        # Try by number
+        try:
+            idx = int(section) - 1
+            if 0 <= idx < len(sections):
+                return sections[idx]
+        except Exception:
+            pass
+        # Try by keyword
+        section_lower = section.strip().lower()
+        for i, heading in enumerate(headings):
+            if section_lower in heading.lower():
+                return sections[i]
+        return f"Section '{section}' not found."
+    
+    return template
 
 @mcp.tool()
 def list_dags() -> Dict[str, Any]:
@@ -163,6 +204,38 @@ def unpause_dag(dag_id: str) -> Dict[str, Any]:
     resp.raise_for_status()
     dag = resp.json()
     return {"dag_id": dag.get("dag_id", dag_id), "is_paused": dag.get("is_paused", False)}
+
+#========================================================================================
+# MCP Prompts (for prompts/list exposure)
+#========================================================================================
+
+@mcp.prompt("prompt_template_full")
+def prompt_template_full_prompt() -> str:
+    """Return the full canonical prompt template."""
+    return read_prompt_template(PROMPT_TEMPLATE_PATH)
+
+@mcp.prompt("prompt_template_headings")
+def prompt_template_headings_prompt() -> str:
+    """Return compact list of section headings."""
+    template = read_prompt_template(PROMPT_TEMPLATE_PATH)
+    headings, _ = parse_prompt_sections(template)
+    lines = ["Section Headings:"]
+    for idx, title in enumerate(headings, 1):
+        lines.append(f"{idx}. {title}")
+    return "\n".join(lines)
+
+@mcp.prompt("prompt_template_section")
+def prompt_template_section_prompt(section: Optional[str] = None) -> str:
+    """Return a specific prompt template section by number or keyword."""
+    if not section:
+        headings_result = prompt_template_headings_prompt()
+        return "\n".join([
+            "[HELP] Missing 'section' argument.",
+            "Specify a section number or keyword.",
+            "Examples: 1 | overview | tool map | usage",
+            headings_result.strip()
+        ])
+    return get_prompt_template(section=section)
 
 #========================================================================================
 

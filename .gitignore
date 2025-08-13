@@ -9,4 +9,7 @@ wheels/
 # Virtual environments
 .venv
 
+**/__pycache__/
+**/.pytest_cache/
+
 mcp-config.json

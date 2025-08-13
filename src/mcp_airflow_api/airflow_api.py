@@ -903,19 +903,27 @@ def get_current_time_context() -> Dict[str, Any]:
     Returns:
         Current date and time information for reference in date calculations
     """
-    from datetime import datetime
+    from datetime import datetime, timedelta
     current_time = datetime.now()
+    current_date_str = current_time.strftime('%Y-%m-%d')
+    
+    # Calculate relative dates based on actual current time
+    yesterday = (current_time - timedelta(days=1)).strftime('%Y-%m-%d')
+    last_week_start = (current_time - timedelta(days=7)).strftime('%Y-%m-%d')
+    last_week_end = (current_time - timedelta(days=1)).strftime('%Y-%m-%d')
+    last_3_days_start = (current_time - timedelta(days=3)).strftime('%Y-%m-%d')
+    
     return {
-        "current_date": "2025-08-13",
+        "current_date": current_date_str,
         "current_time": current_time.strftime('%Y-%m-%d %H:%M:%S'),
-        "reference_date": "August 13, 2025 (2025-08-13)",
+        "reference_date": f"{current_time.strftime('%B %d, %Y')} ({current_date_str})",
         "date_calculation_examples": {
-            "yesterday": "2025-08-12",
-            "last_week": "2025-08-06 to 2025-08-12",
-            "last_3_days": "2025-08-10 to 2025-08-13",
-            "today": "2025-08-13"
+            "yesterday": yesterday,
+            "last_week": f"{last_week_start} to {last_week_end}",
+            "last_3_days": f"{last_3_days_start} to {current_date_str}",
+            "today": current_date_str
         },
-        "message": "Use 2025-08-13 as the absolute reference point for all relative date calculations"
+        "message": f"Use {current_date_str} as the absolute reference point for all relative date calculations"
     }
 
 @mcp.tool()
@@ -923,13 +931,14 @@ def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, executio
     """
     [Tool Role]: Lists task instances across all DAGs or filtered by specific DAG with comprehensive filtering options.
     
-    CURRENT TIME CONTEXT: August 13, 2025 (2025-08-13) - Use this as the absolute reference for all relative date calculations.
+    CURRENT TIME CONTEXT: Use get_current_time_context() tool to get the current date for accurate relative date calculations.
     
-    IMPORTANT: When users provide natural language dates, calculate relative to 2025-08-13:
-    - "yesterday" = 2025-08-12
-    - "last week" = 2025-08-06 to 2025-08-12  
-    - "last 3 days" = 2025-08-10 to 2025-08-13
-    - "today" = 2025-08-13
+    IMPORTANT: When users provide natural language dates, always call get_current_time_context() first to get the current date,
+    then calculate relative dates based on that current date:
+    - "yesterday" = current_date - 1 day
+    - "last week" = current_date - 7 days to current_date - 1 day  
+    - "last 3 days" = current_date - 3 days to current_date
+    - "today" = current_date
 
     Args:
         dag_id: Filter by DAG ID (optional)
@@ -955,7 +964,8 @@ def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, executio
     
     # Log current time for verification
     current_time = datetime.now()
-    logger.info(f"CURRENT TIME CONTEXT - Function execution time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} | Reference date for calculations: 2025-08-13")
+    current_date_str = current_time.strftime('%Y-%m-%d')
+    logger.info(f"CURRENT TIME CONTEXT - Function execution time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} | Reference date for calculations: {current_date_str}")
     
     # Auto-correct date formats to include timezone if missing
     def ensure_timezone(date_str):
@@ -1107,7 +1117,7 @@ def list_task_instances_batch(dag_ids: List[str] = None, dag_run_ids: List[str] 
     """
     [Tool Role]: Lists task instances in batch with multiple filtering criteria for bulk operations.
     
-    CURRENT TIME CONTEXT: August 13, 2025 (2025-08-13) - Use this as the absolute reference for all relative date calculations.
+    CURRENT TIME CONTEXT: Use get_current_time_context() tool to get the current date for accurate relative date calculations.
 
     Args:
         dag_ids: List of DAG IDs to filter by (optional)

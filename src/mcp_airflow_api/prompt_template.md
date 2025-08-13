@@ -4,7 +4,7 @@
 
 This MCP server provides natural language tools for managing Apache Airflow clusters via REST API. All prompts and tool outputs are designed for minimal, LLM-friendly English responses.
 
-**IMPORTANT: Current Date Context - August 13, 2025 (2025-08-13)** - Use this as the absolute reference point for all relative date calculations.
+**IMPORTANT: Current Date Context** - Always use the `get_current_time_context()` tool first to get the current date for accurate relative date calculations.
 
 ## 2. Available MCP Tools
 
@@ -19,6 +19,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ### Cluster Management & Health
 - `get_health`: Get the health status of the Airflow webserver instance.
 - `get_version`: Get version information of the Airflow instance.
+- `get_current_time_context`: Get current date and time for accurate relative date calculations.
 
 ### Pool Management
 - `list_pools(limit, offset)`: List all pools in the Airflow instance.
@@ -141,14 +142,18 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 
 **Before making any API calls with relative dates, verify your calculation:**
 
-| User Input | Base Date | Calculation | Correct Result |
-|------------|-----------|-------------|----------------|
-| "yesterday" | 2025-08-13 | 2025-08-13 - 1 day | 2025-08-12 |
-| "last week" | 2025-08-13 | 7 days ago to 1 day ago | 2025-08-06 to 2025-08-12 |
-| "last 3 days" | 2025-08-13 | 2025-08-13 - 3 days | 2025-08-10 to 2025-08-13 |
-| "this morning" | 2025-08-13 | Today 00:00 to 12:00 | 2025-08-13T00:00:00Z to 2025-08-13T12:00:00Z |
+**STEP 1**: Always call `get_current_time_context()` first to get the current date.
 
-**CRITICAL**: If your calculated date is before 2025-01-01 or after 2025-12-31, your calculation is WRONG.
+**STEP 2**: Calculate relative dates based on the current date returned from step 1.
+
+| User Input | Calculation Method | Example Format |
+|------------|-------------------|----------------|
+| "yesterday" | current_date - 1 day | YYYY-MM-DD (1 day before current) |
+| "last week" | current_date - 7 days to current_date - 1 day | YYYY-MM-DD to YYYY-MM-DD (7 days range) |
+| "last 3 days" | current_date - 3 days to current_date | YYYY-MM-DD to YYYY-MM-DD (3 days range) |
+| "this morning" | current_date 00:00 to 12:00 | YYYY-MM-DDTHH:mm:ssZ format |
+
+**CRITICAL**: Always base calculations on the actual current date from `get_current_time_context()`, not hardcoded examples.
 
 ## 6. Formatting Rules
 

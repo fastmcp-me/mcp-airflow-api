@@ -6,15 +6,15 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 
 **IMPORTANT: Current Date Context** - Always use the `get_current_time_context()` tool first to get the current date for accurate relative date calculations.
 
-**Large Environment Optimizations**: This MCP server has been specifically optimized for enterprise-scale Airflow deployments:
-- **Enhanced Default Limits**: Functions use higher default limits (100+ instead of 20-50) for better coverage
+**Resource-Optimized Design**: This MCP server has been optimized for efficient resource usage:
+- **Optimized Default Limits**: Functions use default limits of 20 for better memory usage and faster response times
 - **Comprehensive Pagination**: All listing functions include detailed pagination metadata
-- **Enterprise Coverage**: Tested and optimized for Airflow clusters with 1000+ DAGs and extensive task histories
+- **Flexible Scaling**: Users can specify higher limits (up to 1000) when needed for bulk operations
 
 ## 2. Available MCP Tools
 
 ### Basic DAG Management
-- `list_dags(limit=100, offset=0)`: List all DAGs in the Airflow cluster with pagination support.
+- `list_dags(limit=20, offset=0)`: List all DAGs in the Airflow cluster with pagination support.
 - `list_all_dags_paginated(page_size=100)`: Automatically retrieve ALL DAGs using pagination.
 - `running_dags`: List all currently running DAG runs.
 - `failed_dags`: List all recently failed DAG runs.
@@ -51,15 +51,15 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - `dag_graph(dag_id)`: Get task dependency graph structure for a DAG.
 - `list_tasks(dag_id)`: List all tasks for a specific DAG.
 - `dag_code(dag_id)`: Retrieve source code for a specific DAG.
-- `list_event_logs(dag_id, task_id, run_id, limit=100, offset=0)`: List event log entries with filtering. **Improved**: Default limit increased from 20 to 100.
+- `list_event_logs(dag_id, task_id, run_id, limit=20, offset=0)`: List event log entries with filtering. **Optimized**: Default limit is 20 for better performance.
 - `get_event_log(event_log_id)`: Get a specific event log entry by ID.
 - `all_dag_event_summary()`: Get event count summary for all DAGs. **Improved**: Uses limit=1000 for DAG retrieval.
-- `list_import_errors(limit=100, offset=0)`: List import errors with filtering. **Improved**: Default limit increased from 20 to 100.
+- `list_import_errors(limit=20, offset=0)`: List import errors with filtering. **Optimized**: Default limit is 20 for better performance.
 - `get_import_error(import_error_id)`: Get a specific import error by ID.
 - `all_dag_import_summary()`: Get import error summary for all DAGs.
 - `dag_run_duration(dag_id, limit=50)`: Get run duration statistics for a DAG. **Improved**: Default limit increased from 10 to 50.
 - `dag_task_duration(dag_id, run_id)`: Get task duration info for a DAG run.
-- `dag_calendar(dag_id, start_date, end_date, limit=100)`: Get calendar/schedule info for a DAG. **Improved**: Now configurable parameter (was hardcoded at 50).
+- `dag_calendar(dag_id, start_date, end_date, limit=20)`: Get calendar/schedule info for a DAG. **Optimized**: Default limit is 20, configurable up to 1000.
 
 ## 3. Tool Map
 
@@ -96,23 +96,23 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | dag_graph           | Get task dependency graph                 | dag_id (str)                  | dag_id, tasks, dependencies, total_tasks |
 | list_tasks          | List all tasks for a specific DAG        | dag_id (str)                  | dag_id, tasks, task_configuration_details |
 | dag_code            | Get DAG source code                       | dag_id (str)                  | dag_id, file_token, source_code      |
-| list_event_logs     | List event log entries with filtering     | dag_id, task_id, run_id, limit=100, offset=0 | event_logs, total_entries, limit, offset, has_more_pages, next_offset, pagination_info |
+| list_event_logs     | List event log entries with filtering     | dag_id, task_id, run_id, limit=20, offset=0 | event_logs, total_entries, limit, offset, has_more_pages, next_offset, pagination_info |
 | get_event_log       | Get specific event log entry by ID        | event_log_id (int)            | event_log_id, when, event, dag_id, task_id, run_id, etc. |
 | all_dag_event_summary | Get event count summary for all DAGs    | None                          | dag_summaries, total_dags, total_events (improved: uses limit=1000) |
-| list_import_errors  | List import errors with filtering         | limit=100, offset=0           | import_errors, total_entries, limit, offset, has_more_pages, next_offset, pagination_info |
+| list_import_errors  | List import errors with filtering         | limit=20, offset=0           | import_errors, total_entries, limit, offset, has_more_pages, next_offset, pagination_info |
 | get_import_error    | Get specific import error by ID           | import_error_id (int)         | import_error_id, filename, stacktrace, timestamp |
 | all_dag_import_summary | Get import error summary for all DAGs | None                          | import_summaries, total_errors, affected_files |
 | dag_run_duration    | Get run duration statistics               | dag_id (str), limit=50        | dag_id, runs, statistics (improved: limit 10→50) |
 | dag_task_duration   | Get task duration for a run               | dag_id (str), run_id (str)    | dag_id, run_id, tasks, statistics    |
-| dag_calendar        | Get calendar/schedule information         | dag_id (str), start_date, end_date, limit=100 | dag_id, schedule_interval, runs, next_runs (improved: configurable limit) |
+| dag_calendar        | Get calendar/schedule information         | dag_id (str), start_date, end_date, limit=20 | dag_id, schedule_interval, runs, next_runs (optimized: default 20, configurable) |
 
 ## 4. Example Queries
 
 ### Basic DAG Operations
-- **list_dags**: "List all DAGs." → Returns first 100 DAGs with pagination info
-- **list_dags**: "List all DAGs with limit 500." → Returns up to 500 DAGs
+- **list_dags**: "List all DAGs." → Returns first 20 DAGs with pagination info
+- **list_dags**: "List all DAGs with limit 100." → Returns up to 100 DAGs
 - **list_dags**: "Show next page of DAGs." → Use offset for pagination
-- **list_dags**: "List DAGs 101-200." → `list_dags(limit=100, offset=100)`
+- **list_dags**: "List DAGs 21-40." → `list_dags(limit=20, offset=20)`
 - **list_all_dags_paginated**: "Get all DAGs in the system." → Automatically fetches all DAGs
 - **list_all_dags_paginated**: "Show complete DAG inventory." → Returns all DAGs regardless of count
 - **running_dags**: "Show running DAGs."

@@ -24,15 +24,15 @@ This project provides natural language MCP tools for essential Airflow cluster o
 - Easy integration with MCP Inspector, OpenWebUI, Smithery, etc.
 - **Enhanced for Large-Scale Environments**: Improved default limits and pagination support for enterprise Airflow deployments (100+ to 1000+ DAGs)
 
-## Large Environment Optimizations
+## Resource-Optimized Design
 
-This MCP server has been specifically optimized for large-scale Airflow deployments:
+This MCP server has been optimized for efficient resource usage and better performance:
 
-- **Increased Default Limits**: Most functions now use higher default limits (100+ instead of 20-50) to reduce API calls
+- **Optimized Default Limits**: Most functions use default limits of 20 (reduced from 100) for better memory usage and faster response times
 - **Comprehensive Pagination**: All listing functions include pagination metadata (`has_more_pages`, `next_offset`, `pagination_info`)
 - **Automatic Pagination Helpers**: `list_all_dags_paginated()` for complete DAG inventory without manual pagination
-- **Efficient Batch Operations**: Functions designed to minimize API calls for large datasets
-- **Enterprise-Grade Coverage**: Tested and optimized for Airflow clusters with 1000+ DAGs and extensive task histories
+- **Flexible Scaling**: Users can specify higher limits (up to 1000) when needed for bulk operations
+- **Memory-Efficient**: Smaller default payloads reduce memory usage while maintaining full functionality
 
 ---
 
@@ -40,13 +40,14 @@ This MCP server has been specifically optimized for large-scale Airflow deployme
 
 ### DAG Management
 
-- `list_dags(limit=100, offset=0)`  
+- `list_dags(limit=20, offset=0)`  
 	Returns all DAGs registered in the Airflow cluster with pagination support.  
 	Output: `dag_id`, `dag_display_name`, `is_active`, `is_paused`, `owners`, `tags`, plus pagination info (`total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`)
 	
 	**Pagination Examples:**
-	- First 100 DAGs: `list_dags()`
-	- Next 100 DAGs: `list_dags(limit=100, offset=100)`
+	- First 20 DAGs: `list_dags()`
+	- Next 20 DAGs: `list_dags(limit=20, offset=20)`
+	- Large batch: `list_dags(limit=100, offset=0)`  
 	- All DAGs at once: `list_dags(limit=1000)`
 
 - `list_all_dags_paginated(page_size=100)`  
@@ -90,7 +91,7 @@ This MCP server has been specifically optimized for large-scale Airflow deployme
 
 ### Pool Management
 
-- `list_pools(limit=100, offset=0)`  
+- `list_pools(limit=20, offset=0)`  
 	List all pools in the Airflow instance with pagination support.  
 	Output: `pools`, `total_entries`, `limit`, `offset`, pool details with slots usage
 
@@ -100,7 +101,7 @@ This MCP server has been specifically optimized for large-scale Airflow deployme
 
 ### Variable Management
 
-- `list_variables(limit=100, offset=0, order_by="key")`  
+- `list_variables(limit=20, offset=0, order_by="key")`  
 	List all variables stored in Airflow with pagination support.  
 	Output: `variables`, `total_entries`, `limit`, `offset`, variable details with keys, values, and descriptions
 
@@ -114,7 +115,7 @@ This MCP server has been specifically optimized for large-scale Airflow deployme
 	Returns the current time context for accurate relative date calculations.  
 	Output: `current_date`, `current_time`, `reference_date`, `date_calculation_examples`, `message`
 
-- `list_task_instances_all(dag_id=None, dag_run_id=None, execution_date_gte=None, execution_date_lte=None, start_date_gte=None, start_date_lte=None, end_date_gte=None, end_date_lte=None, duration_gte=None, duration_lte=None, state=None, pool=None, queue=None, limit=100, offset=0)`  
+- `list_task_instances_all(dag_id=None, dag_run_id=None, execution_date_gte=None, execution_date_lte=None, start_date_gte=None, start_date_lte=None, end_date_gte=None, end_date_lte=None, duration_gte=None, duration_lte=None, state=None, pool=None, queue=None, limit=20, offset=0)`  
 	Lists task instances across all DAGs or filtered by specific criteria with comprehensive filtering options.  
 	Output: `task_instances`, `total_entries`, `limit`, `offset`, `applied_filters`
 
@@ -136,7 +137,7 @@ This MCP server has been specifically optimized for large-scale Airflow deployme
 
 ### XCom Management
 
-- `list_xcom_entries(dag_id, dag_run_id, task_id, limit=100, offset=0)`  
+- `list_xcom_entries(dag_id, dag_run_id, task_id, limit=20, offset=0)`  
 	Lists XCom entries for a specific task instance.  
 	Output: `dag_id`, `dag_run_id`, `task_id`, `xcom_entries`, `total_entries`, `limit`, `offset`
 
@@ -163,9 +164,9 @@ This MCP server has been specifically optimized for large-scale Airflow deployme
 	Retrieves the source code for a specific DAG.  
 	Output: `dag_id`, `file_token`, `source_code`
 
-- `list_event_logs(dag_id=None, task_id=None, run_id=None, limit=100, offset=0)`  
+- `list_event_logs(dag_id=None, task_id=None, run_id=None, limit=20, offset=0)`  
 	Lists event log entries with optional filtering.  
-	**Improved limit**: Default increased from 20 to 100 for better coverage in large environments.  
+	**Optimized limit**: Default is 20 for better performance while maintaining good coverage.  
 	Output: `event_logs`, `total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`
 
 - `get_event_log(event_log_id)`  
@@ -177,9 +178,9 @@ This MCP server has been specifically optimized for large-scale Airflow deployme
 	**Improved limit**: Uses limit=1000 for DAG retrieval to avoid missing DAGs in large environments.  
 	Output: `dag_summaries`, `total_dags`, `total_events`
 
-- `list_import_errors(limit=100, offset=0)`  
+- `list_import_errors(limit=20, offset=0)`  
 	Lists import errors with optional filtering.  
-	**Improved limit**: Default increased from 20 to 100 for better coverage in large environments.  
+	**Optimized limit**: Default is 20 for better performance while maintaining good coverage.  
 	Output: `import_errors`, `total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`
 
 - `get_import_error(import_error_id)`  
@@ -199,9 +200,9 @@ This MCP server has been specifically optimized for large-scale Airflow deployme
 	Retrieves task duration information for a specific DAG run.  
 	Output: `dag_id`, `run_id`, `tasks`, individual task performance
 
-- `dag_calendar(dag_id, start_date=None, end_date=None, limit=100)`  
+- `dag_calendar(dag_id, start_date=None, end_date=None, limit=20)`  
 	Retrieves calendar/schedule information for a specific DAG.  
-	**Improved limit**: Now configurable parameter (default: 100), was hardcoded at 50.  
+	**Configurable limit**: Default is 20, can be increased up to 1000 for bulk analysis.  
 	Output: `dag_id`, `schedule_interval`, `runs`, upcoming executions
 
 ---
@@ -209,10 +210,10 @@ This MCP server has been specifically optimized for large-scale Airflow deployme
 ## Example Queries
 
 ### Basic DAG Operations
-- **list_dags**: "List all DAGs." → Returns first 100 DAGs with pagination info
-- **list_dags**: "List all DAGs with limit 500." → Returns up to 500 DAGs
+- **list_dags**: "List all DAGs." → Returns first 20 DAGs with pagination info
+- **list_dags**: "List all DAGs with limit 100." → Returns up to 100 DAGs
 - **list_dags**: "Show next page of DAGs." → Use offset for pagination
-- **list_dags**: "List DAGs 101-200." → `list_dags(limit=100, offset=100)`
+- **list_dags**: "List DAGs 21-40." → `list_dags(limit=20, offset=20)`
 - **list_all_dags_paginated**: "Get all DAGs in the system." → Automatically fetches all DAGs
 - **list_all_dags_paginated**: "Show complete DAG inventory." → Returns all DAGs regardless of count
 - **running_dags**: "Show running DAGs."
@@ -411,30 +412,30 @@ The `list_dags()` function now supports pagination to handle large Airflow envir
 
 **🔍 Exploratory (Recommended for LLMs):**
 ```
-1. list_dags() → Check first 100 DAGs
+1. list_dags() → Check first 20 DAGs
 2. Use has_more_pages to determine if more exist
-3. list_dags(limit=100, offset=100) → Get next 100
+3. list_dags(limit=20, offset=20) → Get next 20
 4. Continue as needed
 ```
 
 **📊 Complete Analysis:**
 ```
-list_all_dags_paginated(page_size=200)
+list_all_dags_paginated(page_size=100)
 → Automatically fetches ALL DAGs regardless of count
 ```
 
 **⚡ Quick Large Queries:**
 ```
-list_dags(limit=1000)
-→ Get up to 1000 DAGs in one call
+list_dags(limit=500)
+→ Get up to 500 DAGs in one call
 ```
 
 ### Best Practices
 
-- **Small Airflow (< 100 DAGs)**: Use default `list_dags()`
-- **Medium Airflow (100-1000 DAGs)**: Use `list_dags(limit=500)`  
-- **Large Airflow (1000+ DAGs)**: Use `list_all_dags_paginated()` for complete analysis
-- **Memory-conscious**: Use smaller page sizes (50-100) with manual pagination
+- **Small Airflow (< 50 DAGs)**: Use default `list_dags()`
+- **Medium Airflow (50-500 DAGs)**: Use `list_dags(limit=100)` or `list_dags(limit=200)`  
+- **Large Airflow (500+ DAGs)**: Use `list_all_dags_paginated()` for complete analysis or `list_dags(limit=500)`
+- **Memory-conscious**: Use default limits (20) with manual pagination
 
 ---
 

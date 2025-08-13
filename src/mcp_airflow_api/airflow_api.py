@@ -62,12 +62,12 @@ def get_prompt_template(section: Optional[str] = None, mode: Optional[str] = Non
     return template
 
 @mcp.tool()
-def list_dags(limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+def list_dags(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: Lists all DAGs registered in the Airflow cluster with pagination support.
     
     Args:
-        limit: Maximum number of DAGs to return (default: 100)
+        limit: Maximum number of DAGs to return (default: 20)
                - For small queries: use default 100
                - For large environments: use 500-1000 to get more DAGs at once
                - Maximum recommended: 1000 (to avoid API timeouts)
@@ -77,8 +77,8 @@ def list_dags(limit: int = 100, offset: int = 0) -> Dict[str, Any]:
                 - Example: offset=100 for page 2 when limit=100
 
     Pagination Examples:
-        - First 100 DAGs: list_dags()
-        - Next 100 DAGs: list_dags(limit=100, offset=100)  
+        - First 20 DAGs: list_dags()
+        - Next 20 DAGs: list_dags(limit=20, offset=20)  
         - Page 3 of 50 DAGs each: list_dags(limit=50, offset=100)
         - All DAGs at once: list_dags(limit=1000)
         
@@ -535,7 +535,7 @@ def dag_code(dag_id: str) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None, limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None, limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: Lists event log entries with optional filtering.
 
@@ -543,7 +543,7 @@ def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None,
         dag_id: Filter by DAG ID (optional)
         task_id: Filter by task ID (optional)
         run_id: Filter by run ID (optional)
-        limit: Maximum number of log entries to return (default: 100, increased from 20 for better coverage)
+        limit: Maximum number of log entries to return (default: 20, increased from 20 for better coverage)
         offset: Number of entries to skip (default: 0)
 
     Returns:
@@ -684,12 +684,12 @@ def all_dag_event_summary() -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def list_import_errors(limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+def list_import_errors(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: Lists import errors with optional filtering.
 
     Args:
-        limit: Maximum number of import errors to return (default: 100, increased from 20 for better coverage)
+        limit: Maximum number of import errors to return (default: 20, increased from 20 for better coverage)
         offset: Number of entries to skip (default: 0)
 
     Returns:
@@ -923,7 +923,7 @@ def dag_task_duration(dag_id: str, run_id: str = None) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None, limit: int = 100) -> Dict[str, Any]:
+def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None, limit: int = 20) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves calendar/schedule information for a specific DAG.
 
@@ -931,7 +931,7 @@ def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None, limi
         dag_id: The DAG ID to get calendar info for
         start_date: Start date for calendar range (YYYY-MM-DD format, optional)
         end_date: End date for calendar range (YYYY-MM-DD format, optional)
-        limit: Maximum number of DAG runs to return (default: 100, was hardcoded at 50)
+        limit: Maximum number of DAG runs to return (default: 20, was hardcoded at 50)
 
     Returns:
         DAG calendar data: dag_id, schedule_interval, runs, next_runs
@@ -1024,12 +1024,12 @@ def get_version() -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def list_pools(limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+def list_pools(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: List all pools in the Airflow instance.
     
     Args:
-        limit: Maximum number of pools to return (default: 100)
+        limit: Maximum number of pools to return (default: 20)
         offset: Number of pools to skip for pagination (default: 0)
     
     Returns:
@@ -1127,7 +1127,7 @@ def get_current_time_context() -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: str = None, pool: str = None, queue: str = None, limit: int = 100, offset: int = 0) -> Dict[str, Any]:
+def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: str = None, pool: str = None, queue: str = None, limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: Lists task instances across all DAGs or filtered by specific DAG with comprehensive filtering options.
     
@@ -1154,7 +1154,7 @@ def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, executio
         state: Filter by task state (queued, running, success, failed, up_for_retry, up_for_reschedule, upstream_failed, skipped, deferred, scheduled, removed, restarting, optional)
         pool: Filter by pool name (optional)
         queue: Filter by queue name (optional)
-        limit: Maximum number of task instances to return (default: 100)
+        limit: Maximum number of task instances to return (default: 20)
         offset: Number of task instances to skip for pagination (default: 0)
 
     Returns:
@@ -1512,12 +1512,12 @@ def get_task_instance_logs(dag_id: str, dag_run_id: str, task_id: str, try_numbe
 #========================================================================================
 
 @mcp.tool()
-def list_variables(limit: int = 100, offset: int = 0, order_by: str = "key") -> Dict[str, Any]:
+def list_variables(limit: int = 20, offset: int = 0, order_by: str = "key") -> Dict[str, Any]:
     """
     [Tool Role]: Lists all variables stored in Airflow.
 
     Args:
-        limit: Maximum number of variables to return (default: 100)
+        limit: Maximum number of variables to return (default: 20)
         offset: Number of variables to skip for pagination (default: 0)
         order_by: Order variables by field (key, description) (default: key)
 
@@ -1584,7 +1584,7 @@ def list_xcom_entries(
     dag_id: str,
     dag_run_id: str,
     task_id: str,
-    limit: int = 100,
+    limit: int = 20,
     offset: int = 0
 ) -> Dict[str, Any]:
     """
@@ -1594,7 +1594,7 @@ def list_xcom_entries(
         dag_id: The DAG ID
         dag_run_id: The DAG run ID  
         task_id: The task ID
-        limit: Maximum number of entries to return (default: 100)
+        limit: Maximum number of entries to return (default: 20)
         offset: Number of entries to skip (default: 0)
 
     Returns:

@@ -5,9 +5,53 @@ import os
 import requests
 from typing import Any, Dict, Optional
 
+# Global session instance for connection pooling and performance optimization
+_airflow_session = None
+
+def get_airflow_session() -> requests.Session:
+    """
+    Get or create a global requests.Session for Airflow API calls.
+    This enables connection pooling and Keep-Alive connections for better performance.
+    """
+    global _airflow_session
+    if _airflow_session is None:
+        _airflow_session = requests.Session()
+        
+        # Configure session defaults
+        _airflow_session.headers.update({
+            'Content-Type': 'application/json',
+            'User-Agent': 'mcp-airflow-api/1.0'
+        })
+        
+        # Configure connection pooling for better performance
+        from requests.adapters import HTTPAdapter
+        from urllib3.util.retry import Retry
+        
+        # Configure retry strategy
+        retry_strategy = Retry(
+            total=3,
+            backoff_factor=0.5,
+            status_forcelist=[429, 500, 502, 503, 504],
+        )
+        
+        # Configure adapter with connection pooling
+        adapter = HTTPAdapter(
+            pool_connections=5,  # Number of connection pools
+            pool_maxsize=10,     # Maximum connections per pool
+            max_retries=retry_strategy
+        )
+        
+        # Mount adapter for both HTTP and HTTPS
+        _airflow_session.mount("http://", adapter)
+        _airflow_session.mount("https://", adapter)
+    
+    return _airflow_session
+
 def airflow_request(method: str, path: str, **kwargs) -> requests.Response:
     """
-    Make a Basic Auth request to Airflow REST API.
+    Make a Basic Auth request to Airflow REST API using a persistent session.
+    This improves performance through connection pooling and Keep-Alive connections.
+    
     'path' should be relative to AIRFLOW_API_URL (e.g., '/dags', '/pools').
     """
     base_url = os.getenv("AIRFLOW_API_URL", "").rstrip("/")
@@ -30,7 +74,19 @@ def airflow_request(method: str, path: str, **kwargs) -> requests.Response:
     auth = (username, password)
     headers = kwargs.pop("headers", {})
     
-    return requests.request(method, full_url, headers=headers, auth=auth, **kwargs)
+    # Use persistent session for better performance
+    session = get_airflow_session()
+    return session.request(method, full_url, headers=headers, auth=auth, **kwargs)
+
+def close_airflow_session():
+    """
+    Close the global Airflow session and cleanup resources.
+    This is optional and mainly useful for testing or application shutdown.
+    """
+    global _airflow_session
+    if _airflow_session is not None:
+        _airflow_session.close()
+        _airflow_session = None
 
 def read_prompt_template(path: str) -> str:
     """

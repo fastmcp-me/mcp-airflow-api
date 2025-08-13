@@ -1371,6 +1371,70 @@ def get_task_instance_logs(dag_id: str, dag_run_id: str, task_id: str, try_numbe
 
 #========================================================================================
 
+@mcp.tool()
+def list_variables(limit: int = 100, offset: int = 0, order_by: str = "key") -> Dict[str, Any]:
+    """
+    [Tool Role]: Lists all variables stored in Airflow.
+
+    Args:
+        limit: Maximum number of variables to return (default: 100)
+        offset: Number of variables to skip for pagination (default: 0)
+        order_by: Order variables by field (key, description) (default: key)
+
+    Returns:
+        List of variables with their keys, values, and descriptions
+    """
+    params = [f"limit={limit}", f"offset={offset}", f"order_by={order_by}"]
+    query_string = "&".join(params)
+    
+    resp = airflow_request("GET", f"/variables?{query_string}")
+    resp.raise_for_status()
+    data = resp.json()
+    
+    variables = []
+    for var in data.get("variables", []):
+        var_info = {
+            "key": var.get("key"),
+            "value": var.get("value"),
+            "description": var.get("description"),
+            "is_encrypted": var.get("is_encrypted", False)
+        }
+        variables.append(var_info)
+    
+    return {
+        "variables": variables,
+        "total_entries": data.get("total_entries", len(variables)),
+        "limit": limit,
+        "offset": offset
+    }
+
+@mcp.tool()
+def get_variable(variable_key: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves a specific variable by its key from Airflow.
+
+    Args:
+        variable_key: The key of the variable to retrieve
+
+    Returns:
+        Variable information including key, value, and description
+    """
+    if not variable_key:
+        raise ValueError("variable_key must not be empty")
+    
+    resp = airflow_request("GET", f"/variables/{variable_key}")
+    resp.raise_for_status()
+    var = resp.json()
+    
+    return {
+        "key": var.get("key"),
+        "value": var.get("value"),
+        "description": var.get("description"),
+        "is_encrypted": var.get("is_encrypted", False)
+    }
+
+#========================================================================================
+
 #========================================================================================
 # MCP Prompts (for prompts/list exposure)
 #========================================================================================

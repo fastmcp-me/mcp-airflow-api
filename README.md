@@ -73,6 +73,16 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Get detailed information about a specific pool.  
 	Output: `name`, `slots`, `occupied_slots`, `running_slots`, `queued_slots`, `open_slots`, `description`, `utilization_percentage`
 
+### Variable Management
+
+- `list_variables(limit=100, offset=0, order_by="key")`  
+	List all variables stored in Airflow with pagination support.  
+	Output: `variables`, `total_entries`, `limit`, `offset`, variable details with keys, values, and descriptions
+
+- `get_variable(variable_key)`  
+	Get detailed information about a specific variable by its key.  
+	Output: `key`, `value`, `description`, `is_encrypted`
+
 ### Task Instance Management
 
 - `get_current_time_context()`  
@@ -175,6 +185,12 @@ This project provides natural language MCP tools for essential Airflow cluster o
 - **list_pools**: "Show pool usage statistics."
 - **get_pool**: "Get details for pool 'default_pool'."
 - **get_pool**: "Check pool utilization."
+
+### Variable Management
+- **list_variables**: "List all variables."
+- **list_variables**: "Show all Airflow variables with their values."
+- **get_variable**: "Get variable 'database_url'."
+- **get_variable**: "Show the value of variable 'api_key'."
 
 ### Task Instance Management
 - **list_task_instances_all**: "List all task instances for DAG 'conditional_dataset_and_time_based_timetable'."

@@ -25,6 +25,10 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - `list_pools(limit, offset)`: List all pools in the Airflow instance.
 - `get_pool(pool_name)`: Get detailed information about a specific pool.
 
+### Variable Management
+- `list_variables(limit, offset, order_by)`: List all variables stored in Airflow.
+- `get_variable(variable_key)`: Get detailed information about a specific variable by its key.
+
 ### Task Instance Management
 - `list_task_instances_all(dag_id, dag_run_id, execution_date_gte, execution_date_lte, start_date_gte, start_date_lte, end_date_gte, end_date_lte, duration_gte, duration_lte, state, pool, queue, limit, offset)`: List task instances across all DAGs with comprehensive filtering.
 - `get_task_instance_details(dag_id, dag_run_id, task_id)`: Get detailed information about a specific task instance.
@@ -64,6 +68,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | **Pool Management** |                                           |                               |                                      |
 | list_pools          | List all pools in Airflow                | limit, offset                 | pools, total_entries, slots usage   |
 | get_pool            | Get specific pool details                 | pool_name (str)               | name, slots, occupied_slots, running_slots, queued_slots, open_slots, description, utilization_percentage |
+| **Variable Management** |                                       |                               |                                      |
+| list_variables      | List all variables in Airflow            | limit, offset, order_by       | variables, total_entries, key-value pairs |
+| get_variable        | Get specific variable details             | variable_key (str)            | key, value, description, is_encrypted |
 | **Task Instance Management** |                               |                               |                                      |
 | list_task_instances_all | List task instances with filtering    | dag_id, dag_run_id, dates, state, pool, queue, limit, offset | task_instances, total_entries, applied_filters |
 | get_task_instance_details | Get detailed task instance info     | dag_id, dag_run_id, task_id   | Comprehensive task details, execution info, state, timing |
@@ -104,6 +111,12 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **list_pools**: "Show pool usage statistics."
 - **get_pool**: "Get details for pool 'default_pool'."
 - **get_pool**: "Check pool utilization."
+
+### Variable Management
+- **list_variables**: "List all variables."
+- **list_variables**: "Show all Airflow variables with their values."
+- **get_variable**: "Get variable 'database_url'."
+- **get_variable**: "Show the value of variable 'api_key'."
 
 ### Task Instance Management
 - **list_task_instances_all**: "List all task instances for DAG 'example_complex'."

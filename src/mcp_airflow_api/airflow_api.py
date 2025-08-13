@@ -62,18 +62,55 @@ def get_prompt_template(section: Optional[str] = None, mode: Optional[str] = Non
     return template
 
 @mcp.tool()
-def list_dags() -> Dict[str, Any]:
+def list_dags(limit: int = 100, offset: int = 0) -> Dict[str, Any]:
     """
-    [Tool Role]: Lists all DAGs registered in the Airflow cluster.
+    [Tool Role]: Lists all DAGs registered in the Airflow cluster with pagination support.
+    
+    Args:
+        limit: Maximum number of DAGs to return (default: 100)
+               - For small queries: use default 100
+               - For large environments: use 500-1000 to get more DAGs at once
+               - Maximum recommended: 1000 (to avoid API timeouts)
+        offset: Number of DAGs to skip for pagination (default: 0)
+                - Use 0 for first page
+                - Use limit*page_number for subsequent pages
+                - Example: offset=100 for page 2 when limit=100
+
+    Pagination Examples:
+        - First 100 DAGs: list_dags()
+        - Next 100 DAGs: list_dags(limit=100, offset=100)  
+        - Page 3 of 50 DAGs each: list_dags(limit=50, offset=100)
+        - All DAGs at once: list_dags(limit=1000)
+        
+    Use total_entries from response to determine if more pages exist:
+        - has_more_pages = (offset + limit) < total_entries
+        - next_offset = offset + limit
+        - remaining_count = total_entries - (offset + limit)
 
     Returns:
-        List of DAGs with comprehensive info: dag_id, dag_display_name, is_active, is_paused, 
-        description, schedule_interval, max_active_runs, max_active_tasks, owners, tags, 
-        next_dagrun info, last_parsed_time, has_import_errors, timetable_description
+        Dict containing:
+        - dags: List of DAG objects with comprehensive info (dag_id, dag_display_name, is_active, 
+                is_paused, description, schedule_interval, max_active_runs, max_active_tasks, 
+                owners, tags, next_dagrun info, last_parsed_time, has_import_errors, timetable_description)
+        - total_entries: Total number of DAGs in Airflow (for pagination calculation)
+        - limit: Requested limit (echoed back)
+        - offset: Requested offset (echoed back)
+        - returned_count: Actual number of DAGs returned in this response
+        - has_more_pages: Boolean indicating if more pages are available
+        - next_offset: Suggested offset for next page (if has_more_pages is True)
     """
-    resp = airflow_request("GET", "/dags")
+    params = []
+    params.append(f"limit={limit}")
+    if offset > 0:
+        params.append(f"offset={offset}")
+    
+    query_string = "&".join(params) if params else ""
+    endpoint = f"/dags?{query_string}" if query_string else "/dags"
+    
+    resp = airflow_request("GET", endpoint)
     resp.raise_for_status()
-    dags = resp.json().get("dags", [])
+    response_data = resp.json()
+    dags = response_data.get("dags", [])
     dag_list = []
     for dag in dags:
         # Extract schedule interval info
@@ -108,9 +145,83 @@ def list_dags() -> Dict[str, Any]:
         }
         dag_list.append(dag_info)
     
+    # Calculate pagination info
+    total_entries = response_data.get("total_entries", len(dag_list))
+    returned_count = len(dag_list)
+    has_more_pages = (offset + limit) < total_entries
+    next_offset = offset + limit if has_more_pages else None
+    
     return {
         "dags": dag_list,
-        "total_dags": len(dag_list)
+        "total_entries": total_entries,
+        "limit": limit,
+        "offset": offset,
+        "returned_count": returned_count,
+        "has_more_pages": has_more_pages,
+        "next_offset": next_offset,
+        "pagination_info": {
+            "current_page": (offset // limit) + 1 if limit > 0 else 1,
+            "total_pages": ((total_entries - 1) // limit) + 1 if limit > 0 and total_entries > 0 else 1,
+            "remaining_count": max(0, total_entries - (offset + returned_count))
+        }
+    }
+
+@mcp.tool()
+def list_all_dags_paginated(page_size: int = 100) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves ALL DAGs from Airflow using automatic pagination.
+    This function automatically handles pagination to fetch all DAGs regardless of total count.
+    
+    Args:
+        page_size: Number of DAGs to fetch per API call (default: 100)
+                   - Smaller values (50-100): More API calls but lower memory usage
+                   - Larger values (500-1000): Fewer API calls but higher memory usage
+    
+    Returns:
+        Dict containing:
+        - dags: Complete list of all DAGs in the system
+        - total_entries: Total number of DAGs retrieved
+        - pages_fetched: Number of API calls made to get all DAGs
+        - page_size_used: Page size used for fetching
+        
+    Use this when:
+        - You need ALL DAGs and don't want to handle pagination manually
+        - You're doing analysis that requires complete DAG inventory
+        - You want a simple "get everything" approach
+        
+    For large Airflow installations (1000+ DAGs), consider using list_dags() with 
+    manual pagination for better performance and memory control.
+    """
+    all_dags = []
+    offset = 0
+    pages_fetched = 0
+    total_entries = 0
+    
+    while True:
+        # Fetch one page
+        result = list_dags(limit=page_size, offset=offset)
+        
+        # Add DAGs to our collection
+        page_dags = result.get("dags", [])
+        all_dags.extend(page_dags)
+        
+        # Update counters
+        pages_fetched += 1
+        total_entries = result.get("total_entries", 0)
+        
+        # Check if we're done
+        if not result.get("has_more_pages", False) or len(page_dags) == 0:
+            break
+            
+        # Prepare for next page
+        offset = result.get("next_offset", offset + page_size)
+    
+    return {
+        "dags": all_dags,
+        "total_entries": total_entries,
+        "pages_fetched": pages_fetched,
+        "page_size_used": page_size,
+        "actual_retrieved_count": len(all_dags)
     }
 
 @mcp.tool()

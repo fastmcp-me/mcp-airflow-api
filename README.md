@@ -29,9 +29,23 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 ### DAG Management
 
-- `list_dags`  
-	Returns all DAGs registered in the Airflow cluster.  
-	Output: `dag_id`, `dag_display_name`, `is_active`, `is_paused`, `owners`, `tags`
+- `list_dags(limit=100, offset=0)`  
+	Returns all DAGs registered in the Airflow cluster with pagination support.  
+	Output: `dag_id`, `dag_display_name`, `is_active`, `is_paused`, `owners`, `tags`, plus pagination info (`total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`)
+	
+	**Pagination Examples:**
+	- First 100 DAGs: `list_dags()`
+	- Next 100 DAGs: `list_dags(limit=100, offset=100)`
+	- All DAGs at once: `list_dags(limit=1000)`
+
+- `list_all_dags_paginated(page_size=100)`  
+	Automatically retrieves ALL DAGs using pagination, regardless of total count.  
+	Output: `dags` (complete list), `total_entries`, `pages_fetched`, `page_size_used`, `actual_retrieved_count`
+	
+	**Use cases:**
+	- Complete DAG inventory analysis
+	- When you need ALL DAGs without manual pagination
+	- Large Airflow installations (1000+ DAGs)
 
 - `running_dags`  
 	Returns all currently running DAG runs.  
@@ -179,7 +193,12 @@ This project provides natural language MCP tools for essential Airflow cluster o
 ## Example Queries
 
 ### Basic DAG Operations
-- **list_dags**: "List all DAGs."
+- **list_dags**: "List all DAGs." → Returns first 100 DAGs with pagination info
+- **list_dags**: "List all DAGs with limit 500." → Returns up to 500 DAGs
+- **list_dags**: "Show next page of DAGs." → Use offset for pagination
+- **list_dags**: "List DAGs 101-200." → `list_dags(limit=100, offset=100)`
+- **list_all_dags_paginated**: "Get all DAGs in the system." → Automatically fetches all DAGs
+- **list_all_dags_paginated**: "Show complete DAG inventory." → Returns all DAGs regardless of count
 - **running_dags**: "Show running DAGs."
 - **failed_dags**: "Show failed DAGs."
 - **trigger_dag**: "Trigger DAG 'example_complex'."
@@ -318,6 +337,65 @@ Policy: Only English is stored; LLM는 사용자 질의 언어와 무관하게 �
 
 3. Register the MCP server in MCP Inspector/Smithery  
 	 - Example address: `http://localhost:8000/airflow-api`
+
+---
+
+## Pagination Guide for Large Airflow Environments
+
+### Understanding DAG Pagination
+
+The `list_dags()` function now supports pagination to handle large Airflow environments efficiently:
+
+**Default Behavior:**
+- Returns first 100 DAGs by default
+- Includes pagination metadata in response
+
+**Pagination Response Structure:**
+```json
+{
+  "dags": [...],
+  "total_entries": 1500,
+  "limit": 100,
+  "offset": 0,
+  "returned_count": 100,
+  "has_more_pages": true,
+  "next_offset": 100,
+  "pagination_info": {
+    "current_page": 1,
+    "total_pages": 15,
+    "remaining_count": 1400
+  }
+}
+```
+
+### Pagination Strategies
+
+**🔍 Exploratory (Recommended for LLMs):**
+```
+1. list_dags() → Check first 100 DAGs
+2. Use has_more_pages to determine if more exist
+3. list_dags(limit=100, offset=100) → Get next 100
+4. Continue as needed
+```
+
+**📊 Complete Analysis:**
+```
+list_all_dags_paginated(page_size=200)
+→ Automatically fetches ALL DAGs regardless of count
+```
+
+**⚡ Quick Large Queries:**
+```
+list_dags(limit=1000)
+→ Get up to 1000 DAGs in one call
+```
+
+### Best Practices
+
+- **Small Airflow (< 100 DAGs)**: Use default `list_dags()`
+- **Medium Airflow (100-1000 DAGs)**: Use `list_dags(limit=500)`  
+- **Large Airflow (1000+ DAGs)**: Use `list_all_dags_paginated()` for complete analysis
+- **Memory-conscious**: Use smaller page sizes (50-100) with manual pagination
 
 ---
 

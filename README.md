@@ -276,6 +276,29 @@ This MCP server has been specifically optimized for large-scale Airflow deployme
 - **dag_calendar**: "Get calendar info for DAG 'example_complex' from last month."
 - **dag_calendar**: "Show DAG schedule for 'example_complex' from this week."
 
+## Date Calculation Verification
+
+**Before making any API calls with relative dates, verify your calculation:**
+
+**STEP 1**: Always call `get_current_time_context()` first to get the current date.
+
+**STEP 2**: Calculate relative dates based on the current date returned from step 1.
+
+| User Input | Calculation Method | Example Format |
+|------------|-------------------|----------------|
+| "yesterday" | current_date - 1 day | YYYY-MM-DD (1 day before current) |
+| "last week" | current_date - 7 days to current_date - 1 day | YYYY-MM-DD to YYYY-MM-DD (7 days range) |
+| "last 3 days" | current_date - 3 days to current_date | YYYY-MM-DD to YYYY-MM-DD (3 days range) |
+| "this morning" | current_date 00:00 to 12:00 | YYYY-MM-DDTHH:mm:ssZ format |
+
+**CRITICAL**: Always base calculations on the actual current date from `get_current_time_context()`, not hardcoded examples.
+
+## Formatting Rules
+
+- Output only the requested fields.
+- No extra explanation unless explicitly requested.
+- Use JSON objects for tool outputs.
+
 ---
 
 ## Prompt Template

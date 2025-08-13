@@ -535,7 +535,7 @@ def dag_code(dag_id: str) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None, limit: int = 20, offset: int = 0) -> Dict[str, Any]:
+def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None, limit: int = 100, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: Lists event log entries with optional filtering.
 
@@ -543,11 +543,11 @@ def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None,
         dag_id: Filter by DAG ID (optional)
         task_id: Filter by task ID (optional)
         run_id: Filter by run ID (optional)
-        limit: Maximum number of log entries to return (default: 20)
+        limit: Maximum number of log entries to return (default: 100, increased from 20 for better coverage)
         offset: Number of entries to skip (default: 0)
 
     Returns:
-        List of event logs: event_logs, total_entries, limit, offset
+        List of event logs: event_logs, total_entries, limit, offset, pagination metadata
     """
     # Build query parameters
     params = []
@@ -581,11 +581,25 @@ def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None,
         }
         events.append(event_info)
     
+    # Calculate pagination info
+    total_entries = logs.get("total_entries", len(events))
+    returned_count = len(events)
+    has_more_pages = (offset + limit) < total_entries
+    next_offset = offset + limit if has_more_pages else None
+    
     return {
         "event_logs": events,
-        "total_entries": logs.get("total_entries", len(events)),
+        "total_entries": total_entries,
         "limit": limit,
-        "offset": offset
+        "offset": offset,
+        "returned_count": returned_count,
+        "has_more_pages": has_more_pages,
+        "next_offset": next_offset,
+        "pagination_info": {
+            "current_page": (offset // limit) + 1 if limit > 0 else 1,
+            "total_pages": ((total_entries - 1) // limit) + 1 if limit > 0 and total_entries > 0 else 1,
+            "remaining_count": max(0, total_entries - (offset + returned_count))
+        }
     }
 
 @mcp.tool()
@@ -627,8 +641,8 @@ def all_dag_event_summary() -> Dict[str, Any]:
     Returns:
         Summary of event counts by DAG: dag_summaries, total_dags, total_events
     """
-    # First get all DAGs
-    dags_resp = airflow_request("GET", "/dags")
+    # First get all DAGs with increased limit to avoid missing DAGs in large environments
+    dags_resp = airflow_request("GET", "/dags?limit=1000")
     dags_resp.raise_for_status()
     dags = dags_resp.json().get("dags", [])
     
@@ -670,16 +684,16 @@ def all_dag_event_summary() -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def list_import_errors(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
+def list_import_errors(limit: int = 100, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: Lists import errors with optional filtering.
 
     Args:
-        limit: Maximum number of import errors to return (default: 20)
+        limit: Maximum number of import errors to return (default: 100, increased from 20 for better coverage)
         offset: Number of entries to skip (default: 0)
 
     Returns:
-        List of import errors: import_errors, total_entries, limit, offset
+        List of import errors: import_errors, total_entries, limit, offset, pagination metadata
     """
     # Build query parameters
     params = [f"limit={limit}", f"offset={offset}"]
@@ -699,11 +713,25 @@ def list_import_errors(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
         }
         import_errors.append(error_info)
     
+    # Calculate pagination info
+    total_entries = errors.get("total_entries", len(import_errors))
+    returned_count = len(import_errors)
+    has_more_pages = (offset + limit) < total_entries
+    next_offset = offset + limit if has_more_pages else None
+    
     return {
         "import_errors": import_errors,
-        "total_entries": errors.get("total_entries", len(import_errors)),
+        "total_entries": total_entries,
         "limit": limit,
-        "offset": offset
+        "offset": offset,
+        "returned_count": returned_count,
+        "has_more_pages": has_more_pages,
+        "next_offset": next_offset,
+        "pagination_info": {
+            "current_page": (offset // limit) + 1 if limit > 0 else 1,
+            "total_pages": ((total_entries - 1) // limit) + 1 if limit > 0 and total_entries > 0 else 1,
+            "remaining_count": max(0, total_entries - (offset + returned_count))
+        }
     }
 
 @mcp.tool()
@@ -785,13 +813,13 @@ def all_dag_import_summary() -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def dag_run_duration(dag_id: str, limit: int = 10) -> Dict[str, Any]:
+def dag_run_duration(dag_id: str, limit: int = 50) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves run duration statistics for a specific DAG.
 
     Args:
         dag_id: The DAG ID to get run durations for
-        limit: Maximum number of recent runs to analyze (default: 10)
+        limit: Maximum number of recent runs to analyze (default: 50, increased from 10 for better statistics)
 
     Returns:
         DAG run duration data: dag_id, runs, statistics
@@ -895,7 +923,7 @@ def dag_task_duration(dag_id: str, run_id: str = None) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None) -> Dict[str, Any]:
+def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None, limit: int = 100) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves calendar/schedule information for a specific DAG.
 
@@ -903,6 +931,7 @@ def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None) -> D
         dag_id: The DAG ID to get calendar info for
         start_date: Start date for calendar range (YYYY-MM-DD format, optional)
         end_date: End date for calendar range (YYYY-MM-DD format, optional)
+        limit: Maximum number of DAG runs to return (default: 100, was hardcoded at 50)
 
     Returns:
         DAG calendar data: dag_id, schedule_interval, runs, next_runs
@@ -916,7 +945,7 @@ def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None) -> D
     dag = dag_resp.json()
     
     # Build query parameters for date range
-    query_params = "?limit=50&order_by=-execution_date"
+    query_params = f"?limit={limit}&order_by=-execution_date"
     if start_date:
         query_params += f"&start_date_gte={start_date}T00:00:00Z"
     if end_date:

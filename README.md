@@ -472,6 +472,75 @@ This project starts with a minimal set of essential Airflow management tools. Ma
 
 ---
 
+## Testing
+
+This project includes comprehensive tests for the prompt template functionality.
+
+### Running Tests
+
+```bash
+# Install development dependencies
+uv sync
+
+# Run all tests
+uv run pytest
+
+# Run tests with verbose output
+uv run pytest -v
+
+# Run specific test file
+uv run pytest tests/test_prompt_template.py -v
+```
+
+### Test Coverage
+
+The test suite currently covers:
+- **Prompt template loading and parsing**: Ensures the template loads correctly and contains expected content
+- **Section retrieval**: Tests fetching specific sections by number and keyword (flexible approach)
+- **Headings mode**: Validates the section headings output format
+- **Error handling**: Tests invalid section requests and edge cases
+- **Template structure**: Verifies template maintains expected structure and integrity
+- **Case sensitivity**: Ensures keyword searches work regardless of case
+- **Boundary conditions**: Tests section access with dynamic boundaries
+- **Performance**: Validates template loading speed and memory usage
+- **Diagnostics**: Provides detailed template analysis and health checks
+
+**Flexibility Design**: The test suite is designed to be resilient to template content changes:
+- Uses configuration-driven expectations instead of hardcoded values
+- Dynamically adapts to current template structure  
+- Focuses on functionality rather than specific content
+- Provides diagnostic tools to understand template changes
+
+### Test Structure
+
+```
+tests/
+├── __init__.py                # Test package initialization
+├── config.py                  # Test configuration (update when template changes)
+├── test_prompt_template.py    # Main functionality tests (rarely needs updates)
+├── test_diagnostics.py        # Template analysis and health checks
+└── utils.py                   # Test utilities and helper functions
+```
+
+### Updating Tests for Template Changes
+
+When you add new tools or modify the template structure:
+
+1. **Most tests require no changes** - they adapt automatically
+2. **Update `tests/config.py` only** if major structural changes occur:
+   ```python
+   TEMPLATE_CONFIG = {
+       "min_sections": 8,  # Update if section count changes significantly
+       "expected_keywords": ["overview", "tools", "example"],  # Add new key concepts
+   }
+   ```
+3. **Run diagnostics** to understand changes:
+   ```bash
+   uv run pytest tests/test_diagnostics.py -v -s
+   ```
+
+---
+
 ## License
 
 This project is licensed under the MIT License.

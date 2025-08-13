@@ -39,8 +39,8 @@ def get_prompt_template(section: Optional[str] = None, mode: Optional[str] = Non
     if mode == "headings":
         headings, _ = parse_prompt_sections(template)
         lines = ["Section Headings:"]
-        for idx, title in enumerate(headings, 1):
-            lines.append(f"{idx}. {title}")
+        for title in headings:
+            lines.append(title)
         return "\n".join(lines)
     
     if section:
@@ -48,15 +48,16 @@ def get_prompt_template(section: Optional[str] = None, mode: Optional[str] = Non
         # Try by number
         try:
             idx = int(section) - 1
-            if 0 <= idx < len(sections):
-                return sections[idx]
+            # Skip the first section (title section) and adjust index
+            if 0 <= idx < len(headings):
+                return sections[idx + 1]  # +1 to skip the title section
         except Exception:
             pass
         # Try by keyword
         section_lower = section.strip().lower()
         for i, heading in enumerate(headings):
             if section_lower in heading.lower():
-                return sections[i]
+                return sections[i + 1]  # +1 to skip the title section
         return f"Section '{section}' not found."
     
     return template

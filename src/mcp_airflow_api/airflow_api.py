@@ -1,7 +1,7 @@
 """
 MCP tool definitions for Airflow REST API operations.
 
-- Airflow API Documents: https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html#operation/get_task_instances
+- Airflow API Documents: https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html
 """
 import argparse
 import logging
@@ -67,22 +67,51 @@ def list_dags() -> Dict[str, Any]:
     [Tool Role]: Lists all DAGs registered in the Airflow cluster.
 
     Returns:
-        List of DAGs with minimal info: dag_id, dag_display_name, is_active, is_paused, owners, tags
+        List of DAGs with comprehensive info: dag_id, dag_display_name, is_active, is_paused, 
+        description, schedule_interval, max_active_runs, max_active_tasks, owners, tags, 
+        next_dagrun info, last_parsed_time, has_import_errors, timetable_description
     """
     resp = airflow_request("GET", "/dags")
     resp.raise_for_status()
     dags = resp.json().get("dags", [])
-    minimal = []
+    dag_list = []
     for dag in dags:
-        minimal.append({
+        # Extract schedule interval info
+        schedule_info = dag.get("schedule_interval")
+        if isinstance(schedule_info, dict) and schedule_info.get("__type") == "CronExpression":
+            schedule_display = schedule_info.get("value", "Unknown")
+        elif schedule_info:
+            schedule_display = str(schedule_info)
+        else:
+            schedule_display = None
+        
+        dag_info = {
             "dag_id": dag.get("dag_id"),
             "dag_display_name": dag.get("dag_display_name"),
+            "description": dag.get("description"),
             "is_active": dag.get("is_active"),
             "is_paused": dag.get("is_paused"),
+            "schedule_interval": schedule_display,
+            "max_active_runs": dag.get("max_active_runs"),
+            "max_active_tasks": dag.get("max_active_tasks"),
             "owners": dag.get("owners"),
-            "tags": [t.get("name") for t in dag.get("tags", [])]
-        })
-    return {"dags": minimal}
+            "tags": [t.get("name") for t in dag.get("tags", [])],
+            "next_dagrun": dag.get("next_dagrun"),
+            "next_dagrun_data_interval_start": dag.get("next_dagrun_data_interval_start"),
+            "next_dagrun_data_interval_end": dag.get("next_dagrun_data_interval_end"),
+            "last_parsed_time": dag.get("last_parsed_time"),
+            "has_import_errors": dag.get("has_import_errors"),
+            "has_task_concurrency_limits": dag.get("has_task_concurrency_limits"),
+            "timetable_description": dag.get("timetable_description"),
+            "fileloc": dag.get("fileloc"),
+            "file_token": dag.get("file_token")
+        }
+        dag_list.append(dag_info)
+    
+    return {
+        "dags": dag_list,
+        "total_dags": len(dag_list)
+    }
 
 @mcp.tool()
 def running_dags() -> Dict[str, Any]:
@@ -90,30 +119,45 @@ def running_dags() -> Dict[str, Any]:
     [Tool Role]: Lists all currently running DAG runs in the Airflow cluster.
 
     Returns:
-        List of running DAG runs with minimal info: dag_id, run_id, state, execution_date, start_date, end_date
+        List of running DAG runs with comprehensive info: dag_id, run_id, state, execution_date, 
+        start_date, end_date, data_interval_start, data_interval_end, run_type, conf, 
+        external_trigger, dag_display_name
     """
-    dags_resp = airflow_request("GET", "/dags")
-    dags_resp.raise_for_status()
-    dags = dags_resp.json().get("dags", [])
-    running = []
-    for dag in dags:
-        dag_id = dag.get("dag_id")
-        if not dag_id:
-            continue
-        runs_resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns")
-        runs_resp.raise_for_status()
-        runs = runs_resp.json().get("dag_runs", [])
-        for run in runs:
-            if run.get("state") == "running":
-                running.append({
-                    "dag_id": dag_id,
-                    "run_id": run.get("run_id"),
-                    "state": run.get("state"),
-                    "execution_date": run.get("execution_date"),
-                    "start_date": run.get("start_date"),
-                    "end_date": run.get("end_date")
-                })
-    return {"dag_runs": running}
+    # Use the global endpoint to get all DAG runs filtered by running state
+    # This is much more efficient than querying each DAG individually
+    resp = airflow_request("GET", "/dags/~/dagRuns?state=running&limit=1000&order_by=-start_date")
+    resp.raise_for_status()
+    data = resp.json()
+    
+    running_runs = []
+    for run in data.get("dag_runs", []):
+        # Get additional DAG info if needed
+        run_info = {
+            "dag_id": run.get("dag_id"),
+            "dag_display_name": run.get("dag_display_name"),
+            "run_id": run.get("run_id"),
+            "run_type": run.get("run_type"),  # manual, scheduled, dataset_triggered, etc.
+            "state": run.get("state"),
+            "execution_date": run.get("execution_date"),
+            "start_date": run.get("start_date"),
+            "end_date": run.get("end_date"),
+            "data_interval_start": run.get("data_interval_start"),
+            "data_interval_end": run.get("data_interval_end"),
+            "external_trigger": run.get("external_trigger"),
+            "conf": run.get("conf"),  # Configuration passed to the DAG run
+            "note": run.get("note")
+        }
+        running_runs.append(run_info)
+    
+    return {
+        "dag_runs": running_runs,
+        "total_running": len(running_runs),
+        "query_info": {
+            "state_filter": "running",
+            "limit": 1000,
+            "order_by": "start_date (descending)"
+        }
+    }
 
 @mcp.tool()
 def failed_dags() -> Dict[str, Any]:
@@ -121,30 +165,44 @@ def failed_dags() -> Dict[str, Any]:
     [Tool Role]: Lists all recently failed DAG runs in the Airflow cluster.
 
     Returns:
-        List of failed DAG runs with minimal info: dag_id, run_id, state, execution_date, start_date, end_date
+        List of failed DAG runs with comprehensive info: dag_id, run_id, state, execution_date, 
+        start_date, end_date, data_interval_start, data_interval_end, run_type, conf, 
+        external_trigger, dag_display_name
     """
-    dags_resp = airflow_request("GET", "/dags")
-    dags_resp.raise_for_status()
-    dags = dags_resp.json().get("dags", [])
-    failed = []
-    for dag in dags:
-        dag_id = dag.get("dag_id")
-        if not dag_id:
-            continue
-        runs_resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns")
-        runs_resp.raise_for_status()
-        runs = runs_resp.json().get("dag_runs", [])
-        for run in runs:
-            if run.get("state") == "failed":
-                failed.append({
-                    "dag_id": dag_id,
-                    "run_id": run.get("run_id"),
-                    "state": run.get("state"),
-                    "execution_date": run.get("execution_date"),
-                    "start_date": run.get("start_date"),
-                    "end_date": run.get("end_date")
-                })
-    return {"dag_runs": failed}
+    # Use the global endpoint to get all DAG runs filtered by failed state
+    # This is much more efficient than querying each DAG individually
+    resp = airflow_request("GET", "/dags/~/dagRuns?state=failed&limit=1000&order_by=-start_date")
+    resp.raise_for_status()
+    data = resp.json()
+    
+    failed_runs = []
+    for run in data.get("dag_runs", []):
+        run_info = {
+            "dag_id": run.get("dag_id"),
+            "dag_display_name": run.get("dag_display_name"),
+            "run_id": run.get("run_id"),
+            "run_type": run.get("run_type"),  # manual, scheduled, dataset_triggered, etc.
+            "state": run.get("state"),
+            "execution_date": run.get("execution_date"),
+            "start_date": run.get("start_date"),
+            "end_date": run.get("end_date"),
+            "data_interval_start": run.get("data_interval_start"),
+            "data_interval_end": run.get("data_interval_end"),
+            "external_trigger": run.get("external_trigger"),
+            "conf": run.get("conf"),  # Configuration passed to the DAG run
+            "note": run.get("note")
+        }
+        failed_runs.append(run_info)
+    
+    return {
+        "dag_runs": failed_runs,
+        "total_failed": len(failed_runs),
+        "query_info": {
+            "state_filter": "failed",
+            "limit": 1000,
+            "order_by": "start_date (descending)"
+        }
+    }
 
 @mcp.tool()
 def trigger_dag(dag_id: str) -> Dict[str, Any]:

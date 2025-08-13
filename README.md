@@ -12,7 +12,7 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 **Tested and supported Airflow version: 2.10.2 (API Version: v1)**
 
-- [Airflow API Documents](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html#operation/get_task_instances)
+- [Airflow API Documents](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
 
 ## Features
 

@@ -6,6 +6,11 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 
 **IMPORTANT: Current Date Context** - Always use the `get_current_time_context()` tool first to get the current date for accurate relative date calculations.
 
+**Large Environment Optimizations**: This MCP server has been specifically optimized for enterprise-scale Airflow deployments:
+- **Enhanced Default Limits**: Functions use higher default limits (100+ instead of 20-50) for better coverage
+- **Comprehensive Pagination**: All listing functions include detailed pagination metadata
+- **Enterprise Coverage**: Tested and optimized for Airflow clusters with 1000+ DAGs and extensive task histories
+
 ## 2. Available MCP Tools
 
 ### Basic DAG Management
@@ -46,15 +51,15 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - `dag_graph(dag_id)`: Get task dependency graph structure for a DAG.
 - `list_tasks(dag_id)`: List all tasks for a specific DAG.
 - `dag_code(dag_id)`: Retrieve source code for a specific DAG.
-- `list_event_logs(dag_id, task_id, run_id, limit, offset)`: List event log entries with filtering.
+- `list_event_logs(dag_id, task_id, run_id, limit=100, offset=0)`: List event log entries with filtering. **Improved**: Default limit increased from 20 to 100.
 - `get_event_log(event_log_id)`: Get a specific event log entry by ID.
-- `all_dag_event_summary()`: Get event count summary for all DAGs.
-- `list_import_errors(limit, offset)`: List import errors with filtering.
+- `all_dag_event_summary()`: Get event count summary for all DAGs. **Improved**: Uses limit=1000 for DAG retrieval.
+- `list_import_errors(limit=100, offset=0)`: List import errors with filtering. **Improved**: Default limit increased from 20 to 100.
 - `get_import_error(import_error_id)`: Get a specific import error by ID.
 - `all_dag_import_summary()`: Get import error summary for all DAGs.
-- `dag_run_duration(dag_id, limit)`: Get run duration statistics for a DAG.
+- `dag_run_duration(dag_id, limit=50)`: Get run duration statistics for a DAG. **Improved**: Default limit increased from 10 to 50.
 - `dag_task_duration(dag_id, run_id)`: Get task duration info for a DAG run.
-- `dag_calendar(dag_id, start_date, end_date)`: Get calendar/schedule info for a DAG.
+- `dag_calendar(dag_id, start_date, end_date, limit=100)`: Get calendar/schedule info for a DAG. **Improved**: Now configurable parameter (was hardcoded at 50).
 
 ## 3. Tool Map
 
@@ -91,15 +96,15 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | dag_graph           | Get task dependency graph                 | dag_id (str)                  | dag_id, tasks, dependencies, total_tasks |
 | list_tasks          | List all tasks for a specific DAG        | dag_id (str)                  | dag_id, tasks, task_configuration_details |
 | dag_code            | Get DAG source code                       | dag_id (str)                  | dag_id, file_token, source_code      |
-| list_event_logs     | List event log entries with filtering     | dag_id, task_id, run_id, limit, offset | event_logs, total_entries, limit, offset |
+| list_event_logs     | List event log entries with filtering     | dag_id, task_id, run_id, limit=100, offset=0 | event_logs, total_entries, limit, offset, has_more_pages, next_offset, pagination_info |
 | get_event_log       | Get specific event log entry by ID        | event_log_id (int)            | event_log_id, when, event, dag_id, task_id, run_id, etc. |
-| all_dag_event_summary | Get event count summary for all DAGs    | None                          | dag_summaries, total_dags, total_events |
-| list_import_errors  | List import errors with filtering         | limit, offset                 | import_errors, total_entries, limit, offset |
+| all_dag_event_summary | Get event count summary for all DAGs    | None                          | dag_summaries, total_dags, total_events (improved: uses limit=1000) |
+| list_import_errors  | List import errors with filtering         | limit=100, offset=0           | import_errors, total_entries, limit, offset, has_more_pages, next_offset, pagination_info |
 | get_import_error    | Get specific import error by ID           | import_error_id (int)         | import_error_id, filename, stacktrace, timestamp |
 | all_dag_import_summary | Get import error summary for all DAGs | None                          | import_summaries, total_errors, affected_files |
-| dag_run_duration    | Get run duration statistics               | dag_id (str), limit (int)     | dag_id, runs, statistics             |
+| dag_run_duration    | Get run duration statistics               | dag_id (str), limit=50        | dag_id, runs, statistics (improved: limit 10→50) |
 | dag_task_duration   | Get task duration for a run               | dag_id (str), run_id (str)    | dag_id, run_id, tasks, statistics    |
-| dag_calendar        | Get calendar/schedule information         | dag_id (str), start_date, end_date | dag_id, schedule_interval, runs, next_runs |
+| dag_calendar        | Get calendar/schedule information         | dag_id (str), start_date, end_date, limit=100 | dag_id, schedule_interval, runs, next_runs (improved: configurable limit) |
 
 ## 4. Example Queries
 

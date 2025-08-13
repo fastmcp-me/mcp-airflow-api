@@ -22,6 +22,17 @@ This project provides natural language MCP tools for essential Airflow cluster o
 - Check cluster health and version information
 - Minimal, LLM-friendly output for all tools
 - Easy integration with MCP Inspector, OpenWebUI, Smithery, etc.
+- **Enhanced for Large-Scale Environments**: Improved default limits and pagination support for enterprise Airflow deployments (100+ to 1000+ DAGs)
+
+## Large Environment Optimizations
+
+This MCP server has been specifically optimized for large-scale Airflow deployments:
+
+- **Increased Default Limits**: Most functions now use higher default limits (100+ instead of 20-50) to reduce API calls
+- **Comprehensive Pagination**: All listing functions include pagination metadata (`has_more_pages`, `next_offset`, `pagination_info`)
+- **Automatic Pagination Helpers**: `list_all_dags_paginated()` for complete DAG inventory without manual pagination
+- **Efficient Batch Operations**: Functions designed to minimize API calls for large datasets
+- **Enterprise-Grade Coverage**: Tested and optimized for Airflow clusters with 1000+ DAGs and extensive task histories
 
 ---
 
@@ -152,9 +163,10 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Retrieves the source code for a specific DAG.  
 	Output: `dag_id`, `file_token`, `source_code`
 
-- `list_event_logs(dag_id=None, task_id=None, run_id=None, limit=20, offset=0)`  
+- `list_event_logs(dag_id=None, task_id=None, run_id=None, limit=100, offset=0)`  
 	Lists event log entries with optional filtering.  
-	Output: `event_logs`, `total_entries`, `limit`, `offset`
+	**Improved limit**: Default increased from 20 to 100 for better coverage in large environments.  
+	Output: `event_logs`, `total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`
 
 - `get_event_log(event_log_id)`  
 	Retrieves a specific event log entry by ID.  
@@ -162,11 +174,13 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 - `all_dag_event_summary()`  
 	Retrieves event count summary for all DAGs.  
+	**Improved limit**: Uses limit=1000 for DAG retrieval to avoid missing DAGs in large environments.  
 	Output: `dag_summaries`, `total_dags`, `total_events`
 
-- `list_import_errors(limit=20, offset=0)`  
+- `list_import_errors(limit=100, offset=0)`  
 	Lists import errors with optional filtering.  
-	Output: `import_errors`, `total_entries`, `limit`, `offset`
+	**Improved limit**: Default increased from 20 to 100 for better coverage in large environments.  
+	Output: `import_errors`, `total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`
 
 - `get_import_error(import_error_id)`  
 	Retrieves a specific import error by ID.  
@@ -176,16 +190,18 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Retrieves import error summary for all DAGs.  
 	Output: `import_summaries`, `total_errors`, `affected_files`
 
-- `dag_run_duration(dag_id, limit=10)`  
+- `dag_run_duration(dag_id, limit=50)`  
 	Retrieves run duration statistics for a specific DAG.  
+	**Improved limit**: Default increased from 10 to 50 for better statistical analysis.  
 	Output: `dag_id`, `runs`, duration analysis, success/failure stats
 
 - `dag_task_duration(dag_id, run_id=None)`  
 	Retrieves task duration information for a specific DAG run.  
 	Output: `dag_id`, `run_id`, `tasks`, individual task performance
 
-- `dag_calendar(dag_id, start_date=None, end_date=None)`  
+- `dag_calendar(dag_id, start_date=None, end_date=None, limit=100)`  
 	Retrieves calendar/schedule information for a specific DAG.  
+	**Improved limit**: Now configurable parameter (default: 100), was hardcoded at 50.  
 	Output: `dag_id`, `schedule_interval`, `runs`, upcoming executions
 
 ---

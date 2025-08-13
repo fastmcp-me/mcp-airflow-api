@@ -1,5 +1,7 @@
 """
 MCP tool definitions for Airflow REST API operations.
+
+- Airflow API Documents: https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html#operation/get_task_instances
 """
 import argparse
 import logging

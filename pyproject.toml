@@ -1,3 +1,7 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
 [project]
 name = "mcp-airflow-api"
 version = "0.0.0"
@@ -14,15 +18,14 @@ dependencies = [
 [project.scripts]
 mcp-airflow-api = "mcp_airflow_api.airflow_api:main"
 
-[tool.setuptools.packages.find]
-where = ["src"]
-include = ["mcp_airflow_api*"]
+[tool.hatch.build.targets.sdist]
+include = [
+    "/src",
+    "/README.md",
+]
 
-[tool.setuptools]
-include-package-data = true
-
-[tool.setuptools.package-data]
-mcp_airflow_api = ["prompt_template.md"]
+[tool.hatch.build.targets.wheel]
+packages = ["src/mcp_airflow_api"]
 
 [dependency-groups]
 dev = [

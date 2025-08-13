@@ -36,6 +36,10 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - `get_task_instance_extra_links(dag_id, dag_run_id, task_id)`: List extra links for a specific task instance.
 - `get_task_instance_logs(dag_id, dag_run_id, task_id, try_number, full_content, token)`: Get logs for a specific task instance and try number.
 
+### XCom Management
+- `list_xcom_entries(dag_id, dag_run_id, task_id, limit, offset)`: List XCom entries for a specific task instance.
+- `get_xcom_entry(dag_id, dag_run_id, task_id, xcom_key, map_index)`: Get a specific XCom entry for a task instance.
+
 ### DAG Analysis & Monitoring
 - `dag_details(dag_id)`: Get comprehensive details for a specific DAG.
 - `dag_graph(dag_id)`: Get task dependency graph structure for a DAG.
@@ -77,6 +81,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | list_task_instances_batch | Batch list task instances           | dag_ids, dag_run_ids, task_ids, dates, state, pool, queue | task_instances, total_entries, applied_filters |
 | get_task_instance_extra_links | List extra links for task       | dag_id, dag_run_id, task_id   | task_id, dag_id, dag_run_id, extra_links, total_links |
 | get_task_instance_logs | Get logs for task instance           | dag_id, dag_run_id, task_id, try_number, full_content, token | content, continuation_token, metadata |
+| **XCom Management** |                                           |                               |                                      |
+| list_xcom_entries   | List XCom entries for task instance      | dag_id, dag_run_id, task_id, limit, offset | dag_id, dag_run_id, task_id, xcom_entries, total_entries |
+| get_xcom_entry      | Get specific XCom entry                   | dag_id, dag_run_id, task_id, xcom_key, map_index | key, value, timestamp, execution_date, run_id |
 | **DAG Analysis & Monitoring** |                                   |                               |                                      |
 | dag_details         | Get comprehensive DAG details             | dag_id (str)                  | dag_id, schedule_interval, start_date, owners, tags, description, etc. |
 | dag_graph           | Get task dependency graph                 | dag_id (str)                  | dag_id, tasks, dependencies, total_tasks |
@@ -127,11 +134,17 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **list_task_instances_all**: "List failed task instances from yesterday."
 - **list_task_instances_all**: "Show task instances that started after 9 AM today."
 - **list_task_instances_all**: "List task instances from the last 3 days with state 'failed'."
-- **get_task_instance_details**: "Get details for task 'example_complex' in DAG 'example_complex'.
+- **get_task_instance_details**: "Get details for task 'data_processing' in DAG 'example_complex' run 'scheduled__xxxxx'."
 - **list_task_instances_batch**: "List failed task instances from last month."
 - **list_task_instances_batch**: "Show task instances in batch for multiple DAGs from this week."
 - **get_task_instance_extra_links**: "Get extra links for task 'data_processing' in latest run."
 - **get_task_instance_logs**: "Retrieve logs for task 'create_entry_gcs' try number 2 of DAG 'example_complex'."
+
+### XCom Management
+- **list_xcom_entries**: "List XCom entries for task 'data_processing' in DAG 'example_complex' run 'scheduled__xxxxx'."
+- **list_xcom_entries**: "Show all XCom entries for task 'data_processing' in latest run."
+- **get_xcom_entry**: "Get XCom entry with key 'result' for task 'data_processing' in specific run."
+- **get_xcom_entry**: "Retrieve XCom value for key 'processed_count' from task 'data_processing'."
 
 ### DAG Analysis & Monitoring
 - **dag_details**: "Get details for DAG 'example_complex'."

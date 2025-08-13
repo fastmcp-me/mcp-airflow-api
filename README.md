@@ -109,6 +109,16 @@ This project provides natural language MCP tools for essential Airflow cluster o
 	Retrieves logs for a specific task instance and its try number with content and metadata.  
 	Output: `task_id`, `dag_id`, `dag_run_id`, `try_number`, `content`, `continuation_token`, `metadata`
 
+### XCom Management
+
+- `list_xcom_entries(dag_id, dag_run_id, task_id, limit=100, offset=0)`  
+	Lists XCom entries for a specific task instance.  
+	Output: `dag_id`, `dag_run_id`, `task_id`, `xcom_entries`, `total_entries`, `limit`, `offset`
+
+- `get_xcom_entry(dag_id, dag_run_id, task_id, xcom_key, map_index=-1)`  
+	Retrieves a specific XCom entry for a task instance.  
+	Output: `dag_id`, `dag_run_id`, `task_id`, `xcom_key`, `map_index`, `key`, `value`, `timestamp`, `execution_date`, `run_id`
+
 ### DAG Analysis & Monitoring
 
 - `dag_details(dag_id)`  
@@ -172,9 +182,9 @@ This project provides natural language MCP tools for essential Airflow cluster o
 - **list_dags**: "List all DAGs."
 - **running_dags**: "Show running DAGs."
 - **failed_dags**: "Show failed DAGs."
-- **trigger_dag**: "Trigger DAG 'example_dag'."
-- **pause_dag**: "Pause DAG 'etl_job'."
-- **unpause_dag**: "Unpause DAG 'etl_job'."
+- **trigger_dag**: "Trigger DAG 'example_complex'."
+- **pause_dag**: "Pause DAG 'example_complex'."
+- **unpause_dag**: "Unpause DAG 'example_complex'."
 
 ### Cluster Management & Health
 - **get_health**: "Check Airflow cluster health."
@@ -193,7 +203,7 @@ This project provides natural language MCP tools for essential Airflow cluster o
 - **get_variable**: "Show the value of variable 'api_key'."
 
 ### Task Instance Management
-- **list_task_instances_all**: "List all task instances for DAG 'conditional_dataset_and_time_based_timetable'."
+- **list_task_instances_all**: "List all task instances for DAG 'example_complex'."
 - **list_task_instances_all**: "Show running task instances."
 - **list_task_instances_all**: "Show task instances filtered by pool 'default_pool'."
 - **list_task_instances_all**: "List task instances with duration greater than 300 seconds."
@@ -201,28 +211,35 @@ This project provides natural language MCP tools for essential Airflow cluster o
 - **list_task_instances_all**: "List failed task instances from yesterday."
 - **list_task_instances_all**: "Show task instances that started after 9 AM today."
 - **list_task_instances_all**: "List task instances from the last 3 days with state 'failed'."
-- **get_task_instance_details**: "Get details for task 'conditional_dataset_and_time_based_timetable' in DAG 'conditional_dataset_and_time_based_timetable' run 'scheduled__2025-08-06T01:00:00+00:00'."
+- **get_task_instance_details**: "Get details for task 'data_processing' in DAG 'example_complex' run 'scheduled__xxxxx'."
 - **list_task_instances_batch**: "List failed task instances from last month."
 - **list_task_instances_batch**: "Show task instances in batch for multiple DAGs from this week."
 - **get_task_instance_extra_links**: "Get extra links for task 'data_processing' in latest run."
-- **get_task_instance_logs**: "Retrieve logs for task 'etl_task' try number 2."
+- **get_task_instance_logs**: "Retrieve logs for task 'create_entry_gcs' try number 2 of DAG 'example_complex'."
+
+### XCom Management
+- **list_xcom_entries**: "List XCom entries for task 'data_processing' in DAG 'example_complex' run 'scheduled__xxxxx'."
+- **list_xcom_entries**: "Show all XCom entries for task 'data_processing' in latest run."
+- **get_xcom_entry**: "Get XCom entry with key 'result' for task 'data_processing' in specific run."
+- **get_xcom_entry**: "Retrieve XCom value for key 'processed_count' from task 'data_processing'."
 
 ### DAG Analysis & Monitoring
-- **dag_details**: "Get details for DAG 'my_dag'."
-- **dag_graph**: "Show task graph for DAG 'workflow_dag'."
-- **list_tasks**: "List all tasks in DAG 'data_pipeline'."
-- **dag_code**: "Get source code for DAG 'data_pipeline'."
-- **list_event_logs**: "List event logs for DAG 'etl_process'."
-- **list_event_logs**: "Show event logs from yesterday for all DAGs."
+- **dag_details**: "Get details for DAG 'example_complex'."
+- **dag_graph**: "Show task graph for DAG 'example_complex'."
+- **list_tasks**: "List all tasks in DAG 'example_complex'."
+- **dag_code**: "Get source code for DAG 'example_complex'."
+- **list_event_logs**: "List event logs for DAG 'example_complex'."
+- **list_event_logs**: "Show event logs with ID from yesterday for all DAGs."
 - **get_event_log**: "Get event log entry with ID 12345."
 - **all_dag_event_summary**: "Show event count summary for all DAGs."
-- **list_import_errors**: "List import errors."
+- **list_import_errors**: "List import errors with ID."
 - **get_import_error**: "Get import error with ID 67890."
 - **all_dag_import_summary**: "Show import error summary for all DAGs."
-- **dag_run_duration**: "Get run duration stats for DAG 'batch_job'."
-- **dag_task_duration**: "Show task durations for latest run of 'ml_pipeline'."
-- **dag_calendar**: "Get calendar info for DAG 'daily_report' from last month."
-- **dag_calendar**: "Show DAG schedule for 'weekly_report' from this week."
+- **dag_run_duration**: "Get run duration stats for DAG 'example_complex'."
+- **dag_task_duration**: "Show latest run of DAG 'example_complex'."
+- **dag_task_duration**: "Show task durations for latest run of 'manual__xxxxx'."
+- **dag_calendar**: "Get calendar info for DAG 'example_complex' from last month."
+- **dag_calendar**: "Show DAG schedule for 'example_complex' from this week."
 
 ---
 

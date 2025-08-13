@@ -1436,6 +1436,112 @@ def get_variable(variable_key: str) -> Dict[str, Any]:
 #========================================================================================
 
 #========================================================================================
+# XCom Management
+#========================================================================================
+
+@mcp.tool()
+def list_xcom_entries(
+    dag_id: str,
+    dag_run_id: str,
+    task_id: str,
+    limit: int = 100,
+    offset: int = 0
+) -> Dict[str, Any]:
+    """
+    [Tool Role]: Lists XCom entries for a specific task instance.
+
+    Args:
+        dag_id: The DAG ID
+        dag_run_id: The DAG run ID  
+        task_id: The task ID
+        limit: Maximum number of entries to return (default: 100)
+        offset: Number of entries to skip (default: 0)
+
+    Returns:
+        Dictionary containing XCom entries with key, value, timestamp, and other metadata
+    """
+    path = f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}/xcomEntries"
+    params = {
+        "limit": limit,
+        "offset": offset
+    }
+    
+    resp = airflow_request("GET", path, params=params)
+    resp.raise_for_status()
+    data = resp.json()
+    
+    xcom_entries = data.get("xcom_entries", [])
+    processed_entries = []
+    
+    for entry in xcom_entries:
+        entry_info = {
+            "key": entry.get("key"),
+            "timestamp": entry.get("timestamp"),
+            "execution_date": entry.get("execution_date"),
+            "task_id": entry.get("task_id"),
+            "dag_id": entry.get("dag_id"),
+            "run_id": entry.get("run_id"),
+            "value": entry.get("value"),  # Note: may be truncated in list view
+            "map_index": entry.get("map_index", -1)
+        }
+        processed_entries.append(entry_info)
+    
+    return {
+        "dag_id": dag_id,
+        "dag_run_id": dag_run_id, 
+        "task_id": task_id,
+        "xcom_entries": processed_entries,
+        "total_entries": data.get("total_entries", len(processed_entries)),
+        "limit": limit,
+        "offset": offset
+    }
+
+@mcp.tool()
+def get_xcom_entry(
+    dag_id: str,
+    dag_run_id: str,
+    task_id: str,
+    xcom_key: str,
+    map_index: int = -1
+) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves a specific XCom entry for a task instance.
+
+    Args:
+        dag_id: The DAG ID
+        dag_run_id: The DAG run ID
+        task_id: The task ID  
+        xcom_key: The XCom key to retrieve
+        map_index: Map index for mapped tasks (default: -1 for non-mapped)
+
+    Returns:
+        Dictionary containing the specific XCom entry with full value and metadata
+    """
+    path = f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}/xcomEntries/{xcom_key}"
+    params = {}
+    if map_index != -1:
+        params["map_index"] = map_index
+        
+    resp = airflow_request("GET", path, params=params)
+    resp.raise_for_status()
+    entry = resp.json()
+    
+    return {
+        "dag_id": dag_id,
+        "dag_run_id": dag_run_id,
+        "task_id": task_id,
+        "xcom_key": xcom_key,
+        "map_index": map_index,
+        "key": entry.get("key"),
+        "value": entry.get("value"),
+        "timestamp": entry.get("timestamp"),
+        "execution_date": entry.get("execution_date"),
+        "run_id": entry.get("run_id")
+    }
+
+#========================================================================================
+
+#========================================================================================
 # MCP Prompts (for prompts/list exposure)
 #========================================================================================
 

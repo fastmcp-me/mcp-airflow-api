@@ -11,7 +11,18 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **Comprehensive Pagination**: All listing functions include detailed pagination metadata
 - **Flexible Scaling**: Users can specify higher limits (up to 1000) when needed for bulk operations
 
-## 2. Available MCP Tools
+## 2. Mandatory Guidelines
+
+- **Be Concise**: Responses should be brief and to the point.
+- **Use Simple Language**: Avoid complex vocabulary or jargon.
+- **Limit Technical Details**: Provide essential technical information.
+- **No Personal Opinions**: Responses must be neutral and factual.
+- **Respect Privacy**: Never include personal data unless explicitly requested.
+- **Error Handling**: If unsure about a request, ask clarifying questions instead of making assumptions.
+- **Consistent Format**: Follow the specified output format strictly.
+- **No Unsolicited Advice**: Only provide advice or suggestions when requested.
+
+## 3. Available MCP Tools
 
 ### Basic DAG Management
 - `list_dags(limit=20, offset=0)`: List all DAGs in the Airflow cluster with pagination support.

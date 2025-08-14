@@ -5,6 +5,8 @@
 Model Context Protocol (MCP) server for Apache Airflow API integration.  
 This project provides natural language MCP tools for essential Airflow cluster operations.
 
+> **Note:** To minimize operational risk, this MCP server currently focuses on read-only (query) operations only. APIs that modify the target Airflow cluster (e.g., triggering or pausing DAGs) are planned but currently on hold.
+
 ---
 
 

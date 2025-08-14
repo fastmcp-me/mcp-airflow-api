@@ -1,9 +1,9 @@
-Model Context Protocol (MCP) server for Apache Airflow API integration.  
-This project provides natural language MCP tools for essential Airflow cluster operations.
-
 [![Deploy to PyPI with tag](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml)
 
 [![smithery badge](https://smithery.ai/badge/@call518/mcp-airflow-api)](https://smithery.ai/server/@call518/mcp-airflow-api)
+
+Model Context Protocol (MCP) server for Apache Airflow API integration.  
+This project provides natural language MCP tools for essential Airflow cluster operations.
 
 ---
 

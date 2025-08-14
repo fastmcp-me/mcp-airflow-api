@@ -36,7 +36,7 @@ This MCP server has been optimized for efficient resource usage and better perfo
 
 - **Optimized Default Limits**: Most functions use default limits of 20 (reduced from 100) for better memory usage and faster response times
 - **Comprehensive Pagination**: All listing functions include pagination metadata (`has_more_pages`, `next_offset`, `pagination_info`)
-- **Automatic Pagination Helpers**: `list_all_dags_paginated()` for complete DAG inventory without manual pagination
+- **Automatic Pagination Helpers**: Use `list_dags(..., fetch_all=True)` for complete DAG inventory without manual pagination
 - **Flexible Scaling**: Users can specify higher limits (up to 1000) when needed for bulk operations
 - **Memory-Efficient**: Smaller default payloads reduce memory usage while maintaining full functionality
 
@@ -212,8 +212,8 @@ This MCP server has been optimized for efficient resource usage and better perfo
 ## Example Queries
 
 ### Basic DAG Operations
-- **list_dags**: "List all DAGs." → Returns first 20 DAGs with pagination info
 - **list_dags**: "List all DAGs with limit 100." → Returns up to 100 DAGs
+- **list_dags**: "List all DAGs and present them in a table format." → Returns first 20 DAGs with pagination info
 - **list_dags**: "Show next page of DAGs." → Use offset for pagination
 - **list_dags**: "List DAGs 21-40." → `list_dags(limit=20, offset=20)`
 - **list_all_dags_paginated**: "Get all DAGs in the system." → Automatically fetches all DAGs
@@ -278,6 +278,7 @@ This MCP server has been optimized for efficient resource usage and better perfo
 - **dag_task_duration**: "Show task durations for latest run of 'manual__xxxxx'."
 - **dag_calendar**: "Get calendar info for DAG 'example_complex' from last month."
 - **dag_calendar**: "Show DAG schedule for 'example_complex' from this week."
+## Date Calculation Guidance
 
 ## Date Calculation Guidance
 

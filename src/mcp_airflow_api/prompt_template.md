@@ -25,14 +25,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ## 3. Available MCP Tools
 
 ### Basic DAG Management
-- `list_dags(limit=20, offset=0)`: List all DAGs in the Airflow cluster with pagination support.
-- `list_all_dags_paginated(page_size=100)`: Automatically retrieve ALL DAGs using pagination.
-- `running_dags`: List all currently running DAG runs.
-- `failed_dags`: List all recently failed DAG runs.
-- `trigger_dag(dag_id)`: Trigger a DAG run by ID.
-- `pause_dag(dag_id)`: Pause a DAG (prevent scheduling).
-- `unpause_dag(dag_id)`: Unpause a DAG (allow scheduling).
-
+ `list_dags(limit=20, offset=0, fetch_all=False)`: List DAGs with pagination. Set `fetch_all=True` to retrieve all pages automatically.
 ### Cluster Management & Health
 - `get_health`: Get the health status of the Airflow webserver instance.
 - `get_version`: Get version information of the Airflow instance.
@@ -76,8 +69,8 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | Tool Name           | Role/Description                          | Input Args                    | Output Fields                        |
 |---------------------|-------------------------------------------|-------------------------------|--------------------------------------|
 | **Basic DAG Management** |                                     |                               |                                      |
-| list_dags           | List all DAGs with pagination            | limit (int), offset (int)     | dag_id, dag_display_name, is_active, is_paused, owners, tags, total_entries, has_more_pages, next_offset, pagination_info |
-| list_all_dags_paginated | Automatically retrieve ALL DAGs     | page_size (int)               | dags (complete list), total_entries, pages_fetched, page_size_used, actual_retrieved_count |
+| list_dags           | List DAGs with pagination or all with fetch_all | limit (int), offset (int), fetch_all (bool) | dag_id, dag_display_name, is_active, is_paused, owners, tags, total_entries, has_more_pages, next_offset, pagination_info |
+<!-- list_all_dags_paginated removed; use fetch_all flag -->
 | running_dags        | List running DAG runs                     | None                          | dag_id, run_id, state, execution_date, start_date, end_date |
 | failed_dags         | List failed DAG runs                      | None                          | dag_id, run_id, state, execution_date, start_date, end_date |
 | trigger_dag         | Trigger a DAG run                         | dag_id (str)                  | dag_id, run_id, state, execution_date, start_date, end_date |
@@ -119,8 +112,8 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ## 5. Example Queries
 
 ### Basic DAG Operations
-- **list_dags**: "List all DAGs." → Returns first 20 DAGs with pagination info
 - **list_dags**: "List all DAGs with limit 100." → Returns up to 100 DAGs
+- **list_dags**: "List all DAGs and present them in a table format." → Returns first 20 DAGs with pagination info
 - **list_dags**: "Show next page of DAGs." → Use offset for pagination
 - **list_dags**: "List DAGs 21-40." → `list_dags(limit=20, offset=20)`
 - **list_all_dags_paginated**: "Get all DAGs in the system." → Automatically fetches all DAGs

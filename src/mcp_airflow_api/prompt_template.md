@@ -4,7 +4,7 @@
 
 This MCP server provides natural language tools for managing Apache Airflow clusters via REST API. All prompts and tool outputs are designed for minimal, LLM-friendly English responses.
 
-**IMPORTANT: Current Date Context** - Always use the `get_current_time_context()` tool first to get the current date for accurate relative date calculations.
+**IMPORTANT: Current Date Context** - Relative dates should be resolved against the server's current time (handled internally by the tools).
 
 **Resource-Optimized Design**: This MCP server has been optimized for efficient resource usage:
 - **Optimized Default Limits**: Functions use default limits of 20 for better memory usage and faster response times
@@ -25,7 +25,6 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ### Cluster Management & Health
 - `get_health`: Get the health status of the Airflow webserver instance.
 - `get_version`: Get version information of the Airflow instance.
-- `get_current_time_context`: Get current date and time for accurate relative date calculations.
 
 ### Pool Management
 - `list_pools(limit, offset)`: List all pools in the Airflow instance.
@@ -180,9 +179,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 
 **Before making any API calls with relative dates, verify your calculation:**
 
-**STEP 1**: Always call `get_current_time_context()` first to get the current date.
-
-**STEP 2**: Calculate relative dates based on the current date returned from step 1.
+Tools automatically base relative date calculations on the server's current date/time. Examples:
 
 | User Input | Calculation Method | Example Format |
 |------------|-------------------|----------------|
@@ -191,7 +188,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | "last 3 days" | current_date - 3 days to current_date | YYYY-MM-DD to YYYY-MM-DD (3 days range) |
 | "this morning" | current_date 00:00 to 12:00 | YYYY-MM-DDTHH:mm:ssZ format |
 
-**CRITICAL**: Always base calculations on the actual current date from `get_current_time_context()`, not hardcoded examples.
+The server always uses its current date/time for these calculations.
 
 ## 6. Formatting Rules
 

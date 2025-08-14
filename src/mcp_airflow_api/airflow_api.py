@@ -9,7 +9,7 @@ from typing import Any, Dict, List, Optional
 import mcp
 from mcp.server.fastmcp import FastMCP
 import os
-from .functions import airflow_request, read_prompt_template, parse_prompt_sections
+from .functions import airflow_request, read_prompt_template, parse_prompt_sections, get_current_time_context
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -1096,46 +1096,15 @@ def get_pool(pool_name: str) -> Dict[str, Any]:
 # Task Instance Management Functions
 #========================================================================================
 
-@mcp.tool()
-def get_current_time_context() -> Dict[str, Any]:
-    """
-    [Tool Role]: Returns the current time context for accurate relative date calculations.
-    
-    Returns:
-        Current date and time information for reference in date calculations
-    """
-    from datetime import datetime, timedelta
-    current_time = datetime.now()
-    current_date_str = current_time.strftime('%Y-%m-%d')
-    
-    # Calculate relative dates based on actual current time
-    yesterday = (current_time - timedelta(days=1)).strftime('%Y-%m-%d')
-    last_week_start = (current_time - timedelta(days=7)).strftime('%Y-%m-%d')
-    last_week_end = (current_time - timedelta(days=1)).strftime('%Y-%m-%d')
-    last_3_days_start = (current_time - timedelta(days=3)).strftime('%Y-%m-%d')
-    
-    return {
-        "current_date": current_date_str,
-        "current_time": current_time.strftime('%Y-%m-%d %H:%M:%S'),
-        "reference_date": f"{current_time.strftime('%B %d, %Y')} ({current_date_str})",
-        "date_calculation_examples": {
-            "yesterday": yesterday,
-            "last_week": f"{last_week_start} to {last_week_end}",
-            "last_3_days": f"{last_3_days_start} to {current_date_str}",
-            "today": current_date_str
-        },
-        "message": f"Use {current_date_str} as the absolute reference point for all relative date calculations"
-    }
+# Note: get_current_time_context is now an internal helper in functions.py, not exposed as an MCP tool.
 
 @mcp.tool()
 def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: str = None, pool: str = None, queue: str = None, limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: Lists task instances across all DAGs or filtered by specific DAG with comprehensive filtering options.
     
-    CURRENT TIME CONTEXT: Use get_current_time_context() tool to get the current date for accurate relative date calculations.
-    
-    IMPORTANT: When users provide natural language dates, always call get_current_time_context() first to get the current date,
-    then calculate relative dates based on that current date:
+    IMPORTANT: When users provide natural language dates, calculate relative dates using the current server time context
+    (internally via get_current_time_context):
     - "yesterday" = current_date - 1 day
     - "last week" = current_date - 7 days to current_date - 1 day  
     - "last 3 days" = current_date - 3 days to current_date
@@ -1161,12 +1130,10 @@ def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, executio
     Returns:
         List of task instances with comprehensive information: task_instances, total_entries, limit, offset
     """
-    from datetime import datetime
-    
-    # Log current time for verification
-    current_time = datetime.now()
-    current_date_str = current_time.strftime('%Y-%m-%d')
-    logger.info(f"CURRENT TIME CONTEXT - Function execution time: {current_time.strftime('%Y-%m-%d %H:%M:%S')} | Reference date for calculations: {current_date_str}")
+    # Log current time for verification (via internal helper)
+    ctx = get_current_time_context()
+    current_date_str = ctx["current_date"]
+    logger.info(f"CURRENT TIME CONTEXT - Function execution time: {ctx['current_time']} | Reference date for calculations: {current_date_str}")
     
     # Auto-correct date formats to include timezone if missing
     def ensure_timezone(date_str):
@@ -1318,7 +1285,7 @@ def list_task_instances_batch(dag_ids: List[str] = None, dag_run_ids: List[str] 
     """
     [Tool Role]: Lists task instances in batch with multiple filtering criteria for bulk operations.
     
-    CURRENT TIME CONTEXT: Use get_current_time_context() tool to get the current date for accurate relative date calculations.
+    Relative date filters (if provided) are resolved against the server's current time.
 
     Args:
         dag_ids: List of DAG IDs to filter by (optional)

@@ -117,3 +117,33 @@ def parse_prompt_sections(template: str):
     if current:
         sections.append("\n".join(current))
     return headings, sections
+
+
+def get_current_time_context() -> Dict[str, Any]:
+    """
+    Internal helper: Returns the current time context for relative date calculations.
+
+    Returns:
+        Current date and time information for reference in date calculations
+    """
+    from datetime import datetime, timedelta
+    current_time = datetime.now()
+    current_date_str = current_time.strftime('%Y-%m-%d')
+
+    # Calculate relative dates based on actual current time
+    yesterday = (current_time - timedelta(days=1)).strftime('%Y-%m-%d')
+    last_week_start = (current_time - timedelta(days=7)).strftime('%Y-%m-%d')
+    last_week_end = (current_time - timedelta(days=1)).strftime('%Y-%m-%d')
+    last_3_days_start = (current_time - timedelta(days=3)).strftime('%Y-%m-%d')
+
+    return {
+        "current_date": current_date_str,
+        "current_time": current_time.strftime('%Y-%m-%d %H:%M:%S'),
+        "reference_date": f"{current_time.strftime('%B %d, %Y')} ({current_date_str})",
+        "date_calculation_examples": {
+            "yesterday": yesterday,
+            "last_week": f"{last_week_start} to {last_week_end}",
+            "last_3_days": f"{last_3_days_start} to {current_date_str}",
+            "today": current_date_str
+        }
+    }

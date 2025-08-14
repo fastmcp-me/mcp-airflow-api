@@ -111,10 +111,6 @@ This MCP server has been optimized for efficient resource usage and better perfo
 
 ### Task Instance Management
 
-- `get_current_time_context()`  
-	Returns the current time context for accurate relative date calculations.  
-	Output: `current_date`, `current_time`, `reference_date`, `date_calculation_examples`, `message`
-
 - `list_task_instances_all(dag_id=None, dag_run_id=None, execution_date_gte=None, execution_date_lte=None, start_date_gte=None, start_date_lte=None, end_date_gte=None, end_date_lte=None, duration_gte=None, duration_lte=None, state=None, pool=None, queue=None, limit=20, offset=0)`  
 	Lists task instances across all DAGs or filtered by specific criteria with comprehensive filtering options.  
 	Output: `task_instances`, `total_entries`, `limit`, `offset`, `applied_filters`
@@ -277,13 +273,9 @@ This MCP server has been optimized for efficient resource usage and better perfo
 - **dag_calendar**: "Get calendar info for DAG 'example_complex' from last month."
 - **dag_calendar**: "Show DAG schedule for 'example_complex' from this week."
 
-## Date Calculation Verification
+## Date Calculation Guidance
 
-**Before making any API calls with relative dates, verify your calculation:**
-
-**STEP 1**: Always call `get_current_time_context()` first to get the current date.
-
-**STEP 2**: Calculate relative dates based on the current date returned from step 1.
+Relative date phrases like "yesterday" or "last week" are resolved against the server's current date/time internally by the tools. You do not need to call any separate tool.
 
 | User Input | Calculation Method | Example Format |
 |------------|-------------------|----------------|
@@ -292,7 +284,7 @@ This MCP server has been optimized for efficient resource usage and better perfo
 | "last 3 days" | current_date - 3 days to current_date | YYYY-MM-DD to YYYY-MM-DD (3 days range) |
 | "this morning" | current_date 00:00 to 12:00 | YYYY-MM-DDTHH:mm:ssZ format |
 
-**CRITICAL**: Always base calculations on the actual current date from `get_current_time_context()`, not hardcoded examples.
+The server always bases calculations on its actual current date/time.
 
 ## Formatting Rules
 

@@ -25,7 +25,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ## 3. Available MCP Tools
 
 ### Basic DAG Management
- `list_dags(limit=20, offset=0, fetch_all=False)`: List DAGs with pagination. Set `fetch_all=True` to retrieve all pages automatically.
+ `list_dags(limit=20, offset=0, fetch_all=False, id_contains=None, name_contains=None)`: List DAGs with pagination and optional filters. Set `fetch_all=True` to retrieve all pages automatically.
 ### Cluster Management & Health
 - `get_health`: Get the health status of the Airflow webserver instance.
 - `get_version`: Get version information of the Airflow instance.

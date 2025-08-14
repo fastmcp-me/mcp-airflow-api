@@ -63,7 +63,11 @@ def get_prompt_template(section: Optional[str] = None, mode: Optional[str] = Non
     return template
 
 @mcp.tool()
-def list_dags(limit: int = 20, offset: int = 0, fetch_all: bool = False) -> Dict[str, Any]:
+def list_dags(limit: int = 20,
+              offset: int = 0,
+              fetch_all: bool = False,
+              id_contains: Optional[str] = None,
+              name_contains: Optional[str] = None) -> Dict[str, Any]:
     """
     [Tool Role]: Lists all DAGs registered in the Airflow cluster with pagination support.
     
@@ -100,6 +104,17 @@ def list_dags(limit: int = 20, offset: int = 0, fetch_all: bool = False) -> Dict
         - has_more_pages: Boolean indicating if more pages are available
         - next_offset: Suggested offset for next page (if has_more_pages is True)
     """
+    # Helper: server-side filtering by ID and display name
+    def _filter_dags(dag_list):
+        results = dag_list
+        if id_contains:
+            key = id_contains.lower()
+            results = [d for d in results if key in d.get("dag_id", "").lower()]
+        if name_contains:
+            key = name_contains.lower()
+            results = [d for d in results if key in (d.get("dag_display_name") or "").lower()]
+        return results
+
     # If fetch_all=True, loop through pages to collect all DAGs
     if fetch_all:
         all_dags = []
@@ -116,9 +131,11 @@ def list_dags(limit: int = 20, offset: int = 0, fetch_all: bool = False) -> Dict
             if not result.get("has_more_pages", False) or not page_dags:
                 break
             current_offset = result.get("next_offset", current_offset + limit)
+        # apply filters
+        filtered = _filter_dags(all_dags)
         return {
-            "dags": all_dags,
-            "total_entries": total_entries,
+            "dags": filtered,
+            "total_entries": len(filtered),
             "pages_fetched": pages_fetched,
             "limit": limit,
             "offset": offset
@@ -170,14 +187,15 @@ def list_dags(limit: int = 20, offset: int = 0, fetch_all: bool = False) -> Dict
         }
         dag_list.append(dag_info)
     
-    # Calculate pagination info
+    # Calculate pagination info and apply filters
     total_entries = response_data.get("total_entries", len(dag_list))
-    returned_count = len(dag_list)
     has_more_pages = (offset + limit) < total_entries
     next_offset = offset + limit if has_more_pages else None
+    filtered = _filter_dags(dag_list)
+    returned_count = len(filtered)
     
     return {
-        "dags": dag_list,
+        "dags": filtered,
         "total_entries": total_entries,
         "limit": limit,
         "offset": offset,

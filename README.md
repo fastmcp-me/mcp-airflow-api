@@ -46,7 +46,7 @@ This MCP server has been optimized for efficient resource usage and better perfo
 
 ### DAG Management
 
-- `list_dags(limit=20, offset=0)`  
+- `list_dags(limit=20, offset=0, fetch_all=False, id_contains=None, name_contains=None)`  
 	Returns all DAGs registered in the Airflow cluster with pagination support.  
 	Output: `dag_id`, `dag_display_name`, `is_active`, `is_paused`, `owners`, `tags`, plus pagination info (`total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`)
 	
@@ -55,6 +55,10 @@ This MCP server has been optimized for efficient resource usage and better perfo
 	- Next 20 DAGs: `list_dags(limit=20, offset=20)`
 	- Large batch: `list_dags(limit=100, offset=0)`  
 	- All DAGs at once: `list_dags(limit=1000)`
+
+	- `id_contains="etl"` → dag_id에 "etl" 포함된 DAG만  
+	- `name_contains="daily"` → display_name에 "daily" 포함된 DAG만  
+	- 둘 다 지정 시 두 조건을 모두 만족하는 결과
 
 - `list_all_dags_paginated(page_size=100)`  
 	Automatically retrieves ALL DAGs using pagination, regardless of total count.  

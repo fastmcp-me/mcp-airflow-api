@@ -71,7 +71,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - `dag_task_duration(dag_id, run_id)`: Get task duration info for a DAG run.
 - `dag_calendar(dag_id, start_date, end_date, limit=20)`: Get calendar/schedule info for a DAG. **Optimized**: Default limit is 20, configurable up to 1000.
 
-## 3. Tool Map
+## 4. Tool Map
 
 | Tool Name           | Role/Description                          | Input Args                    | Output Fields                        |
 |---------------------|-------------------------------------------|-------------------------------|--------------------------------------|
@@ -116,7 +116,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | dag_task_duration   | Get task duration for a run               | dag_id (str), run_id (str)    | dag_id, run_id, tasks, statistics    |
 | dag_calendar        | Get calendar/schedule information         | dag_id (str), start_date, end_date, limit=20 | dag_id, schedule_interval, runs, next_runs (optimized: default 20, configurable) |
 
-## 4. Example Queries
+## 5. Example Queries
 
 ### Basic DAG Operations
 - **list_dags**: "List all DAGs." → Returns first 20 DAGs with pagination info
@@ -186,7 +186,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **dag_calendar**: "Get calendar info for DAG 'example_complex' from last month."
 - **dag_calendar**: "Show DAG schedule for 'example_complex' from this week."
 
-## 5. Date Calculation Verification
+## 6. Date Calculation Verification
 
 **Before making any API calls with relative dates, verify your calculation:**
 
@@ -201,18 +201,18 @@ Tools automatically base relative date calculations on the server's current date
 
 The server always uses its current date/time for these calculations.
 
-## 6. Formatting Rules
+## 7. Formatting Rules
 
 - Output only the requested fields.
 - No extra explanation unless explicitly requested.
 - Use JSON objects for tool outputs.
 
-## 7. Logging & Environment
+## 8. Logging & Environment
 
 - Control log level via AIRFLOW_LOG_LEVEL env or --log-level CLI flag.
 - Supported levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
 
-## 8. References
+## 9. References
 
 - Main MCP tool file: `src/mcp_airflow_api/airflow_api.py`
 - Utility functions: `src/mcp_airflow_api/functions.py`

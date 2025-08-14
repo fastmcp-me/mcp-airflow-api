@@ -153,7 +153,7 @@ This MCP server has been optimized for efficient resource usage and better perfo
 
 ### DAG Analysis & Monitoring
 
-- `dag_details(dag_id)`  
+- `get_dag(dag_id)`  
 	Retrieves comprehensive details for a specific DAG.  
 	Output: `dag_id`, `description`, `schedule_interval`, `owners`, `tags`, `start_date`, `next_dagrun`, etc.
 
@@ -266,7 +266,7 @@ This MCP server has been optimized for efficient resource usage and better perfo
 - **get_xcom_entry**: "Retrieve XCom value for key 'processed_count' from task 'data_processing'."
 
 ### DAG Analysis & Monitoring
-- **dag_details**: "Get details for DAG 'example_complex'."
+- **get_dag**: "Get details for DAG 'example_complex'."
 - **dag_graph**: "Show task graph for DAG 'example_complex'."
 - **list_tasks**: "List all tasks in DAG 'example_complex'."
 - **dag_code**: "Get source code for DAG 'example_complex'."

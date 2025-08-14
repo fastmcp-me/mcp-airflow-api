@@ -95,7 +95,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | list_xcom_entries   | List XCom entries for task instance      | dag_id, dag_run_id, task_id, limit, offset | dag_id, dag_run_id, task_id, xcom_entries, total_entries |
 | get_xcom_entry      | Get specific XCom entry                   | dag_id, dag_run_id, task_id, xcom_key, map_index | key, value, timestamp, execution_date, run_id |
 | **DAG Analysis & Monitoring** |                                   |                               |                                      |
-| dag_details         | Get comprehensive DAG details             | dag_id (str)                  | dag_id, schedule_interval, start_date, owners, tags, description, etc. |
+| get_dag             | Get comprehensive DAG details             | dag_id (str)                  | dag_id, schedule_interval, start_date, owners, tags, description, etc. |
 | dag_graph           | Get task dependency graph                 | dag_id (str)                  | dag_id, tasks, dependencies, total_tasks |
 | list_tasks          | List all tasks for a specific DAG        | dag_id (str)                  | dag_id, tasks, task_configuration_details |
 | dag_code            | Get DAG source code                       | dag_id (str)                  | dag_id, file_token, source_code      |
@@ -162,7 +162,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **get_xcom_entry**: "Retrieve XCom value for key 'processed_count' from task 'data_processing'."
 
 ### DAG Analysis & Monitoring
-- **dag_details**: "Get details for DAG 'example_complex'."
+- **get_dag**: "Get details for DAG 'example_complex'."
 - **dag_graph**: "Show task graph for DAG 'example_complex'."
 - **list_tasks**: "List all tasks in DAG 'example_complex'."
 - **dag_code**: "Get source code for DAG 'example_complex'."

@@ -363,7 +363,7 @@ def unpause_dag(dag_id: str) -> Dict[str, Any]:
     return {"dag_id": dag.get("dag_id", dag_id), "is_paused": dag.get("is_paused", False)}
 
 @mcp.tool()
-def dag_details(dag_id: str) -> Dict[str, Any]:
+def get_dag(dag_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves detailed information for a specific DAG.
 

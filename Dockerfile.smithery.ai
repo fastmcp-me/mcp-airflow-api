@@ -22,8 +22,9 @@ WORKDIR /app
 # Copy local source code
 COPY . /app
 
-RUN LATEST_TAG=$(git tag --sort=-version:refname | head -n 1 | sed 's/^v//'); \
-    sed -i "s|^version = \".*\"|version = \"${LATEST_TAG}\"|" pyproject.toml;
+RUN sed -i "s|^version = \".*\"|version = \"$(git tag | tail -n 1)\"|" pyproject.toml
+
+# ...existing code...
 
 # RUN pip install --upgrade \
 #         'uv>=0.8.5' \

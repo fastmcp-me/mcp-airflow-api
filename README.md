@@ -13,12 +13,30 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 ---
 
-
 # MCP-Airflow-API
 
 **Tested and supported Airflow version: 2.10.2 (API Version: v1)**
 
 - [Airflow API Documents](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
+
+## Usages
+
+```json
+{
+  "mcpServers": {
+    "airflow-api": {
+      "command": "uvx",
+      "args": ["--python", "3.11", "mcp-airflow-api"],
+      "env": {
+        "AIRFLOW_API_URL": "http://localhost:8080/api/v1",
+        "AIRFLOW_API_USERNAME": "airflow",
+        "AIRFLOW_API_PASSWORD": "airflow",
+        "AIRFLOW_LOG_LEVEL": "INFO"
+      }
+    }
+  }
+}
+```
 
 ## Features
 

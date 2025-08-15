@@ -32,7 +32,9 @@ COPY . /app
 
 # Fetch git tags and update version
 RUN git fetch --tags origin && \
-    sed -i "s|^version = \".*\"|version = \"$(git tag | tail -n 1)\"|" pyproject.toml && \
+    LATEST_TAG=$(git tag | tail -n 1) && \
+    echo "LATEST_TAG='$LATEST_TAG'" && \
+    sed -i "s|^version = \".*\"|version = \"${LATEST_TAG}\"|" pyproject.toml && \
     rm -rf .git
 
 # ...existing code...

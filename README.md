@@ -49,16 +49,16 @@ This MCP server has been optimized for efficient resource usage and better perfo
 - `list_dags(limit=20, offset=0, fetch_all=False, id_contains=None, name_contains=None)`  
 	Returns all DAGs registered in the Airflow cluster with pagination support.  
 	Output: `dag_id`, `dag_display_name`, `is_active`, `is_paused`, `owners`, `tags`, plus pagination info (`total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`)
-	
+
 	**Pagination Examples:**
 	- First 20 DAGs: `list_dags()`
 	- Next 20 DAGs: `list_dags(limit=20, offset=20)`
-	- Large batch: `list_dags(limit=100, offset=0)`  
+	- Large batch: `list_dags(limit=100, offset=0)`
 	- All DAGs at once: `list_dags(limit=1000)`
 
-	- `id_contains="etl"` → dag_id에 "etl" 포함된 DAG만  
-	- `name_contains="daily"` → display_name에 "daily" 포함된 DAG만  
-	- 둘 다 지정 시 두 조건을 모두 만족하는 결과
+	- `id_contains="etl"` → Only DAGs whose `dag_id` contains "etl"
+	- `name_contains="daily"` → Only DAGs whose `display_name` contains "daily"
+	- If both are specified, only DAGs matching both conditions are returned
 
 - `running_dags`  
 	Returns all currently running DAG runs.  
@@ -361,15 +361,29 @@ Policy: Only English is stored; LLM는 사용자 질의 언어와 무관하게 �
 
 ## QuickStart (Demo): Running MCP-Airflow-API with Docker
 
-1. Prepare an Airflow cluster  
-	 - See [Official Airflow Docker Install Guide](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html)
+1. Prepare an Airflow Demo cluster  
+	- Try this, [Airflow-Docker-Compose](https://github.com/call518/Airflow-Docker-Compose)
+	- (Optional) See [Official Airflow Docker Install Guide](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html)
 
-2. Prepare MCP Tools environment  
-	 - Install Docker and Docker Compose
-	 - Clone this project and run `docker-compose up -d` in the root directory
+2. Prepare MCP Tools environment
+	- Install Docker and Docker Compose
+	- Edit `mcp-config.json` file for AIRFLOW Cluster Info.
+	- Clone this project and run `docker-compose up -d` in the root directory
 
-3. Register the MCP server in MCP Inspector/Smithery  
-	 - Example address: `http://localhost:8000/airflow-api`
+3. Check MCP-Server REST-API (by MCPO Swagger)
+	- Try check this URL: http://localhost:8002/docs
+
+4. Access to OpenWebUI with your browser
+	- (NOTE) Port numbers can change due to conflicts — check your docker-compose.yml.
+	- Example OpenWebUI address: `http://localhost:8000/airflow-api`
+
+5. Register the MCP server
+	- In [Settings] — [Tools], add the API address of the “airflow-api” tool (the link displayed in the MCPO Swagger), e.g., http://localhost:8001/airflow-api
+
+6. Setup LLM
+	- In [Admin Pannel] - [Setting] - [Connection], configure API Key for OpenAI or Ollama.
+
+7. Completed!
 
 ---
 

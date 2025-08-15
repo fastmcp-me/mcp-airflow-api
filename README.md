@@ -19,6 +19,10 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 - [Airflow API Documents](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
 
+## Example Query - List DAGs
+
+![ScreenShot-009](img/screenshot-009.png)
+
 ## Usages
 
 Using this is very simple and straightforward. If you already have an MCP Tools environment running, just add the following configuration to your `mcp-config.json` file:
@@ -519,7 +523,7 @@ uv run pytest tests/test_prompt_template.py -v
 
 ---
 
-## ScreenShoots
+## More ScreenShoots
 
 ![ScreenShot-001](img/screenshot-001.png)
 
@@ -536,8 +540,6 @@ uv run pytest tests/test_prompt_template.py -v
 ![ScreenShot-007](img/screenshot-007.png)
 
 ![ScreenShot-008](img/screenshot-008.png)
-
-![ScreenShot-009](img/screenshot-009.png)
 
 ![ScreenShot-010](img/screenshot-010.png)
 

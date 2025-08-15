@@ -22,7 +22,7 @@ build:
 testProfile:
   command: pytest
   directory: .
-  timeoutSeconds: 120  
+  timeoutSeconds: 120
 
 startCommand:
   type: stdio

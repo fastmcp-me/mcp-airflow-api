@@ -21,6 +21,8 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 ## Usages
 
+`mcp-config.json`
+
 ```json
 {
   "mcpServers": {

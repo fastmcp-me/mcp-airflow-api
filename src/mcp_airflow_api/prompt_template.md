@@ -112,7 +112,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ## 5. Example Queries
 
 ### Basic DAG Operations
-- **list_dags**: "List all DAGs with limit 100." → Returns up to 100 DAGs
+- **list_dags**: "List all DAGs with limit 10." → Returns up to 100 DAGs
 - **list_dags**: "List all DAGs and present them in a table format." → Returns first 20 DAGs with pagination info
 - **list_dags**: "Show next page of DAGs." → Use offset for pagination
 - **list_dags**: "List DAGs 21-40." → `list_dags(limit=20, offset=20)`

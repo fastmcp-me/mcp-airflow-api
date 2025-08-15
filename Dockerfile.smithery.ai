@@ -30,27 +30,22 @@ WORKDIR /app
 # Copy local source code
 COPY . /app
 
-# Debug git tags and update version
-RUN echo "=== DEBUG GIT INFO ===" && \
-    pwd && \
-    ls -la && \
-    echo "Git status:" && \
-    git status || echo "Git status failed" && \
-    echo "Available git tags:" && \
+# Fetch git tags and update version
+RUN echo "=== FETCHING GIT TAGS ===" && \
+    git fetch --tags origin || echo "Git fetch failed, trying alternative method" && \
+    echo "Available git tags after fetch:" && \
     git tag || echo "No tags found" && \
-    echo "Last tag:" && \
-    LAST_TAG=$(git tag | tail -n 1) && \
+    LAST_TAG=$(git tag --sort=-version:refname | head -n 1 | sed 's/^v//') && \
     echo "LAST_TAG='$LAST_TAG'" && \
-    echo "Tag length: ${#LAST_TAG}" && \
     if [ -n "$LAST_TAG" ]; then \
         echo "Using tag: $LAST_TAG"; \
         sed -i "s|^version = \".*\"|version = \"${LAST_TAG}\"|" pyproject.toml; \
     else \
         echo "No tags found, keeping original version"; \
     fi && \
-    echo "Final pyproject.toml version line:" && \
+    echo "Final version:" && \
     grep "^version =" pyproject.toml && \
-    echo "=== END DEBUG ==="
+    echo "=== END TAGS ==="
 
 # ...existing code...
 

@@ -209,6 +209,43 @@ def list_dags(limit: int = 20,
         }
     }
 
+@mcp.tool()
+def get_dag(dag_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves detailed information for a specific DAG.
+
+    Args:
+        dag_id: The DAG ID to get details for
+
+    Returns:
+        Comprehensive DAG details: dag_id, schedule_interval, start_date, owners, tags, description, etc.
+    """
+    if not dag_id:
+        raise ValueError("dag_id must not be empty")
+    resp = airflow_request("GET", f"/dags/{dag_id}")
+    resp.raise_for_status()
+    dag = resp.json()
+    return {
+        "dag_id": dag.get("dag_id"),
+        "dag_display_name": dag.get("dag_display_name"),
+        "description": dag.get("description"),
+        "schedule_interval": dag.get("schedule_interval"),
+        "start_date": dag.get("start_date"),
+        "end_date": dag.get("end_date"),
+        "is_active": dag.get("is_active"),
+        "is_paused": dag.get("is_paused"),
+        "owners": dag.get("owners"),
+        "tags": [t.get("name") for t in dag.get("tags", [])],
+        "catchup": dag.get("catchup"),
+        "max_active_runs": dag.get("max_active_runs"),
+        "max_active_tasks": dag.get("max_active_tasks"),
+        "has_task_concurrency_limits": dag.get("has_task_concurrency_limits"),
+        "has_import_errors": dag.get("has_import_errors"),
+        "next_dagrun": dag.get("next_dagrun"),
+        "next_dagrun_data_interval_start": dag.get("next_dagrun_data_interval_start"),
+        "next_dagrun_data_interval_end": dag.get("next_dagrun_data_interval_end")
+    }
+
  # list_all_dags_paginated removed; please use list_dags(fetch_all=True) instead.
 @mcp.tool()
 def running_dags() -> Dict[str, Any]:
@@ -361,43 +398,6 @@ def unpause_dag(dag_id: str) -> Dict[str, Any]:
     resp.raise_for_status()
     dag = resp.json()
     return {"dag_id": dag.get("dag_id", dag_id), "is_paused": dag.get("is_paused", False)}
-
-@mcp.tool()
-def get_dag(dag_id: str) -> Dict[str, Any]:
-    """
-    [Tool Role]: Retrieves detailed information for a specific DAG.
-
-    Args:
-        dag_id: The DAG ID to get details for
-
-    Returns:
-        Comprehensive DAG details: dag_id, schedule_interval, start_date, owners, tags, description, etc.
-    """
-    if not dag_id:
-        raise ValueError("dag_id must not be empty")
-    resp = airflow_request("GET", f"/dags/{dag_id}")
-    resp.raise_for_status()
-    dag = resp.json()
-    return {
-        "dag_id": dag.get("dag_id"),
-        "dag_display_name": dag.get("dag_display_name"),
-        "description": dag.get("description"),
-        "schedule_interval": dag.get("schedule_interval"),
-        "start_date": dag.get("start_date"),
-        "end_date": dag.get("end_date"),
-        "is_active": dag.get("is_active"),
-        "is_paused": dag.get("is_paused"),
-        "owners": dag.get("owners"),
-        "tags": [t.get("name") for t in dag.get("tags", [])],
-        "catchup": dag.get("catchup"),
-        "max_active_runs": dag.get("max_active_runs"),
-        "max_active_tasks": dag.get("max_active_tasks"),
-        "has_task_concurrency_limits": dag.get("has_task_concurrency_limits"),
-        "has_import_errors": dag.get("has_import_errors"),
-        "next_dagrun": dag.get("next_dagrun"),
-        "next_dagrun_data_interval_start": dag.get("next_dagrun_data_interval_start"),
-        "next_dagrun_data_interval_end": dag.get("next_dagrun_data_interval_end")
-    }
 
 @mcp.tool()
 def dag_graph(dag_id: str) -> Dict[str, Any]:

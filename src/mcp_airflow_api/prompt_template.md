@@ -70,7 +70,6 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 |---------------------|-------------------------------------------|-------------------------------|--------------------------------------|
 | **Basic DAG Management** |                                     |                               |                                      |
 | list_dags           | List DAGs with pagination or all with fetch_all | limit (int), offset (int), fetch_all (bool) | dag_id, dag_display_name, is_active, is_paused, owners, tags, total_entries, has_more_pages, next_offset, pagination_info |
-<!-- list_all_dags_paginated removed; use fetch_all flag -->
 | running_dags        | List running DAG runs                     | None                          | dag_id, run_id, state, execution_date, start_date, end_date |
 | failed_dags         | List failed DAG runs                      | None                          | dag_id, run_id, state, execution_date, start_date, end_date |
 | trigger_dag         | Trigger a DAG run                         | dag_id (str)                  | dag_id, run_id, state, execution_date, start_date, end_date |
@@ -118,8 +117,6 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **list_dags**: "List DAGs 21-40." → `list_dags(limit=20, offset=20)`
 - **list_dags**: "Filter DAGs whose ID contains 'tutorial'." → `list_dags(id_contains="etl")`
 - **list_dags**: "Filter DAGs whose display name contains 'tutorial'." → `list_dags(name_contains="daily")`
-- **list_all_dags_paginated**: "Get all DAGs in the system." → Automatically fetches all DAGs
-- **list_all_dags_paginated**: "Show complete DAG inventory." → Returns all DAGs regardless of count
 - **running_dags**: "Show running DAGs."
 - **failed_dags**: "Show failed DAGs."
 - **trigger_dag**: "Trigger DAG 'example_complex'."

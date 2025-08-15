@@ -60,15 +60,6 @@ This MCP server has been optimized for efficient resource usage and better perfo
 	- `name_contains="daily"` → display_name에 "daily" 포함된 DAG만  
 	- 둘 다 지정 시 두 조건을 모두 만족하는 결과
 
-- `list_all_dags_paginated(page_size=100)`  
-	Automatically retrieves ALL DAGs using pagination, regardless of total count.  
-	Output: `dags` (complete list), `total_entries`, `pages_fetched`, `page_size_used`, `actual_retrieved_count`
-	
-	**Use cases:**
-	- Complete DAG inventory analysis
-	- When you need ALL DAGs without manual pagination
-	- Large Airflow installations (1000+ DAGs)
-
 - `running_dags`  
 	Returns all currently running DAG runs.  
 	Output: `dag_id`, `run_id`, `state`, `execution_date`, `start_date`, `end_date`
@@ -222,8 +213,6 @@ This MCP server has been optimized for efficient resource usage and better perfo
 - **list_dags**: "List DAGs 21-40." → `list_dags(limit=20, offset=20)`
 - **list_dags**: "Filter DAGs whose ID contains 'tutorial'." → `list_dags(id_contains="etl")`
 - **list_dags**: "Filter DAGs whose display name contains 'tutorial'." → `list_dags(name_contains="daily")`
-- **list_all_dags_paginated**: "Get all DAGs in the system." → Automatically fetches all DAGs
-- **list_all_dags_paginated**: "Show complete DAG inventory." → Returns all DAGs regardless of count
 - **running_dags**: "Show running DAGs."
 - **failed_dags**: "Show failed DAGs."
 - **trigger_dag**: "Trigger DAG 'example_complex'."
@@ -424,7 +413,6 @@ The `list_dags()` function now supports pagination to handle large Airflow envir
 
 **📊 Complete Analysis:**
 ```
-list_all_dags_paginated(page_size=100)
 → Automatically fetches ALL DAGs regardless of count
 ```
 
@@ -438,7 +426,6 @@ list_dags(limit=500)
 
 - **Small Airflow (< 50 DAGs)**: Use default `list_dags()`
 - **Medium Airflow (50-500 DAGs)**: Use `list_dags(limit=100)` or `list_dags(limit=200)`  
-- **Large Airflow (500+ DAGs)**: Use `list_all_dags_paginated()` for complete analysis or `list_dags(limit=500)`
 - **Memory-conscious**: Use default limits (20) with manual pagination
 
 ---

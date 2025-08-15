@@ -246,7 +246,6 @@ def get_dag(dag_id: str) -> Dict[str, Any]:
         "next_dagrun_data_interval_end": dag.get("next_dagrun_data_interval_end")
     }
 
- # list_all_dags_paginated removed; please use list_dags(fetch_all=True) instead.
 @mcp.tool()
 def running_dags() -> Dict[str, Any]:
     """

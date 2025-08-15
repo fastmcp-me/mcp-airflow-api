@@ -21,7 +21,7 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 ## Usages
 
-`mcp-config.json`
+Using this is very simple and straightforward. If you already have an MCP Tools environment running, just add the following configuration to your `mcp-config.json` file:
 
 ```json
 {

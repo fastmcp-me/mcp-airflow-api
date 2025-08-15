@@ -216,10 +216,12 @@ This MCP server has been optimized for efficient resource usage and better perfo
 ## Example Queries
 
 ### Basic DAG Operations
-- **list_dags**: "List all DAGs with limit 10." → Returns up to 100 DAGs
-- **list_dags**: "List all DAGs and present them in a table format." → Returns first 20 DAGs with pagination info
+- **list_dags**: "List all DAGs with limit 10 in a table format." → Returns up to 10 DAGs
+- **list_dags**: "List all DAGs a table format." → Returns up to All DAGs (WARN: Need High Tokens)
 - **list_dags**: "Show next page of DAGs." → Use offset for pagination
 - **list_dags**: "List DAGs 21-40." → `list_dags(limit=20, offset=20)`
+- **list_dags**: "Filter DAGs whose ID contains 'tutorial'." → `list_dags(id_contains="etl")`
+- **list_dags**: "Filter DAGs whose display name contains 'tutorial'." → `list_dags(name_contains="daily")`
 - **list_all_dags_paginated**: "Get all DAGs in the system." → Automatically fetches all DAGs
 - **list_all_dags_paginated**: "Show complete DAG inventory." → Returns all DAGs regardless of count
 - **running_dags**: "Show running DAGs."
@@ -282,7 +284,6 @@ This MCP server has been optimized for efficient resource usage and better perfo
 - **dag_task_duration**: "Show task durations for latest run of 'manual__xxxxx'."
 - **dag_calendar**: "Get calendar info for DAG 'example_complex' from last month."
 - **dag_calendar**: "Show DAG schedule for 'example_complex' from this week."
-## Date Calculation Guidance
 
 ## Date Calculation Guidance
 

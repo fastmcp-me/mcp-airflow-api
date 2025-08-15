@@ -22,6 +22,8 @@ WORKDIR /app
 # Copy local source code
 COPY . /app
 
+RUN sed -i "s|^version = \".*\"|version = \"$(git tag | tail -n 1)\"|" pyproject.toml
+
 # ...existing code...
 
 # RUN pip install --upgrade \

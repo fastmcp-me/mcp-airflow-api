@@ -120,8 +120,8 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **running_dags**: "Show running DAGs."
 - **failed_dags**: "Show failed DAGs."
 - **trigger_dag**: "Trigger DAG 'example_complex'."
-- **pause_dag**: "Pause DAG 'example_complex'."
-- **unpause_dag**: "Unpause DAG 'example_complex'."
+- **pause_dag**: "Pause DAG 'example_complex' in a table format."
+- **unpause_dag**: "Unpause DAG 'example_complex' in a table format."
 
 ### Cluster Management & Health
 - **get_health**: "Check Airflow cluster health."

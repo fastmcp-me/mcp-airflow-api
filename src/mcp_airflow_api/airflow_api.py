@@ -6,10 +6,16 @@ MCP tool definitions for Airflow REST API operations.
 import argparse
 import logging
 from typing import Any, Dict, List, Optional
-import mcp
-from mcp.server.fastmcp import FastMCP
+from fastmcp import FastMCP
 import os
-from .functions import airflow_request, read_prompt_template, parse_prompt_sections, get_current_time_context
+
+from mcp_airflow_api.functions import airflow_request, read_prompt_template, parse_prompt_sections, get_current_time_context
+# Handle both direct execution and module execution
+# try:
+#     from .functions import airflow_request, read_prompt_template, parse_prompt_sections, get_current_time_context
+# except ImportError:
+#     # Fallback for direct execution
+#     from functions import airflow_request, read_prompt_template, parse_prompt_sections, get_current_time_context
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -1692,7 +1698,9 @@ def main(argv: Optional[List[str]] = None):
     else:
         logger.debug("Log level from environment: %s", logging.getLogger().level)
 
-    mcp.run(transport='stdio')
+    # mcp.run(transport='stdio')
+    mcp.run(transport='http')
+    # mcp.run(transport="streamable-http", path="/",)
 
 if __name__ == "__main__":
     main()

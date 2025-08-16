@@ -65,7 +65,7 @@ This MCP server supports two connection modes: **stdio** (traditional) and **str
 
 ---
 
-## QuickStart (Demo - streamable-http): Running MCP-Airflow-API with Docker
+## QuickStart (Demo - streamable-http): Running OpenWebUI and MCP-Airflow-API with Docker
 
 1. **Prepare an Airflow Demo cluster**  
 	- Try this: [Airflow-Docker-Compose](https://github.com/call518/Airflow-Docker-Compose)

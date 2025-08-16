@@ -4,8 +4,6 @@
 
 [![Deploy to PyPI with tag](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml)
 
-[![smithery badge](https://smithery.ai/badge/@call518/mcp-airflow-api)](https://smithery.ai/server/@call518/mcp-airflow-api)
-
 Model Context Protocol (MCP) server for Apache Airflow API integration.  
 This project provides natural language MCP tools for essential Airflow cluster operations.
 
@@ -473,19 +471,6 @@ list_dags(limit=500)
 - Structured logs for all tool invocations and HTTP requests
 - Control log level via environment variable (`AIRFLOW_LOG_LEVEL`) or CLI flag (`--log-level`)
 - Supported levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
-
----
-
-## Installing via Smithery
-
-To install Airflow API Integration Server for Claude Desktop automatically via [Smithery](https://smithery.ai/server/@call518/mcp-airflow-api):
-
-```bash
-npx -y @smithery/cli install @call518/mcp-airflow-api --client claude
-```
-
-- [Issues](https://github.com/call518/MCP-Airflow-API/issues)
-- [Smithery Deployment](https://smithery.ai/server/@call518/mcp-airflow-api)
 
 ---
 

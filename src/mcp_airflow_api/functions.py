@@ -56,10 +56,7 @@ def airflow_request(method: str, path: str, **kwargs) -> requests.Response:
     """
     base_url = os.getenv("AIRFLOW_API_URL", "").rstrip("/")
     if not base_url:
-        raise RuntimeError(
-            "AIRFLOW_API_URL environment variable is not set. "
-            "Please configure this server with your Airflow API endpoint."
-        )
+        raise RuntimeError("AIRFLOW_API_URL environment variable is not set")
     
     # Ensure path starts with /
     if not path.startswith("/"):
@@ -72,10 +69,7 @@ def airflow_request(method: str, path: str, **kwargs) -> requests.Response:
     username = os.getenv("AIRFLOW_API_USERNAME")
     password = os.getenv("AIRFLOW_API_PASSWORD")
     if not username or not password:
-        raise RuntimeError(
-            "AIRFLOW_API_USERNAME or AIRFLOW_API_PASSWORD environment variable is not set. "
-            "Please configure these credentials to access the Airflow API."
-        )
+        raise RuntimeError("AIRFLOW_API_USERNAME or AIRFLOW_API_PASSWORD environment variable is not set")
     
     auth = (username, password)
     headers = kwargs.pop("headers", {})

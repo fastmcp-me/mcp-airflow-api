@@ -27,14 +27,4 @@ RUN uv sync
 
 RUN pip install .
 
-# Ensure the binary is accessible and test basic functionality  
-RUN which mcp-airflow-api && mcp-airflow-api --help
-
-# Test basic functionality
-RUN timeout 5s mcp-airflow-api --help || true
-
-# Expose the HTTP port for smithery.ai  
-EXPOSE 8000
-
-# Use HTTP transport with PORT environment variable (smithery.ai requirement)
-CMD ["sh", "-c", "exec mcp-airflow-api --transport http --port ${PORT:-8000} --log-level ${AIRFLOW_LOG_LEVEL:-INFO}"]
+CMD ["mcp-airflow-api"]

@@ -1680,20 +1680,6 @@ def main(argv: Optional[List[str]] = None):
         help="Logging level override (DEBUG, INFO, WARNING, ERROR, CRITICAL). Overrides AIRFLOW_LOG_LEVEL env if provided.",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
     )
-    parser.add_argument(
-        "--transport", "-t",
-        dest="transport",
-        help="Transport method to use (stdio, http)",
-        choices=["stdio", "http"],
-        default="stdio"
-    )
-    parser.add_argument(
-        "--port", "-p",
-        dest="port",
-        help="Port to listen on for HTTP transport (default: from PORT env or 8000)",
-        type=int,
-        default=None
-    )
     # Allow future extension without breaking unknown args usage
     args = parser.parse_args(argv)
 
@@ -1706,21 +1692,7 @@ def main(argv: Optional[List[str]] = None):
     else:
         logger.debug("Log level from environment: %s", logging.getLogger().level)
 
-    # Determine transport method
-    transport = args.transport
-    
-    # For HTTP transport, check PORT environment variable (smithery.ai requirement)
-    if transport == "http" or transport == "streamable-http" or os.getenv("PORT"):
-        port = args.port or int(os.getenv("PORT", "8000"))
-        logger.info("Starting MCP server with streamable-http transport on port %d", port)
-        
-        # Use uvicorn to run the FastMCP streamable HTTP app
-        import uvicorn
-        app = mcp.streamable_http_app()
-        uvicorn.run(app, host="0.0.0.0", port=port)
-    else:
-        logger.info("Starting MCP server with stdio transport")
-        mcp.run(transport='stdio')
+    mcp.run(transport='stdio')
 
 if __name__ == "__main__":
     main()

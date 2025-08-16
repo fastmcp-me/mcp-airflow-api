@@ -5,7 +5,7 @@ FROM rockylinux:9.3
 ARG PYTHON_VERSION=3.11
 
 # Base dependencies
-RUN dnf install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-pip git which && dnf clean all \
+RUN dnf install -y python${PYTHON_VERSION} python${PYTHON_VERSION}-pip git && dnf clean all \
         && update-alternatives --install /usr/bin/python python /usr/bin/python${PYTHON_VERSION} 1000 --slave /usr/bin/pip pip /usr/bin/pip${PYTHON_VERSION}
 
 WORKDIR /app
@@ -27,11 +27,4 @@ RUN uv sync
 
 RUN pip install .
 
-# Ensure the binary is accessible and test basic functionality  
-RUN which mcp-airflow-api && mcp-airflow-api --help
-
-# smithery.ai will provide PORT environment variable dynamically
-# The application auto-detects PORT env var for HTTP transport
-
-# Start the MCP server (will auto-detect PORT env var for HTTP transport)
 CMD ["mcp-airflow-api"]

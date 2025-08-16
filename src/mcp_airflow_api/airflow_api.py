@@ -1692,18 +1692,7 @@ def main(argv: Optional[List[str]] = None):
     else:
         logger.debug("Log level from environment: %s", logging.getLogger().level)
 
-    # Check if PORT environment variable exists (smithery.ai provides this for HTTP)
-    if os.getenv("PORT"):
-        # HTTP transport for smithery.ai
-        port = int(os.getenv("PORT", "8000"))
-        logger.info("Starting HTTP server on port %d for smithery.ai", port)
-        app = mcp.streamable_http_app()
-        import uvicorn
-        uvicorn.run(app, host="0.0.0.0", port=port)
-    else:
-        # Default stdio transport for local usage
-        logger.info("Starting stdio transport for local usage")
-        mcp.run(transport='stdio')
+    mcp.run(transport='stdio')
 
 if __name__ == "__main__":
     main()

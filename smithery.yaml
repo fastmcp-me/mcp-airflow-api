@@ -20,7 +20,7 @@ build:
   dockerBuildPath: "."
 
 startCommand:
-  type: http
+  type: stdio
   # User-supplied configuration schema mapped to environment variables.
   configSchema:
     type: object
@@ -50,6 +50,19 @@ startCommand:
         description: "Log level for MCP server (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
         default: INFO
         secret: false
+  commandFunction: |-
+    (config) => {
+      // Always use the installed console script from PyPI.
+      // (Smithery environment must have already run: pip install mcp-airflow-api[latest|==version])
+      const env = {
+        AIRFLOW_API_URL: config.AIRFLOW_API_URL,
+        AIRFLOW_API_USERNAME: config.AIRFLOW_API_USERNAME,
+        AIRFLOW_API_PASSWORD: config.AIRFLOW_API_PASSWORD,
+        AIRFLOW_LOG_LEVEL: config.AIRFLOW_LOG_LEVEL || 'INFO',
+      };
+      const args = ['--log-level', env.AIRFLOW_LOG_LEVEL];
+      return { command: 'mcp-airflow-api', args, env };
+    }
   exampleConfig:
     AIRFLOW_API_URL: http://localhost:8080/api/v1
     AIRFLOW_API_USERNAME: airflow

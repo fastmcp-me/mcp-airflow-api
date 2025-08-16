@@ -1698,9 +1698,9 @@ def main(argv: Optional[List[str]] = None):
     else:
         logger.debug("Log level from environment: %s", logging.getLogger().level)
 
-    mcp.run(transport='stdio')
-    # mcp.run(transport='http')
-    # mcp.run(transport="streamable-http", path="/",)
+    # mcp.run(transport='stdio')
+    # mcp.run(transport='http', host="127.0.0.1", port=18000)
+    # mcp.run(transport="streamable-http", host="127.0.0.1", port=18000)
 
 if __name__ == "__main__":
     main()

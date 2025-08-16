@@ -29,8 +29,6 @@ This MCP server supports two connection modes: **stdio** (traditional) and **str
 
 ### Method 1: Traditional stdio Mode (Local Installation)
 
-If you already have an MCP Tools environment running, add the following configuration to your `mcp-config.json` file:
-
 ```json
 {
   "mcpServers": {
@@ -50,8 +48,6 @@ If you already have an MCP Tools environment running, add the following configur
 
 ### Method 2: Docker streamable-http Mode
 
-For containerized deployment with better isolation and management, use the Docker Compose setup:
-
 ```json
 {
   "mcpServers": {
@@ -66,6 +62,58 @@ For containerized deployment with better isolation and management, use the Docke
 **Transport Selection Logic:**
 - **stdio mode**: When `MCP_SERVER_PORT` environment variable is NOT set
 - **streamable-http mode**: When `MCP_SERVER_PORT` environment variable is set
+
+---
+
+## QuickStart (Demo - streamable-http): Running MCP-Airflow-API with Docker
+
+1. **Prepare an Airflow Demo cluster**  
+	- Try this: [Airflow-Docker-Compose](https://github.com/call518/Airflow-Docker-Compose)
+	- (Optional) See [Official Airflow Docker Install Guide](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html)
+
+2. **Install Docker and Docker Compose**
+	- Ensure Docker Engine and Docker Compose are installed and running
+
+### Setup and Configuration
+
+3. **Clone and Configure**
+	```bash
+	git clone <repository-url>
+	cd MCP-Airflow-API
+	```
+
+4. **Ensure mcp-config.json**
+	- Check and edit `mcp-config.json.streamable-http`
+	- The file is pre-configured for streamable-http transport
+
+5. **Ensure docker-compose.yml**
+	- Check Network Port numbers that you want.
+	- (NOTE) This Tested on WSL2(networkingMode = bridged)
+
+5. **Start the Docker Services**
+	```bash
+	docker-compose up -d
+	```
+
+### Service Access and Verification
+
+6. **Check MCP Server REST-API (via MCPO Swagger)**
+	- Access: http://localhost:8002/docs
+	- Verify all Airflow API endpoints are available
+
+7. **Access Open WebUI**
+	- URL: http://localhost:3002
+	- The interface includes integrated MCPO proxy support
+
+5. Register the MCP server
+	- In [Settings] — [Tools], add the API address of the “airflow-api” tool (the link displayed in the MCPO Swagger), e.g., http://localhost:8001/airflow-api
+
+6. Setup LLM
+	- In [Admin Pannel] - [Setting] - [Connection], configure API Key for OpenAI or Ollama.
+
+7. Completed!
+
+---
 
 ## Docker Configuration
 
@@ -91,57 +139,10 @@ The project includes a comprehensive Docker Compose setup with three separate se
 
 The Docker setup uses these configuration files:
 - `docker-compose.yml`: Multi-service orchestration
-- `mcp-config.json`: MCPO proxy configuration for streamable-http transport
+- `mcp-config.json.stdio`: MCPO proxy configuration for stdio transport
+- `mcp-config.json.streamable-http`: MCPO proxy configuration for streamable-http transport
 - `Dockerfile.MCPO-Proxy`: MCPO proxy container with Rocky Linux 9.3 base
 - `Dockerfile.MCP-Server`: MCP server container with FastMCP runtime
-- `Dockerfile.OpenWebUI-MCPO-Proxy`: Custom Open WebUI with MCPO integration
-
-### MCP Configuration Templates
-
-The project includes multiple MCP configuration templates for different deployment scenarios:
-
-- `mcp-config.json.local`: Local development with direct Python execution
-  ```json
-  {
-    "mcpServers": {
-      "airflow-api": {
-        "command": "python",
-        "args": ["-m", "mcp_airflow_api.airflow_api"],
-        "env": {
-          "PYTHONPATH": "/app/src",
-          "AIRFLOW_API_URL": "http://localhost:8080/api/v1",
-          "AIRFLOW_API_USERNAME": "airflow",
-          "AIRFLOW_API_PASSWORD": "airflow"
-        }
-      }
-    }
-  }
-  ```
-
-- `mcp-config.json.streamable-http`: Docker deployment with HTTP transport
-  ```json
-  {
-    "mcpServers": {
-      "airflow-api": {
-        "type": "streamable-http",
-        "url": "http://host.docker.internal:18002/mcp"
-      }
-    }
-  }
-  ```
-
-### Starting the Docker Environment
-
-```bash
-# Start all services
-docker-compose up -d
-
-# View logs
-docker-compose logs -f
-
-# Stop services
-docker-compose down
-```
 
 ### Environment Variables
 
@@ -170,50 +171,6 @@ The configuration uses `host.docker.internal:18002` for proper Docker networking
 - Minimal, LLM-friendly output for all tools
 - Easy integration with MCP Inspector, OpenWebUI, Smithery, etc.
 - **Enhanced for Large-Scale Environments**: Improved default limits and pagination support for enterprise Airflow deployments (100+ to 1000+ DAGs)
-
-## Configuration Guide
-
-### Docker Image Details
-
-The project uses specialized Docker images for different components:
-
-#### Dockerfile.MCP-Server
-- **Base**: Rocky Linux 9.3
-- **Purpose**: Runs the MCP Airflow API server with FastMCP framework
-- **Python Version**: 3.11
-- **Key Dependencies**: `uv>=0.8.5`, `fastmcp>=2.11.1`, `aiohttp>=3.12.0`
-- **Runtime**: Executes custom startup script for streamable-http transport
-
-#### Dockerfile.MCPO-Proxy  
-- **Base**: Rocky Linux 9.3
-- **Purpose**: MCPO proxy for converting MCP tools to REST API endpoints
-- **Python Version**: 3.11
-- **Key Dependencies**: `mcpo>=0.0.17`, `fastmcp>=2.11.1`
-- **Runtime**: Provides HTTP interface with Swagger documentation
-
-### MCP Configuration Files
-
-The project includes multiple configuration templates for different deployment scenarios:
-
-#### mcp-config.json.local
-- **Use Case**: Local development and testing
-- **Transport**: stdio (direct process communication)
-- **Features**: Direct Python module execution with PYTHONPATH configuration
-- **Best For**: Development, debugging, local testing
-
-#### mcp-config.json.streamable-http
-- **Use Case**: Production Docker deployment
-- **Transport**: streamable-http (HTTP-based communication)
-- **Features**: Container-friendly networking with `host.docker.internal`
-- **Best For**: Production, containerized environments, scalability
-
-#### Configuration Selection Guide
-
-| Scenario | Configuration File | Transport | Use Case |
-|----------|-------------------|-----------|----------|
-| Local Development | `mcp-config.json.local` | stdio | Testing, debugging |
-| Docker Deployment | `mcp-config.json.streamable-http` | HTTP | Production, containers |
-| PyPI Installation | `mcp-config.json.pypi` | stdio | System-wide installation |
 
 ## Environment Variables Configuration
 
@@ -245,42 +202,6 @@ These environment variables are essential for connecting to your Airflow instanc
 - `AIRFLOW_LOG_LEVEL`: Controls logging verbosity
   - Values: `DEBUG`, `INFO`, `WARNING`, `ERROR`
   - Default: `INFO`
-
-### Docker Environment Setup
-
-For Docker deployments, environment variables can be set in multiple ways:
-
-1. **In docker-compose.yml**:
-```yaml
-environment:
-  MCP_SERVER_PORT: "18000"
-  AIRFLOW_API_URL: "http://your-airflow:8080/api/v1"
-  AIRFLOW_API_USERNAME: "airflow"
-  AIRFLOW_API_PASSWORD: "airflow"
-```
-
-2. **Using .env file**:
-```bash
-MCP_SERVER_PORT=18000
-AIRFLOW_API_URL=http://localhost:8080/api/v1
-AIRFLOW_API_USERNAME=airflow
-AIRFLOW_API_PASSWORD=airflow
-```
-
-3. **Runtime environment**:
-```bash
-docker run -e MCP_SERVER_PORT=18000 -e AIRFLOW_API_URL=http://localhost:8080/api/v1 ...
-```
-
-## Resource-Optimized Design
-
-This MCP server has been optimized for efficient resource usage and better performance:
-
-- **Optimized Default Limits**: Most functions use default limits of 20 (reduced from 100) for better memory usage and faster response times
-- **Comprehensive Pagination**: All listing functions include pagination metadata (`has_more_pages`, `next_offset`, `pagination_info`)
-- **Automatic Pagination Helpers**: Use `list_dags(..., fetch_all=True)` for complete DAG inventory without manual pagination
-- **Flexible Scaling**: Users can specify higher limits (up to 1000) when needed for bulk operations
-- **Memory-Efficient**: Smaller default payloads reduce memory usage while maintaining full functionality
 
 ---
 
@@ -516,25 +437,6 @@ This MCP server has been optimized for efficient resource usage and better perfo
 - **dag_calendar**: "Get calendar info for DAG 'example_complex' from last month."
 - **dag_calendar**: "Show DAG schedule for 'example_complex' from this week."
 
-## Date Calculation Guidance
-
-Relative date phrases like "yesterday" or "last week" are resolved against the server's current date/time internally by the tools. You do not need to call any separate tool.
-
-| User Input | Calculation Method | Example Format |
-|------------|-------------------|----------------|
-| "yesterday" | current_date - 1 day | YYYY-MM-DD (1 day before current) |
-| "last week" | current_date - 7 days to current_date - 1 day | YYYY-MM-DD to YYYY-MM-DD (7 days range) |
-| "last 3 days" | current_date - 3 days to current_date | YYYY-MM-DD to YYYY-MM-DD (3 days range) |
-| "this morning" | current_date 00:00 to 12:00 | YYYY-MM-DDTHH:mm:ssZ format |
-
-The server always bases calculations on its actual current date/time.
-
-## Formatting Rules
-
-- Output only the requested fields.
-- No extra explanation unless explicitly requested.
-- Use JSON objects for tool outputs.
-
 ---
 
 ## Prompt Template
@@ -571,83 +473,6 @@ Policy: Only English is stored; LLM는 사용자 질의 언어와 무관하게 �
 
 - MCP tool definitions: `src/mcp_airflow_api/airflow_api.py`
 - Utility functions: `src/mcp_airflow_api/functions.py`
-
----
-
-## Prompt Template
-
-## How To Use (stdio)
-
-1. In your MCP Tools environment, configure your `mcp-config.json` as follows:
-
-```json
-{
-	"mcpServers": {
-		"airflow-api": {
-			"command": "uvx",
-			"args": ["--python", "3.11", "mcp-airflow-api"],
-			"env": {
-				"AIRFLOW_API_URL": "http://localhost:38080/api/v1",
-				"AIRFLOW_API_USERNAME": "airflow",
-				"AIRFLOW_API_PASSWORD": "airflow",
-				"AIRFLOW_LOG_LEVEL": "INFO"
-			}
-		}
-	}
-}
-```
-
-2. Register the MCP server in MCP Inspector, OpenWebUI, Smithery, etc. and use the tools.
-
----
-
-## QuickStart (Demo - streamable-http): Running MCP-Airflow-API with Docker
-
-1. **Prepare an Airflow Demo cluster**  
-	- Try this: [Airflow-Docker-Compose](https://github.com/call518/Airflow-Docker-Compose)
-	- (Optional) See [Official Airflow Docker Install Guide](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html)
-
-2. **Install Docker and Docker Compose**
-	- Ensure Docker Engine and Docker Compose are installed and running
-
-### Setup and Configuration
-
-3. **Clone and Configure**
-	```bash
-	git clone <repository-url>
-	cd MCP-Airflow-API
-	```
-
-4. **Ensure mcp-config.json**
-	- Check and edit `mcp-config.json.streamable-http`
-	- The file is pre-configured for streamable-http transport
-
-5. **Ensure docker-compose.yml**
-	- Check Network Port numbers that you want.
-	- (NOTE) This Tested on WSL2(networkingMode = bridged)
-
-5. **Start the Docker Services**
-	```bash
-	docker-compose up -d
-	```
-
-### Service Access and Verification
-
-6. **Check MCP Server REST-API (via MCPO Swagger)**
-	- Access: http://localhost:8002/docs
-	- Verify all Airflow API endpoints are available
-
-7. **Access Open WebUI**
-	- URL: http://localhost:3002
-	- The interface includes integrated MCPO proxy support
-
-5. Register the MCP server
-	- In [Settings] — [Tools], add the API address of the “airflow-api” tool (the link displayed in the MCPO Swagger), e.g., http://localhost:8001/airflow-api
-
-6. Setup LLM
-	- In [Admin Pannel] - [Setting] - [Connection], configure API Key for OpenAI or Ollama.
-
-7. Completed!
 
 ---
 

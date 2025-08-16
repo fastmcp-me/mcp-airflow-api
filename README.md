@@ -2,18 +2,9 @@
 
 [![Verified on MSeeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/d024d598-d442-4e4e-827b-d976e4d372fb)
 
-[![Deploy to PyPI with tag](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/call518/MCP-Airflow-API/actions/w5. **Register the MCP Server in Open WebUI**
-	- Navigate to [Settings] → [Tools]
-	- Add the API address: http://localhost:8002/airflow-api
-	- The server will automatically connect via streamable-http transport
+[![Deploy to PyPI with tag](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/call518/MCP-Airflow-API/actions/w5.
 
-6. **Setup LLM Connection**
-	- In [Admin Panel] → [Settings] → [Connections]
-	- Configure API Key for OpenAI, Anthropic, or local Ollama
-
-7. **Completed!**
-	- The MCP Airflow API is now available through Open WebUI
-	- All Airflow operations can be performed through natural languages/pypi-publish.yml)
+---
 
 Model Context Protocol (MCP) server for Apache Airflow API integration.  
 This project provides natural language MCP tools for essential Airflow cluster operations.
@@ -24,7 +15,7 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 # MCP-Airflow-API
 
-**Tested and supported Airflow version: 2.10.2 (API Version: v1)**
+**Tested and supported Airflow version: 2.10.2 (API Version: v1) and WSL(networkingMode = bridged)**
 
 - [Airflow API Documents](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
 

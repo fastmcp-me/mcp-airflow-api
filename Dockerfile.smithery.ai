@@ -27,5 +27,5 @@ RUN uv sync
 
 RUN pip install .
 
-EXPOSE 8000
+EXPOSE 18000
 CMD ["python", "-m", "mcp_airflow_api.airflow_api"]

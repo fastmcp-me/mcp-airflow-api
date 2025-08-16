@@ -8,4 +8,3 @@ export AIRFLOW_API_PASSWORD=${AIRFLOW_API_PASSWORD}
 export AIRFLOW_LOG_LEVEL=${AIRFLOW_LOG_LEVEL}
 
 python -m mcp_airflow_api.airflow_api
-

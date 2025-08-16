@@ -4,6 +4,8 @@ set -euo pipefail
 Dockerfile_PATH="./Dockerfile.MCPO-Proxy"
 IMAGE_NAME="call518/mcpo-proxy-airflow-api"
 
+echo "=== Building Docker image Name: ${IMAGE_NAME} ==="
+
 # CUSTOM_TAG="${1:-latest}"
 TAGs="
 1.0.2

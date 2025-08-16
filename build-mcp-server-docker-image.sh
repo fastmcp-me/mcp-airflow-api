@@ -4,6 +4,8 @@ set -euo pipefail
 Dockerfile_PATH="./Dockerfile.MCP-Server"
 IMAGE_NAME="call518/mcp-server-airflow-api"
 
+echo "=== Building Docker image Name: ${IMAGE_NAME} ==="
+
 # CUSTOM_TAG="${1:-latest}"
 TAGs="
 1.0.0

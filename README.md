@@ -1,3 +1,5 @@
+# MCP-Airflow-API
+
 [![MSeeP.ai Security Assessment Badge](https://mseep.net/pr/call518-mcp-airflow-api-badge.png)](https://mseep.ai/app/call518-mcp-airflow-api)
 
 [![Verified on MSeeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/d024d598-d442-4e4e-827b-d976e4d372fb)
@@ -13,9 +15,7 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 ---
 
-# MCP-Airflow-API
-
-**Tested and supported Airflow version: 2.10.2 (API Version: v1) and WSL(networkingMode = bridged)**
+> Tested and supported Airflow version: 2.10.2 (API Version: v1) and WSL(networkingMode = bridged)
 
 - [Airflow API Documents](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
 
@@ -60,6 +60,7 @@ This MCP server supports two connection modes: **stdio** (traditional) and **htt
 ```
 
 **Transport Selection Logic:**
+
 - **stdio mode**: When `MCP_SERVER_PORT` environment variable is NOT set
 - **http mode**: When `MCP_SERVER_PORT` environment variable is set
 
@@ -68,50 +69,60 @@ This MCP server supports two connection modes: **stdio** (traditional) and **htt
 ## QuickStart (Demo - http): Running OpenWebUI and MCP-Airflow-API with Docker
 
 1. **Prepare an Airflow Demo cluster**  
-	- Try this: [Airflow-Docker-Compose](https://github.com/call518/Airflow-Docker-Compose)
-	- (Optional) See [Official Airflow Docker Install Guide](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html)
+
+- Try this: [Airflow-Docker-Compose](https://github.com/call518/Airflow-Docker-Compose)
+- (Optional) See [Official Airflow Docker Install Guide](https://airflow.apache.org/docs/apache-airflow/stable/start/docker.html)
 
 2. **Install Docker and Docker Compose**
-	- Ensure Docker Engine and Docker Compose are installed and running
+
+- Ensure Docker Engine and Docker Compose are installed and running
 
 ### Setup and Configuration
 
 3. **Clone and Configure**
-	```bash
-	git clone <repository-url>
-	cd MCP-Airflow-API
-	```
+
+```bash
+git clone <repository-url>
+cd MCP-Airflow-API
+```
 
 4. **Ensure mcp-config.json**
-	- Check and edit `mcp-config.json.http`
-	- The file is pre-configured for http transport
+
+- Check and edit `mcp-config.json.http`
+- The file is pre-configured for http transport
 
 5. **Ensure docker-compose.yml**
-	- Check Network Port numbers that you want.
-	- (NOTE) This Tested on WSL2(networkingMode = bridged)
 
-5. **Start the Docker Services**
-	```bash
-	docker-compose up -d
-	```
+- Check Network Port numbers that you want.
+- (NOTE) This Tested on WSL2(networkingMode = bridged)
+
+6. **Start the Docker Services**
+
+```bash
+docker-compose up -d
+```
 
 ### Service Access and Verification
 
-6. **Check MCP Server REST-API (via MCPO Swagger)**
-	- Access: http://localhost:8002/docs
-	- Verify all Airflow API endpoints are available
+7. **Check MCP Server REST-API (via MCPO Swagger)**
 
-7. **Access Open WebUI**
-	- URL: http://localhost:3002
-	- The interface includes integrated MCPO proxy support
+- Access: http://localhost:8002/docs
+- Verify all Airflow API endpoints are available
 
-5. Register the MCP server
-	- In [Settings] — [Tools], add the API address of the “airflow-api” tool (the link displayed in the MCPO Swagger), e.g., http://localhost:8001/airflow-api
+8. **Access Open WebUI**
 
-6. Setup LLM
-	- In [Admin Pannel] - [Setting] - [Connection], configure API Key for OpenAI or Ollama.
+- URL: http://localhost:3002
+- The interface includes integrated MCPO proxy support
 
-7. Completed!
+9. Register the MCP server
+
+- In [Settings] — [Tools], add the API address of the “airflow-api” tool (the link displayed in the MCPO Swagger), e.g., http://localhost:8001/airflow-api
+
+10. Setup LLM
+
+- In [Admin Pannel] - [Setting] - [Connection], configure API Key for OpenAI or Ollama.
+
+11. Completed!
 
 ---
 
@@ -138,6 +149,7 @@ The project includes a comprehensive Docker Compose setup with three separate se
 ### Configuration Files
 
 The Docker setup uses these configuration files:
+
 - `docker-compose.yml`: Multi-service orchestration
 - `mcp-config.json.stdio`: MCPO proxy configuration for stdio transport
 - `mcp-config.json.http`: MCPO proxy configuration for http transport
@@ -147,6 +159,7 @@ The Docker setup uses these configuration files:
 ### Environment Variables
 
 The MCP server container uses these environment variables:
+
 - `MCP_SERVER_PORT=18000`: Enables http transport mode
 - `AIRFLOW_API_URL`: Your Airflow API endpoint
 - `AIRFLOW_API_USERNAME`: Airflow username

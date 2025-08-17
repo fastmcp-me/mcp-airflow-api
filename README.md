@@ -1,15 +1,27 @@
 # MCP-Airflow-API
 
+**Apache Airflow MCP Server** | **Model Context Protocol** | **Natural Language DAG Management** | **Airflow API Integration**
+
 > **Benefits**: Monitor and manage Apache Airflow clusters through natural language queries via MCP tools: DAG inspection, task monitoring, health checks, and cluster analytics without API complexity.
 
 [![Verified on MSeeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/d024d598-d442-4e4e-827b-d976e4d372fb)
 
 [![Deploy to PyPI with tag](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml)
 
----
+## Overview
 
-Model Context Protocol (MCP) server for Apache Airflow API integration.  
-This project provides natural language MCP tools for essential Airflow cluster operations.
+**MCP-Airflow-API** is a Model Context Protocol (MCP) server that transforms Apache Airflow REST API operations into natural language tools for LLM integration. Built for DevOps engineers, data engineers, and Airflow administrators who need intuitive cluster management capabilities.
+
+### Key Features
+- 🔍 **Natural Language Queries**: Query Airflow DAGs, tasks, and runs using plain English
+- 📊 **Comprehensive Monitoring**: Real-time cluster health, DAG status, and performance analytics  
+- 🐳 **Docker Ready**: Streamable HTTP transport with Docker Compose orchestration
+- 🔧 **40+ MCP Tools**: Complete Airflow API coverage including DAGs, tasks, pools, variables, and XCom
+- ⚡ **Enterprise Scale**: Optimized pagination for large Airflow environments (1000+ DAGs)
+- 🛡️ **Production Safe**: Read-only operations by default to minimize operational risk
+
+### Topics
+`apache-airflow` `mcp` `model-context-protocol` `airflow-api` `dag-management` `data-engineering` `devops` `airflow-monitoring` `llm-integration` `natural-language` `docker` `python` `workflow-automation` `airflow-tools` `data-pipelines`
 
 **Note:** To minimize operational risk, this MCP server currently focuses on read-only (query) operations only. APIs that modify the target Airflow cluster (e.g., triggering or pausing DAGs) are planned but currently on hold.
 

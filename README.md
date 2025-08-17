@@ -1,6 +1,6 @@
 # MCP-Airflow-API
 
-[![MSeeP.ai Security Assessment Badge](https://mseep.net/pr/call518-mcp-airflow-api-badge.png)](https://mseep.ai/app/call518-mcp-airflow-api)
+> **Benefits**: Monitor and manage Apache Airflow clusters through natural language queries via MCP tools: DAG inspection, task monitoring, health checks, and cluster analytics without API complexity.
 
 [![Verified on MSeeP](https://mseep.ai/badge.svg)](https://mseep.ai/app/d024d598-d442-4e4e-827b-d976e4d372fb)
 
@@ -11,11 +11,11 @@
 Model Context Protocol (MCP) server for Apache Airflow API integration.  
 This project provides natural language MCP tools for essential Airflow cluster operations.
 
-> **Note:** To minimize operational risk, this MCP server currently focuses on read-only (query) operations only. APIs that modify the target Airflow cluster (e.g., triggering or pausing DAGs) are planned but currently on hold.
+**Note:** To minimize operational risk, this MCP server currently focuses on read-only (query) operations only. APIs that modify the target Airflow cluster (e.g., triggering or pausing DAGs) are planned but currently on hold.
 
 ---
 
-> Tested and supported Airflow version: 2.10.2 (API Version: v1) and WSL(networkingMode = bridged)
+Tested and supported Airflow version: 2.10.2 (API Version: v1) and WSL(networkingMode = bridged)
 
 - [Airflow API Documents](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
 

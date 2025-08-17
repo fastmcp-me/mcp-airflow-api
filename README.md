@@ -25,9 +25,9 @@ This project provides natural language MCP tools for essential Airflow cluster o
 
 ## Usages
 
-This MCP server supports two connection modes: **stdio** (traditional) and **http** (Docker-based). The transport mode is automatically determined by the `MCP_SERVER_PORT` environment variable.
+This MCP server supports two connection modes: **stdio** (traditional) and **streamable-http** (Docker-based). The transport mode is automatically determined by the `MCP_SERVER_PORT` environment variable.
 
-### Method 1: Traditional stdio Mode (Local Installation)
+### Method 1: Local MCP (transport="stdio")
 
 ```json
 {
@@ -46,13 +46,13 @@ This MCP server supports two connection modes: **stdio** (traditional) and **htt
 }
 ```
 
-### Method 2: Docker http Mode
+### Method 2: Remote MCP (transport="streamable-http")
 
 ```json
 {
   "mcpServers": {
     "airflow-api": {
-      "type": "http",
+      "type": "streamable-http",
       "url": "http://host.docker.internal:18002/mcp"
     }
   }
@@ -62,11 +62,11 @@ This MCP server supports two connection modes: **stdio** (traditional) and **htt
 **Transport Selection Logic:**
 
 - **stdio mode**: When `MCP_SERVER_PORT` environment variable is NOT set
-- **http mode**: When `MCP_SERVER_PORT` environment variable is set
+- **streamable-http mode**: When `MCP_SERVER_PORT` environment variable is set
 
 ---
 
-## QuickStart (Demo - http): Running OpenWebUI and MCP-Airflow-API with Docker
+## QuickStart (Demo - streamable-http): Running OpenWebUI and MCP-Airflow-API with Docker
 
 1. **Prepare an Airflow Demo cluster**  
 
@@ -89,7 +89,7 @@ cd MCP-Airflow-API
 4. **Ensure mcp-config.json**
 
 - Check and edit `mcp-config.json.http`
-- The file is pre-configured for http transport
+- The file is pre-configured for streamable-http transport
 
 5. **Ensure docker-compose.yml**
 
@@ -152,7 +152,7 @@ The Docker setup uses these configuration files:
 
 - `docker-compose.yml`: Multi-service orchestration
 - `mcp-config.json.stdio`: MCPO proxy configuration for stdio transport
-- `mcp-config.json.http`: MCPO proxy configuration for http transport
+- `mcp-config.json.http`: MCPO proxy configuration for streamable-http transport
 - `Dockerfile.MCPO-Proxy`: MCPO proxy container with Rocky Linux 9.3 base
 - `Dockerfile.MCP-Server`: MCP server container with FastMCP runtime
 
@@ -160,7 +160,7 @@ The Docker setup uses these configuration files:
 
 The MCP server container uses these environment variables:
 
-- `MCP_SERVER_PORT=18000`: Enables http transport mode
+- `MCP_SERVER_PORT=18000`: Enables streamable-http transport mode
 - `AIRFLOW_API_URL`: Your Airflow API endpoint
 - `AIRFLOW_API_USERNAME`: Airflow username
 - `AIRFLOW_API_PASSWORD`: Airflow password

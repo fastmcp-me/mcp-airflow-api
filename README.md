@@ -412,7 +412,7 @@ Retrieve dynamically via MCP tool:
 • `get_prompt_template("3")` – section 3 (tool map)  
 • `get_prompt_template(mode="headings")` – list all section headings
 
-Policy: Only English is stored; LLM는 사용자 질의 언어와 무관하게 영어 지침을 내부 추론용으로 사용하고, 사용자 응답은 필요 시 다국어로 생성한다.
+**Policy:** Only English is stored; the LLM always uses English instructions for internal reasoning, regardless of the user's query language. User responses may be generated in multiple languages as needed.
 
 ---
 

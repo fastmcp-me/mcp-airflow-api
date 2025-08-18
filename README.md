@@ -301,15 +301,22 @@ These environment variables are essential for connecting to your Airflow instanc
 
 ### Connection Management
 
-- `list_connections(limit=20, offset=0, order_by="connection_id")`  
-  List all connections in the Airflow instance with pagination support.  
-  Output: `connections`, `total_entries`, `limit`, `offset`, connection details with IDs, types, hosts, and schemas (passwords masked for security)
+- `list_connections(limit=20, offset=0, fetch_all=False, order_by="connection_id", id_contains=None, conn_type_contains=None, description_contains=None)`  
+  List all connections in the Airflow instance with pagination and advanced filtering support.  
+  Output: `connections`, `total_entries`, `limit`, `offset`, `applied_filters`, connection details with IDs, types, hosts, and schemas (passwords masked for security)
 
   **Pagination Examples:**
   - First 20 connections: `list_connections()`
   - Next 20 connections: `list_connections(limit=20, offset=20)`
   - Ordered by type: `list_connections(order_by="conn_type")`
   - Large batch: `list_connections(limit=100)`
+  - All connections: `list_connections(fetch_all=True)`
+
+  **Filtering Examples:**
+  - `id_contains="postgres"` → Only connections whose ID contains "postgres"
+  - `conn_type_contains="http"` → Only HTTP-based connections
+  - `description_contains="prod"` → Only connections with "prod" in description
+  - Multiple filters: `list_connections(id_contains="db", conn_type_contains="postgres")`
 
 - `get_connection(connection_id)`  
   Get detailed information about a specific connection.  

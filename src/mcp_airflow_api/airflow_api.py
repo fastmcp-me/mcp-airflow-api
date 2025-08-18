@@ -1689,31 +1689,103 @@ def prompt_template_section_prompt(section: Optional[str] = None) -> str:
 #========================================================================================
 
 @mcp.tool()
-def list_connections(limit: int = 20, offset: int = 0, order_by: str = "connection_id") -> Dict[str, Any]:
+def list_connections(limit: int = 20, 
+                    offset: int = 0, 
+                    fetch_all: bool = False,
+                    order_by: str = "connection_id",
+                    id_contains: Optional[str] = None,
+                    conn_type_contains: Optional[str] = None,
+                    description_contains: Optional[str] = None) -> Dict[str, Any]:
     """
-    [Tool Role]: List all connections in the Airflow instance with pagination support.
+    [Tool Role]: List all connections in the Airflow instance with pagination and advanced filtering support.
     
     Args:
         limit: Maximum number of connections to return (default: 20)
+               - For small queries: use default 20
+               - For large environments: use 100-500 to get more connections at once
+               - Maximum recommended: 1000 (to avoid API timeouts)
         offset: Number of connections to skip for pagination (default: 0)
+        fetch_all: If True, fetches ALL connections regardless of limit (default: False)
+                  - Use with caution in large environments
+                  - Automatically handles pagination internally
         order_by: Field to order by (default: "connection_id")
                  Valid values: connection_id, conn_type, host, schema, login
+        id_contains: Filter connections whose connection_id contains this string (case-insensitive)
+                    - Example: "postgres" → only connections with "postgres" in their ID
+        conn_type_contains: Filter connections whose conn_type contains this string (case-insensitive)
+                           - Example: "http" → only HTTP-based connections
+        description_contains: Filter connections whose description contains this string (case-insensitive)
+                             - Example: "prod" → only connections with "prod" in description
     
     Returns:
-        List of connections with their configuration: connections, total_entries, limit, offset
+        List of connections with their configuration: connections, total_entries, limit, offset, applied_filters
     """
-    # Build query parameters
-    params = [f"limit={limit}", f"offset={offset}"]
-    if order_by:
-        params.append(f"order_by={order_by}")
+    if fetch_all:
+        # Fetch all connections with automatic pagination
+        all_connections = []
+        current_offset = 0
+        batch_limit = 100  # Use reasonable batch size
+        
+        while True:
+            params = [f"limit={batch_limit}", f"offset={current_offset}"]
+            if order_by:
+                params.append(f"order_by={order_by}")
+            
+            query_string = "&".join(params)
+            resp = airflow_request("GET", f"/connections?{query_string}")
+            resp.raise_for_status()
+            batch_data = resp.json()
+            
+            batch_connections = batch_data.get("connections", [])
+            if not batch_connections:
+                break
+                
+            all_connections.extend(batch_connections)
+            current_offset += batch_limit
+            
+            # Check if we've gotten all connections
+            if len(batch_connections) < batch_limit:
+                break
+        
+        raw_connections = all_connections
+        total_from_api = len(all_connections)
+    else:
+        # Regular paginated fetch
+        params = [f"limit={limit}", f"offset={offset}"]
+        if order_by:
+            params.append(f"order_by={order_by}")
+        
+        query_string = "&".join(params)
+        resp = airflow_request("GET", f"/connections?{query_string}")
+        resp.raise_for_status()
+        data = resp.json()
+        
+        raw_connections = data.get("connections", [])
+        total_from_api = data.get("total_entries", len(raw_connections))
     
-    query_string = "&".join(params)
-    resp = airflow_request("GET", f"/connections?{query_string}")
-    resp.raise_for_status()
-    data = resp.json()
+    # Apply client-side filtering (since Airflow API doesn't support these filters)
+    filtered_connections = []
+    applied_filters = []
     
-    connections = []
-    for conn in data.get("connections", []):
+    for conn in raw_connections:
+        # Check id_contains filter
+        if id_contains:
+            conn_id = conn.get("connection_id", "").lower()
+            if id_contains.lower() not in conn_id:
+                continue
+        
+        # Check conn_type_contains filter  
+        if conn_type_contains:
+            conn_type = conn.get("conn_type", "").lower()
+            if conn_type_contains.lower() not in conn_type:
+                continue
+        
+        # Check description_contains filter
+        if description_contains:
+            description = conn.get("description", "").lower()
+            if description_contains.lower() not in description:
+                continue
+        
         # Only return safe connection info (exclude sensitive data like passwords)
         conn_info = {
             "connection_id": conn.get("connection_id"),
@@ -1727,26 +1799,49 @@ def list_connections(limit: int = 20, offset: int = 0, order_by: str = "connecti
             "is_extra_encrypted": conn.get("is_extra_encrypted"),
             "extra": conn.get("extra")  # Note: may contain sensitive data
         }
-        connections.append(conn_info)
+        filtered_connections.append(conn_info)
     
-    # Calculate pagination info
-    total_entries = data.get("total_entries", len(connections))
-    returned_count = len(connections)
-    has_more_pages = (offset + limit) < total_entries
-    next_offset = offset + limit if has_more_pages else None
+    # Record applied filters
+    if id_contains:
+        applied_filters.append(f"id_contains='{id_contains}'")
+    if conn_type_contains:
+        applied_filters.append(f"conn_type_contains='{conn_type_contains}'")
+    if description_contains:
+        applied_filters.append(f"description_contains='{description_contains}'")
+    if order_by:
+        applied_filters.append(f"order_by='{order_by}'")
+    
+    # Calculate pagination info for filtered results
+    total_entries = len(filtered_connections)
+    returned_count = len(filtered_connections)
+    
+    if not fetch_all:
+        # Apply pagination to filtered results
+        start_idx = 0  # We already applied offset in API call
+        end_idx = len(filtered_connections)
+        paginated_connections = filtered_connections[start_idx:end_idx]
+        
+        has_more_pages = (offset + limit) < total_from_api
+        next_offset = offset + limit if has_more_pages else None
+    else:
+        paginated_connections = filtered_connections
+        has_more_pages = False
+        next_offset = None
     
     return {
-        "connections": connections,
+        "connections": paginated_connections,
         "total_entries": total_entries,
-        "limit": limit,
-        "offset": offset,
-        "returned_count": returned_count,
+        "total_from_api": total_from_api,
+        "limit": limit if not fetch_all else len(filtered_connections),
+        "offset": offset if not fetch_all else 0,
+        "returned_count": len(paginated_connections),
         "has_more_pages": has_more_pages,
         "next_offset": next_offset,
+        "applied_filters": applied_filters,
         "pagination_info": {
-            "current_page": (offset // limit) + 1 if limit > 0 else 1,
-            "total_pages": ((total_entries - 1) // limit) + 1 if limit > 0 and total_entries > 0 else 1,
-            "remaining_count": max(0, total_entries - (offset + returned_count))
+            "current_page": (offset // limit) + 1 if limit > 0 and not fetch_all else 1,
+            "total_pages": ((total_entries - 1) // limit) + 1 if limit > 0 and total_entries > 0 and not fetch_all else 1,
+            "remaining_count": max(0, total_entries - (offset + returned_count)) if not fetch_all else 0
         }
     }
 

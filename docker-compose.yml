@@ -15,7 +15,7 @@ services:
   mcp-server:
     image: call518/mcp-server-airflow-api:1.0.0
     container_name: mcp-airflow-api-mcp-server
-    ports:
+    ports: ### (WARNING) Must be same with port number in mcp-config.json.stdio
       - "18002:18000"
     environment:
       - PYTHONPATH=/app/src

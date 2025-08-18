@@ -20,6 +20,7 @@ def get_airflow_session() -> requests.Session:
         # Configure session defaults
         _airflow_session.headers.update({
             'Content-Type': 'application/json',
+            'Accept': 'application/json',
             'User-Agent': 'mcp-airflow-api/1.0'
         })
         

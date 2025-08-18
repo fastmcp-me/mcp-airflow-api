@@ -23,7 +23,6 @@ services:
       - AIRFLOW_API_URL=http://host.docker.internal:38080/api/v1
       - AIRFLOW_API_USERNAME=airflow
       - AIRFLOW_API_PASSWORD=changeme!@34
-      - AIRFLOW__WEBSERVER__EXPOSE_CONFIG=true
       - AIRFLOW_LOG_LEVEL=INFO
     volumes:
       - ./src:/app/src

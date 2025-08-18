@@ -16,7 +16,7 @@
 - 🔍 **Natural Language Queries**: Query Airflow DAGs, tasks, and runs using plain English
 - 📊 **Comprehensive Monitoring**: Real-time cluster health, DAG status, and performance analytics  
 - 🐳 **Docker Ready**: Streamable HTTP transport with Docker Compose orchestration
-- 🔧 **50+ MCP Tools**: Complete Airflow API coverage including DAGs, tasks, pools, variables, connections, configuration, and XCom
+- 🔧 **49+ MCP Tools**: Complete Airflow API coverage including DAGs, tasks, pools, variables, connections, configuration, and XCom
 - ⚡ **Enterprise Scale**: Optimized pagination for large Airflow environments (1000+ DAGs)
 - 🛡️ **Production Safe**: Read-only operations by default to minimize operational risk
 
@@ -340,9 +340,15 @@ These environment variables are essential for connecting to your Airflow instanc
   Get all configuration sections and options from the Airflow instance.  
   Output: `sections`, `total_sections`, `total_options`, complete Airflow configuration with sensitive values masked
 
+  **Note**: Requires appropriate permissions. May return 403 FORBIDDEN if user lacks configuration access rights.
+
+- `list_config_sections()`  
+  List all available configuration sections with summary information.  
+  Output: `sections`, `total_sections`, `total_options`, section summaries with option counts
+
 - `get_config_section(section)`  
-  Get all configuration options for a specific section.  
-  Output: `section`, `options`, `total_options`, `sensitive_options`, section configuration details
+  Get all configuration options for a specific section (filtered from /config endpoint).  
+  Output: `section`, `options`, `total_options`, `option_names`, section configuration details
 
   **Common Sections:**
   - `core` → Core Airflow settings (executor, dags_folder, etc.)
@@ -351,22 +357,16 @@ These environment variables are essential for connecting to your Airflow instanc
   - `database` → Database connection settings
   - `logging` → Logging configuration
 
-- `get_config_option(section, option)`  
-  Get a specific configuration option value.  
-  Output: `section`, `option`, `value`, `source`, `description`, `is_sensitive`, option details with masked sensitive values
-
-- `list_config_sections()`  
-  List all available configuration sections with summary information.  
-  Output: `sections`, `total_sections`, `total_options`, section summaries with option counts
-
-- `search_config_options(search_term, section=None)`  
-  Search for configuration options by name or description.  
-  Output: `matches`, `total_matches`, `match_breakdown`, filtered configuration options matching search criteria
+- `search_config_options(search_term)`  
+  Search for configuration options by key name (searches within /config results).  
+  Output: `matches`, `total_matches`, `sections_searched`, filtered configuration options matching search criteria
 
   **Search Examples:**
-  - `search_term="database"` → Find all database-related options
-  - `search_term="port", section="webserver"` → Find port settings in webserver section
+  - `search_term="database"` → Find all database-related option keys
+  - `search_term="port"` → Find all port-related configuration keys
   - `search_term="timeout"` → Find all timeout-related configurations
+
+  **API Limitation**: Airflow 2.0.0 only supports `/config` endpoint. Individual section/option endpoints (`/config/{section}`, `/config/{section}/{option}`) are not available.
 
 ### Task Instance Management
 

@@ -2054,249 +2054,208 @@ def get_config() -> Dict[str, Any]:
     """
     [Tool Role]: Get all configuration sections and options from the Airflow instance.
     
+    Note: This endpoint requires appropriate permissions. May return 403 FORBIDDEN 
+    if the user doesn't have sufficient permissions to access configuration.
+    
     Returns:
-        Complete Airflow configuration: sections, options, values, sources
+        Complete Airflow configuration: sections with their options and values
     """
-    resp = airflow_request("GET", "/config")
-    resp.raise_for_status()
-    config_data = resp.json()
-    
-    # Process and organize config data
-    sections = {}
-    total_sections = 0
-    total_options = 0
-    
-    for section_name, section_data in config_data.get("sections", {}).items():
-        section_options = {}
-        for option_name, option_data in section_data.items():
-            # Extract option details safely
-            option_info = {
-                "value": option_data.get("value"),
-                "source": option_data.get("source"),
-                "description": option_data.get("description"),
-                "is_sensitive": option_data.get("is_sensitive", False)
+    try:
+        resp = airflow_request("GET", "/config")
+        resp.raise_for_status()
+        config_data = resp.json()
+        
+        # Process config data according to Airflow 2.0.0 API structure
+        sections_processed = {}
+        total_sections = 0
+        total_options = 0
+        
+        for section in config_data.get("sections", []):
+            section_name = section.get("name", "")
+            section_options = {}
+            
+            for option in section.get("options", []):
+                option_key = option.get("key", "")
+                option_value = option.get("value", "")
+                
+                # Basic security: mask values that look like passwords or secrets
+                if any(keyword in option_key.lower() for keyword in ['password', 'secret', 'key', 'token']):
+                    if option_value:
+                        option_value = "[SENSITIVE_VALUE_MASKED]"
+                
+                section_options[option_key] = {
+                    "value": option_value,
+                    "key": option_key
+                }
+                total_options += 1
+            
+            sections_processed[section_name] = {
+                "options": section_options,
+                "option_count": len(section_options)
             }
-            
-            # Mask sensitive values
-            if option_info["is_sensitive"] and option_info["value"]:
-                option_info["value"] = "[SENSITIVE_VALUE_MASKED]"
-            
-            section_options[option_name] = option_info
-            total_options += 1
+            total_sections += 1
         
-        sections[section_name] = {
-            "options": section_options,
-            "option_count": len(section_options)
-        }
-        total_sections += 1
-    
-    return {
-        "sections": sections,
-        "total_sections": total_sections,
-        "total_options": total_options,
-        "metadata": {
-            "retrieved_at": config_data.get("retrieved_at"),
-            "airflow_version": config_data.get("airflow_version")
-        }
-    }
-
-@mcp.tool()
-def get_config_section(section: str) -> Dict[str, Any]:
-    """
-    [Tool Role]: Get all configuration options for a specific section.
-    
-    Args:
-        section: The configuration section name (e.g., 'core', 'webserver', 'scheduler', 'database', 'logging')
-    
-    Returns:
-        Section configuration options with values and sources
-    """
-    if not section:
-        raise ValueError("section must not be empty")
-    
-    resp = airflow_request("GET", f"/config/{section}")
-    resp.raise_for_status()
-    section_data = resp.json()
-    
-    # Process section options
-    options = {}
-    total_options = 0
-    sensitive_options = 0
-    
-    for option_name, option_data in section_data.items():
-        option_info = {
-            "value": option_data.get("value"),
-            "source": option_data.get("source"),
-            "description": option_data.get("description"),
-            "is_sensitive": option_data.get("is_sensitive", False)
+        return {
+            "sections": sections_processed,
+            "total_sections": total_sections,
+            "total_options": total_options,
+            "raw_sections": config_data.get("sections", []),  # Include raw data for reference
+            "note": "Configuration access requires appropriate permissions in Airflow"
         }
         
-        # Mask sensitive values
-        if option_info["is_sensitive"]:
-            if option_info["value"]:
-                option_info["value"] = "[SENSITIVE_VALUE_MASKED]"
-            sensitive_options += 1
-        
-        options[option_name] = option_info
-        total_options += 1
-    
-    return {
-        "section": section,
-        "options": options,
-        "total_options": total_options,
-        "sensitive_options": sensitive_options,
-        "option_names": list(options.keys())
-    }
-
-@mcp.tool()
-def get_config_option(section: str, option: str) -> Dict[str, Any]:
-    """
-    [Tool Role]: Get a specific configuration option value.
-    
-    Args:
-        section: The configuration section name (e.g., 'core', 'webserver', 'scheduler')
-        option: The configuration option name within the section
-    
-    Returns:
-        Option value, source, and metadata
-    """
-    if not section or not option:
-        raise ValueError("Both section and option must not be empty")
-    
-    resp = airflow_request("GET", f"/config/{section}/{option}")
-    resp.raise_for_status()
-    option_data = resp.json()
-    
-    # Extract option details
-    result = {
-        "section": section,
-        "option": option,
-        "value": option_data.get("value"),
-        "source": option_data.get("source"),
-        "description": option_data.get("description"),
-        "is_sensitive": option_data.get("is_sensitive", False)
-    }
-    
-    # Mask sensitive values
-    if result["is_sensitive"] and result["value"]:
-        result["value"] = "[SENSITIVE_VALUE_MASKED]"
-        result["masked"] = True
-    else:
-        result["masked"] = False
-    
-    return result
+    except Exception as e:
+        if "403" in str(e) or "FORBIDDEN" in str(e):
+            return {
+                "error": "Configuration access denied",
+                "message": "The current user does not have sufficient permissions to access Airflow configuration.",
+                "suggestion": "Contact your Airflow administrator to grant configuration access permissions.",
+                "status": "403_FORBIDDEN"
+            }
+        else:
+            raise e
 
 @mcp.tool()
 def list_config_sections() -> Dict[str, Any]:
     """
     [Tool Role]: List all available configuration sections with summary information.
     
+    Note: This is a convenience tool that processes the /config endpoint to show section summaries.
+    
     Returns:
-        List of configuration sections with option counts and descriptions
+        List of configuration sections with option counts and section names
     """
-    resp = airflow_request("GET", "/config")
-    resp.raise_for_status()
-    config_data = resp.json()
-    
-    sections_summary = []
-    total_sections = 0
-    total_options = 0
-    
-    for section_name, section_data in config_data.get("sections", {}).items():
-        option_count = len(section_data)
-        sensitive_count = sum(1 for opt in section_data.values() 
-                            if opt.get("is_sensitive", False))
+    try:
+        config_result = get_config()
         
-        section_summary = {
-            "section_name": section_name,
-            "option_count": option_count,
-            "sensitive_options": sensitive_count,
-            "sample_options": list(section_data.keys())[:5]  # First 5 options as sample
+        # Check if we got an error response
+        if "error" in config_result:
+            return config_result  # Return the error as-is
+        
+        sections_summary = []
+        for section_name, section_data in config_result.get("sections", {}).items():
+            section_summary = {
+                "section_name": section_name,
+                "option_count": section_data.get("option_count", 0),
+                "sample_options": list(section_data.get("options", {}).keys())[:5]  # First 5 options
+            }
+            sections_summary.append(section_summary)
+        
+        return {
+            "sections": sections_summary,
+            "total_sections": config_result.get("total_sections", 0),
+            "total_options": config_result.get("total_options", 0),
+            "common_sections_info": {
+                "note": "Common sections typically include core, webserver, scheduler, database, logging",
+                "access_requirement": "Configuration access requires appropriate Airflow permissions"
+            }
         }
         
-        sections_summary.append(section_summary)
-        total_sections += 1
-        total_options += option_count
-    
-    return {
-        "sections": sections_summary,
-        "total_sections": total_sections,
-        "total_options": total_options,
-        "common_sections": [
-            "core", "webserver", "scheduler", "database", 
-            "logging", "email", "smtp", "celery", "kubernetes"
-        ]
-    }
+    except Exception as e:
+        return {
+            "error": "Failed to retrieve configuration sections",
+            "message": str(e),
+            "suggestion": "Check Airflow connection and permissions"
+        }
 
 @mcp.tool()
-def search_config_options(search_term: str, section: Optional[str] = None) -> Dict[str, Any]:
+def get_config_section(section: str) -> Dict[str, Any]:
     """
-    [Tool Role]: Search for configuration options by name or description.
+    [Tool Role]: Get all configuration options for a specific section.
+    
+    Note: This tool filters the /config endpoint results by section name,
+    as Airflow 2.0.0 API doesn't support /config/{section} endpoint.
     
     Args:
-        search_term: Text to search for in option names or descriptions (case-insensitive)
-        section: Optional section to limit search to (searches all sections if not provided)
+        section: The configuration section name (e.g., 'core', 'webserver', 'scheduler')
     
     Returns:
-        Matching configuration options with their details
+        Section configuration options with values (if accessible)
+    """
+    if not section:
+        return {"error": "Section name must not be empty"}
+    
+    try:
+        config_result = get_config()
+        
+        # Check if we got an error response
+        if "error" in config_result:
+            return config_result  # Return the error as-is
+        
+        sections = config_result.get("sections", {})
+        
+        if section not in sections:
+            available_sections = list(sections.keys())
+            return {
+                "error": f"Section '{section}' not found",
+                "available_sections": available_sections,
+                "suggestion": f"Use one of the available sections: {', '.join(available_sections)}"
+            }
+        
+        section_data = sections[section]
+        options = section_data.get("options", {})
+        
+        return {
+            "section": section,
+            "options": options,
+            "total_options": len(options),
+            "option_names": list(options.keys())
+        }
+        
+    except Exception as e:
+        return {
+            "error": f"Failed to retrieve section '{section}'",
+            "message": str(e)
+        }
+
+@mcp.tool()
+def search_config_options(search_term: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Search for configuration options by key name.
+    
+    Note: Searches within the /config endpoint results for matching option keys.
+    
+    Args:
+        search_term: Text to search for in option keys (case-insensitive)
+    
+    Returns:
+        Matching configuration options across all sections
     """
     if not search_term:
-        raise ValueError("search_term must not be empty")
+        return {"error": "Search term must not be empty"}
     
-    if section:
-        # Search within specific section
-        resp = airflow_request("GET", f"/config/{section}")
-        resp.raise_for_status()
-        section_data = {section: resp.json()}
-    else:
-        # Search across all sections
-        resp = airflow_request("GET", "/config")
-        resp.raise_for_status()
-        section_data = resp.json().get("sections", {})
-    
-    matches = []
-    search_lower = search_term.lower()
-    
-    for section_name, section_options in section_data.items():
-        for option_name, option_data in section_options.items():
-            # Check if search term matches option name or description
-            name_match = search_lower in option_name.lower()
-            desc_match = False
-            
-            description = option_data.get("description", "")
-            if description:
-                desc_match = search_lower in description.lower()
-            
-            if name_match or desc_match:
-                option_info = {
-                    "section": section_name,
-                    "option": option_name,
-                    "value": option_data.get("value"),
-                    "source": option_data.get("source"),
-                    "description": description,
-                    "is_sensitive": option_data.get("is_sensitive", False),
-                    "match_type": "name" if name_match else "description"
-                }
-                
-                # Mask sensitive values
-                if option_info["is_sensitive"] and option_info["value"]:
-                    option_info["value"] = "[SENSITIVE_VALUE_MASKED]"
-                    option_info["masked"] = True
-                else:
-                    option_info["masked"] = False
-                
-                matches.append(option_info)
-    
-    return {
-        "search_term": search_term,
-        "searched_section": section,
-        "matches": matches,
-        "total_matches": len(matches),
-        "match_breakdown": {
-            "name_matches": len([m for m in matches if m["match_type"] == "name"]),
-            "description_matches": len([m for m in matches if m["match_type"] == "description"])
+    try:
+        config_result = get_config()
+        
+        # Check if we got an error response
+        if "error" in config_result:
+            return config_result  # Return the error as-is
+        
+        matches = []
+        search_lower = search_term.lower()
+        
+        for section_name, section_data in config_result.get("sections", {}).items():
+            for option_key, option_data in section_data.get("options", {}).items():
+                if search_lower in option_key.lower():
+                    match = {
+                        "section": section_name,
+                        "option_key": option_key,
+                        "value": option_data.get("value", ""),
+                        "match_type": "key_name"
+                    }
+                    matches.append(match)
+        
+        return {
+            "search_term": search_term,
+            "matches": matches,
+            "total_matches": len(matches),
+            "sections_searched": list(config_result.get("sections", {}).keys())
         }
-    }
+        
+    except Exception as e:
+        return {
+            "error": f"Failed to search configuration options",
+            "message": str(e)
+        }
 
 #========================================================================================
 

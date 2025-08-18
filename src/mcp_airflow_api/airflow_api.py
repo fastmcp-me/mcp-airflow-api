@@ -2299,14 +2299,14 @@ def main(argv: Optional[List[str]] = None):
         logger.debug("Log level from environment: %s", logging.getLogger().level)
 
     # mcp.run(transport='stdio')
-    # mcp.run(transport='http', host="0.0.0.0", port=18000)
-    # mcp.run(transport="streamable-http", host="0.0.0.0", port=18000)
+    # mcp.run(transport='http', host="0.0.0.0", port=18002)
+    # mcp.run(transport="streamable-http", host="0.0.0.0", port=18002)
     
     # FASTMCP_PORT 환경변수가 있으면 streamable-http, 없으면 stdio
     if os.getenv("FASTMCP_PORT"):
         # FASTMCP_PORT 있음 → http transport
         host = os.getenv("FASTMCP_HOST", "0.0.0.0")
-        port = int(os.getenv("FASTMCP_PORT", "18000"))
+        port = int(os.getenv("FASTMCP_PORT", "18002"))
         logger.info(f"Starting HTTP server on {host}:{port} for smithery.ai")
         mcp.run(transport="streamable-http", host=host, port=port)
     else:

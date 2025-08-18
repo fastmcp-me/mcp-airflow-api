@@ -148,7 +148,7 @@ The project includes a comprehensive Docker Compose setup with three separate se
    - Custom Open WebUI with integrated MCPO proxy support
    - Built from `Dockerfile.OpenWebUI-MCPO-Proxy`
 
-2. **mcp-server**: MCP Airflow API server (port 18002, internal 18000)
+2. **mcp-server**: MCP Airflow API server (port 18002, internal 18002)
    - FastMCP-based MCP server with Airflow API tools
    - Built from `Dockerfile.MCP-Server` (Rocky Linux 9.3, Python 3.11)
    - Runs http transport when `FASTMCP_PORT` is set
@@ -172,7 +172,7 @@ The Docker setup uses these configuration files:
 
 The MCP server container uses these environment variables:
 
-- `FASTMCP_PORT=18000`: Enables streamable-http transport mode
+- `FASTMCP_PORT=18002`: Enables streamable-http transport mode
 - `AIRFLOW_API_URL`: Your Airflow API endpoint
 - `AIRFLOW_API_USERNAME`: Airflow username
 - `AIRFLOW_API_PASSWORD`: Airflow password
@@ -220,7 +220,7 @@ These environment variables are essential for connecting to your Airflow instanc
 - `FASTMCP_PORT`: Controls the transport mode selection
   - **When NOT set**: Uses stdio transport (traditional MCP mode)
   - **When set**: Uses http transport (Docker mode)
-  - Example: `18000` (for Docker container internal port)
+  - Example: `18002` (for Docker container internal port)
 
 ### Optional Configuration Variables
 

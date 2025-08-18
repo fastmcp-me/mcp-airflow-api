@@ -16,11 +16,11 @@ services:
     image: call518/mcp-server-airflow-api:1.0.0
     container_name: mcp-airflow-api-mcp-server
     ports:
-      - "18002:18000" ### (WARNING) Must be same with port number in 'mcp-config.json' and 'mcp-config.json.http'
+      - "18002:18002" ### (WARNING) Must be same with port number in 'mcp-config.json' and 'mcp-config.json.http'
     environment:
       - PYTHONPATH=/app/src
       - FASTMCP_HOST=0.0.0.0
-      - FASTMCP_PORT=18000
+      - FASTMCP_PORT=18002
       - AIRFLOW_API_URL=http://host.docker.internal:38080/api/v1
       - AIRFLOW_API_USERNAME=airflow
       - AIRFLOW_API_PASSWORD=changeme!@34

@@ -26,9 +26,15 @@
 
 ---
 
-## Example Usage - List DAGs
+## Example Queries - List DAGs
 
 ![ScreenShot-009](img/screenshot-000.png)
+
+### More Queries
+
+**[Go to More Example Queries](./src/mcp_airflow_api/prompt_template.md#5-example-queries)**
+
+---
 
 ## Setup `mcp-config.json`
 
@@ -123,6 +129,8 @@ uvx mcp-airflow-api --type streamable-http --host 0.0.0.0 --port 8080
 
 ### Setup and Configuration
 
+> **Note:** The following instructions assume you are using the `streamable-http` mode for MCP Server.
+
 3. **Clone and Configure**
 
 - Clone Source codes
@@ -140,7 +148,6 @@ cd MCP-Airflow-API
 5. **Ensure docker-compose.yml**
 
 - Check Network Port numbers that you want.
-- (NOTE) This Tested on WSL2(networkingMode = bridged)
 
 6. **Start the Docker Services**
 
@@ -160,11 +167,11 @@ docker-compose up -d
 - URL: http://localhost:3002
 - The interface includes integrated MCPO proxy support
 
-9. Register the MCP server
+9. Register the MCP Tools
 
 - In [Settings] — [Tools], add the API address of the “airflow-api” tool (the link displayed in the MCPO Swagger), e.g., http://localhost:8001/airflow-api
 
-10. Setup LLM
+10. Setup LLM Provider
 
 - In [Admin Pannel] - [Setting] - [Connection], configure API Key for OpenAI or Ollama.
 
@@ -206,10 +213,13 @@ The Docker setup uses these configuration files:
 
 The MCP server container uses these environment variables:
 
+- `FASTMCP_TYPE`: Specifies the transport type for the MCP server.  
+- `FASTMCP_HOST`: Sets the host address for the MCP server in HTTP mode.  
 - `FASTMCP_PORT=8080`: Enables streamable-http transport mode
 - `AIRFLOW_API_URL`: Your Airflow API endpoint
 - `AIRFLOW_API_USERNAME`: Airflow username
 - `AIRFLOW_API_PASSWORD`: Airflow password
+- `AIRFLOW_LOG_LEVEL`: Values, `DEBUG`, `INFO`, `WARNING`, `ERROR`, `CRITICAL`
 
 ### Service Access
 
@@ -217,19 +227,7 @@ The MCP server container uses these environment variables:
 - MCP Server: http://localhost:18002
 - MCPO Proxy: http://localhost:8002
 
-### Container-to-Host Communication
-
-The configuration uses `host.docker.internal:18002` for proper Docker networking when connecting from containers to host services.
-
-## Features
-
-- List all DAGs in the Airflow cluster
-- Monitor running/failed DAG runs  
-- Trigger DAG runs on demand
-- Check cluster health and version information
-- Minimal, LLM-friendly output for all tools
-- Easy integration with MCP Inspector, OpenWebUI, Smithery, etc.
-- **Enhanced for Large-Scale Environments**: Improved default limits and pagination support for enterprise Airflow deployments (100+ to 1000+ DAGs)
+> (NOTE) The configuration uses `host.docker.internal:18002` for proper Docker networking when connecting from containers to host services.
 
 ## Environment Variables Configuration
 
@@ -532,12 +530,6 @@ The Configuration Management tools require special Airflow settings:
 
 ---
 
-## Example Queries
-
-**[Go to Example Queries](./src/mcp_airflow_api/prompt_template.md)**
-
----
-
 ## Prompt Template
 
 The package exposes a tool `get_prompt_template` that returns either the entire template, a specific section, or just the headings. Three MCP prompts (`prompt_template_full`, `prompt_template_headings`, `prompt_template_section`) are also registered for discovery.
@@ -563,15 +555,6 @@ Retrieve dynamically via MCP tool:
 • `get_prompt_template("tool map")` – only the tool mapping section  
 • `get_prompt_template("3")` – section 3 (tool map)  
 • `get_prompt_template(mode="headings")` – list all section headings
-
-**Policy:** Only English is stored; the LLM always uses English instructions for internal reasoning, regardless of the user's query language. User responses may be generated in multiple languages as needed.
-
----
-
-## Main Tool Files
-
-- MCP tool definitions: `src/mcp_airflow_api/airflow_api.py`
-- Utility functions: `src/mcp_airflow_api/functions.py`
 
 ---
 
@@ -637,40 +620,6 @@ list_dags(limit=500)
 - Structured logs for all tool invocations and HTTP requests
 - Control log level via environment variable (`AIRFLOW_LOG_LEVEL`) or CLI flag (`--log-level`)
 - Supported levels: DEBUG, INFO, WARNING, ERROR, CRITICAL
-
----
-
-## Roadmap
-
-This project starts with a minimal set of essential Airflow management tools. Many more useful features and tools for Airflow cluster operations will be added soon, including advanced monitoring, DAG/task analytics, scheduling controls, and more. Contributions and suggestions are welcome!
-
----
-
-## Additional Links
-
-- [Code](https://github.com/call518/MCP-Airflow-API)
-
----
-
-## Testing
-
-This project includes comprehensive tests for the prompt template functionality.
-
-### Running Tests
-
-```bash
-# Install development dependencies
-uv sync
-
-# Run all tests
-uv run pytest
-
-# Run tests with verbose output
-uv run pytest -v
-
-# Run specific test file
-uv run pytest tests/test_prompt_template.py -v
-```
 
 ---
 

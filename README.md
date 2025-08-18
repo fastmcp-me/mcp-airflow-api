@@ -337,8 +337,8 @@ These environment variables are essential for connecting to your Airflow instanc
 	Output: `dag_id`, `description`, `schedule_interval`, `owners`, `tags`, `start_date`, `next_dagrun`, etc.
 
 - `get_dags_detailed_batch(limit=100, offset=0, fetch_all=False, id_contains=None, name_contains=None, is_active=None, is_paused=None)`  
-	Retrieves detailed information for multiple DAGs in batch with get_dag() level detail. Combines list_dags() filtering with comprehensive DAG details.  
-	Output: `dags_detailed` (list of detailed DAG objects), `total_processed`, `processing_stats`, `applied_filters`, `pagination_info`
+	Retrieves detailed information for multiple DAGs in batch with get_dag() level detail plus latest execution information. Combines list_dags() filtering with comprehensive DAG details and recent run data.  
+	Output: `dags_detailed` (list of detailed DAG objects with `latest_dag_run` info), `total_processed`, `processing_stats`, `applied_filters`, `pagination_info`
 
 - `dag_graph(dag_id)`  
 	Retrieves task dependency graph structure for a specific DAG.  

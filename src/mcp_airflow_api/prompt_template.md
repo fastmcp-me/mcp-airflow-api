@@ -176,6 +176,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **get_dags_detailed_batch**: "Get comprehensive details for all DAGs with execution history." → `get_dags_detailed_batch(fetch_all=True)`
 - **get_dags_detailed_batch**: "Get details for active DAGs with latest run information." → `get_dags_detailed_batch(is_active=True)`
 - **get_dags_detailed_batch**: "Get detailed info for ETL DAGs with recent execution data." → `get_dags_detailed_batch(id_contains="etl")`
+
+**Note**: `get_dags_detailed_batch` returns each DAG with both configuration details (from `get_dag()`) and a `latest_dag_run` field containing the most recent execution information (run_id, state, execution_date, start_date, end_date, etc.).
+
 - **dag_graph**: "Show task graph for DAG 'example_complex'."
 - **list_tasks**: "List all tasks in DAG 'example_complex'."
 - **dag_code**: "Get source code for DAG 'example_complex'."

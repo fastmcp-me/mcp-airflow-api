@@ -333,11 +333,11 @@ The Configuration Management tools require special Airflow settings:
   Get detailed information about a specific connection.  
   Output: `connection_id`, `conn_type`, `description`, `host`, `schema`, `login`, `port`, `is_encrypted`, `is_extra_encrypted`, `extra` (password masked)
 
-- `create_connection(connection_id, conn_type, description=None, host=None, login=None, password=None, schema=None, port=None, extra=None)`  
+- `create_connection(connection_id, conn_type, description=None, host=None, login=None, password=None, db_schema=None, port=None, extra=None)`  
   Create a new connection in Airflow.  
   Output: Created connection information (excluding sensitive data) with `status: "created"`
 
-- `update_connection(connection_id, conn_type=None, description=None, host=None, login=None, password=None, schema=None, port=None, extra=None)`  
+- `update_connection(connection_id, conn_type=None, description=None, host=None, login=None, password=None, db_schema=None, port=None, extra=None)`  
   Update an existing connection in Airflow.  
   Output: Updated connection information (excluding sensitive data) with `status: "updated"`
 

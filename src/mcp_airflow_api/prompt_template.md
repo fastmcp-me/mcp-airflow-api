@@ -93,9 +93,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | get_variable        | Get specific variable details             | variable_key (str)            | key, value, description, is_encrypted |
 | **Connection Management** |                                    |                               |                                      |
 | list_connections    | List all connections in Airflow          | limit, offset, fetch_all, order_by, id_contains, conn_type_contains, description_contains | connections, total_entries, applied_filters, connection details (passwords masked) |
-| get_connection      | Get specific connection details           | connection_id (str)           | connection_id, conn_type, host, schema, login, port (password masked) |
-| create_connection   | Create a new connection                   | connection_id, conn_type, host, login, password, schema, port, extra | Created connection info, status: "created" |
-| update_connection   | Update existing connection                | connection_id, conn_type, host, login, password, schema, port, extra | Updated connection info, status: "updated" |
+| get_connection      | Get specific connection details           | connection_id (str)           | connection_id, conn_type, host, db_schema, login, port (password masked) |
+| create_connection   | Create a new connection                   | connection_id, conn_type, host, login, password, db_schema, port, extra | Created connection info, status: "created" |
+| update_connection   | Update existing connection                | connection_id, conn_type, host, login, password, db_schema, port, extra | Updated connection info, status: "updated" |
 | delete_connection   | Delete a connection                       | connection_id (str)           | connection_id, status: "deleted", confirmation message |
 | **Configuration Management** |                              |                               |                                      |
 | get_config          | Get all configuration sections and options | None                        | sections, total_sections, total_options, complete config (sensitive masked, may return 403) |

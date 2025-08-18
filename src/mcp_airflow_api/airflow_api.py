@@ -1886,7 +1886,7 @@ def create_connection(
     host: Optional[str] = None,
     login: Optional[str] = None,
     password: Optional[str] = None,
-    schema: Optional[str] = None,
+    db_schema: Optional[str] = None,
     port: Optional[int] = None,
     extra: Optional[str] = None
 ) -> Dict[str, Any]:
@@ -1900,7 +1900,7 @@ def create_connection(
         host: Host address for the connection
         login: Login/username for authentication
         password: Password for authentication (will be encrypted)
-        schema: Database schema or namespace
+        db_schema: Database schema or namespace
         port: Port number for the connection
         extra: Additional connection parameters as JSON string
     
@@ -1922,7 +1922,7 @@ def create_connection(
         "host": host,
         "login": login,
         "password": password,
-        "schema": schema,
+        "schema": db_schema,
         "port": port,
         "extra": extra
     }
@@ -1958,7 +1958,7 @@ def update_connection(
     host: Optional[str] = None,
     login: Optional[str] = None,
     password: Optional[str] = None,
-    schema: Optional[str] = None,
+    db_schema: Optional[str] = None,
     port: Optional[int] = None,
     extra: Optional[str] = None
 ) -> Dict[str, Any]:
@@ -1972,7 +1972,7 @@ def update_connection(
         host: Host address for the connection
         login: Login/username for authentication
         password: Password for authentication (will be encrypted)
-        schema: Database schema or namespace
+        db_schema: Database schema or namespace
         port: Port number for the connection
         extra: Additional connection parameters as JSON string
     
@@ -1991,7 +1991,7 @@ def update_connection(
         "host": host,
         "login": login,
         "password": password,
-        "schema": schema,
+        "schema": db_schema,
         "port": port,
         "extra": extra
     }

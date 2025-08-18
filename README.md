@@ -15,27 +15,22 @@
 ### Key Features
 - 🔍 **Natural Language Queries**: Query Airflow DAGs, tasks, and runs using plain English
 - 📊 **Comprehensive Monitoring**: Real-time cluster health, DAG status, and performance analytics  
-- 🐳 **Docker Ready**: Streamable HTTP transport with Docker Compose orchestration
-- 🔧 **43+ MCP Tools**: Complete Airflow API coverage including DAGs, tasks, pools, variables, connections, configuration, and XCom
-- ⚡ **Enterprise Scale**: Optimized pagination for large Airflow environments (1000+ DAGs)
-- 🛡️ **Production Safe**: Read-only operations by default to minimize operational risk
+- 🔧 **40+ MCP Tools**: Complete Airflow API coverage including DAGs, tasks, pools, variables, connections, configuration, and XCom
+- ⚡ **Pagination**: Optimized pagination for large Airflow environments (1000+ DAGs)
 
 ### Topics
 `apache-airflow` `mcp` `model-context-protocol` `airflow-api` `dag-management` `data-engineering` `devops` `airflow-monitoring` `llm-integration` `natural-language` `docker` `python` `workflow-automation` `airflow-tools` `data-pipelines`
 
-**Note:** This MCP server includes both read-only operations and essential DAG management functions (trigger, pause, unpause) for comprehensive Airflow cluster control. Write operations like connection management are implemented with appropriate safety measures.
+### Docuement for Airflow REST-API
+- [Airflow API Documents](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
 
 ---
 
-Tested and supported Airflow version: 2.10.2 (API Version: v1) and WSL(networkingMode = bridged)
-
-- [Airflow API Documents](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
-
-## Example Query - List DAGs
+## Example Usage - List DAGs
 
 ![ScreenShot-009](img/screenshot-000.png)
 
-## Usages
+## Setup `mcp-config.json`
 
 This MCP server supports two connection modes: **stdio** (traditional) and **streamable-http** (Docker-based). The transport mode is automatically determined by the `FASTMCP_PORT` environment variable.
 

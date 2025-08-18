@@ -2,53 +2,45 @@
 Utility functions for Airflow MCP
 """
 import os
-import requests
+import aiohttp
+import asyncio
 from typing import Any, Dict, Optional, List
 
 # Global session instance for connection pooling and performance optimization
 _airflow_session = None
 
-def get_airflow_session() -> requests.Session:
+async def get_airflow_session() -> aiohttp.ClientSession:
     """
-    Get or create a global requests.Session for Airflow API calls.
+    Get or create a global aiohttp.ClientSession for Airflow API calls.
     This enables connection pooling and Keep-Alive connections for better performance.
     """
     global _airflow_session
-    if _airflow_session is None:
-        _airflow_session = requests.Session()
+    if _airflow_session is None or _airflow_session.closed:
+        # Configure connection timeout and limits
+        timeout = aiohttp.ClientTimeout(total=30, connect=10)
+        connector = aiohttp.TCPConnector(
+            limit=10,  # Total connection limit
+            limit_per_host=5,  # Per-host connection limit
+            keepalive_timeout=30,  # Keep connections alive
+            enable_cleanup_closed=True
+        )
         
         # Configure session defaults
-        _airflow_session.headers.update({
+        headers = {
             'Content-Type': 'application/json',
             'Accept': 'application/json',
             'User-Agent': 'mcp-airflow-api/1.0'
-        })
+        }
         
-        # Configure connection pooling for better performance
-        from requests.adapters import HTTPAdapter
-        from urllib3.util.retry import Retry
-        
-        # Configure retry strategy
-        retry_strategy = Retry(
-            total=3,
-            backoff_factor=0.5,
-            status_forcelist=[429, 500, 502, 503, 504],
+        _airflow_session = aiohttp.ClientSession(
+            connector=connector,
+            timeout=timeout,
+            headers=headers
         )
-        
-        # Configure adapter with connection pooling
-        adapter = HTTPAdapter(
-            pool_connections=5,  # Number of connection pools
-            pool_maxsize=10,     # Maximum connections per pool
-            max_retries=retry_strategy
-        )
-        
-        # Mount adapter for both HTTP and HTTPS
-        _airflow_session.mount("http://", adapter)
-        _airflow_session.mount("https://", adapter)
     
     return _airflow_session
 
-def airflow_request(method: str, path: str, **kwargs) -> requests.Response:
+async def airflow_request(method: str, path: str, **kwargs) -> aiohttp.ClientResponse:
     """
     Make a Basic Auth request to Airflow REST API using a persistent session.
     This improves performance through connection pooling and Keep-Alive connections.
@@ -72,21 +64,53 @@ def airflow_request(method: str, path: str, **kwargs) -> requests.Response:
     if not username or not password:
         raise RuntimeError("AIRFLOW_API_USERNAME or AIRFLOW_API_PASSWORD environment variable is not set")
     
-    auth = (username, password)
+    auth = aiohttp.BasicAuth(username, password)
     headers = kwargs.pop("headers", {})
     
     # Use persistent session for better performance
-    session = get_airflow_session()
-    return session.request(method, full_url, headers=headers, auth=auth, **kwargs)
+    session = await get_airflow_session()
+    
+    async with session.request(method, full_url, headers=headers, auth=auth, **kwargs) as response:
+        # Store response data before context manager closes
+        response_data = await response.text()
+        response_status = response.status
+        response_headers = dict(response.headers)
+        
+        # Create a response-like object
+        class AsyncResponse:
+            def __init__(self, status, text, headers):
+                self.status_code = status
+                self._text = text
+                self._headers = headers
+                self.headers = headers
+            
+            def raise_for_status(self):
+                if self.status_code >= 400:
+                    raise aiohttp.ClientResponseError(
+                        request_info=None,
+                        history=None,
+                        status=self.status_code,
+                        message=f"HTTP {self.status_code}"
+                    )
+            
+            def json(self):
+                import json
+                return json.loads(self._text)
+            
+            @property
+            def text(self):
+                return self._text
+        
+        return AsyncResponse(response_status, response_data, response_headers)
 
-def close_airflow_session():
+async def close_airflow_session():
     """
     Close the global Airflow session and cleanup resources.
     This is optional and mainly useful for testing or application shutdown.
     """
     global _airflow_session
     if _airflow_session is not None:
-        _airflow_session.close()
+        await _airflow_session.close()
         _airflow_session = None
 
 def read_prompt_template(path: str) -> str:
@@ -150,7 +174,7 @@ def get_current_time_context() -> Dict[str, Any]:
     }
 
 # DAG-related helper functions
-def list_dags_internal(limit: int = 20,
+async def list_dags_internal(limit: int = 20,
                       offset: int = 0,
                       fetch_all: bool = False,
                       id_contains: Optional[str] = None,
@@ -178,7 +202,7 @@ def list_dags_internal(limit: int = 20,
         pages_fetched = 0
         while True:
             # recursive call without fetch_all to fetch one page
-            result = list_dags_internal(limit=limit, offset=current_offset)
+            result = await list_dags_internal(limit=limit, offset=current_offset)
             page_dags = result.get("dags", [])
             all_dags.extend(page_dags)
             pages_fetched += 1
@@ -204,7 +228,7 @@ def list_dags_internal(limit: int = 20,
     query_string = "&".join(params) if params else ""
     endpoint = f"/dags?{query_string}" if query_string else "/dags"
     
-    resp = airflow_request("GET", endpoint)
+    resp = await airflow_request("GET", endpoint)
     resp.raise_for_status()
     response_data = resp.json()
     dags = response_data.get("dags", [])
@@ -264,14 +288,14 @@ def list_dags_internal(limit: int = 20,
         }
     }
 
-def get_dag_detailed_info(dag_id: str) -> Dict[str, Any]:
+async def get_dag_detailed_info(dag_id: str) -> Dict[str, Any]:
     """
     Internal helper function to get detailed DAG information.
     This function contains the actual implementation logic that can be reused.
     """
     if not dag_id:
         raise ValueError("dag_id must not be empty")
-    resp = airflow_request("GET", f"/dags/{dag_id}")
+    resp = await airflow_request("GET", f"/dags/{dag_id}")
     resp.raise_for_status()
     dag = resp.json()
     return {

@@ -4,6 +4,7 @@ MCP tool definitions for Airflow REST API operations.
 - Airflow API Documents: https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html
 """
 import argparse
+import asyncio
 import logging
 from typing import Any, Dict, List, Optional
 from fastmcp import FastMCP
@@ -33,7 +34,7 @@ PROMPT_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "prompt_template.
 
 
 @mcp.tool()
-def get_prompt_template(section: Optional[str] = None, mode: Optional[str] = None) -> str:
+async def get_prompt_template(section: Optional[str] = None, mode: Optional[str] = None) -> str:
     """
     Returns the MCP prompt template (full, headings, or specific section).
     Args:
@@ -69,7 +70,7 @@ def get_prompt_template(section: Optional[str] = None, mode: Optional[str] = Non
     return template
 
 @mcp.tool()
-def list_dags(limit: int = 20,
+async def list_dags(limit: int = 20,
               offset: int = 0,
               fetch_all: bool = False,
               id_contains: Optional[str] = None,
@@ -110,10 +111,10 @@ def list_dags(limit: int = 20,
         - has_more_pages: Boolean indicating if more pages are available
         - next_offset: Suggested offset for next page (if has_more_pages is True)
     """
-    return list_dags_internal(limit, offset, fetch_all, id_contains, name_contains)
+    return await list_dags_internal(limit, offset, fetch_all, id_contains, name_contains)
 
 @mcp.tool()
-def get_dag(dag_id: str) -> Dict[str, Any]:
+async def get_dag(dag_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves detailed information for a specific DAG.
 
@@ -123,10 +124,10 @@ def get_dag(dag_id: str) -> Dict[str, Any]:
     Returns:
         Comprehensive DAG details: dag_id, schedule_interval, start_date, owners, tags, description, etc.
     """
-    return get_dag_detailed_info(dag_id)
+    return await get_dag_detailed_info(dag_id)
 
 @mcp.tool()
-def get_dags_detailed_batch(
+async def get_dags_detailed_batch(
     limit: int = 100,
     offset: int = 0,
     fetch_all: bool = False,
@@ -171,7 +172,7 @@ def get_dags_detailed_batch(
         - pagination_info: Current page info and remaining counts
     """
     # First get the list of DAGs with basic filtering using helper function
-    dag_list_result = list_dags_internal(
+    dag_list_result = await list_dags_internal(
         limit=limit, 
         offset=offset, 
         fetch_all=fetch_all,
@@ -202,11 +203,11 @@ def get_dags_detailed_batch(
             
         try:
             # Get detailed information for this DAG using helper function
-            detailed_dag = get_dag_detailed_info(dag_id)
+            detailed_dag = await get_dag_detailed_info(dag_id)
             
             # Also get the latest DAG run information for comprehensive details
             try:
-                latest_run_resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns?limit=1&order_by=-execution_date")
+                latest_run_resp = await airflow_request("GET", f"/dags/{dag_id}/dagRuns?limit=1&order_by=-execution_date")
                 latest_run_resp.raise_for_status()
                 latest_runs = latest_run_resp.json().get("dag_runs", [])
                 
@@ -266,7 +267,7 @@ def get_dags_detailed_batch(
     }
 
 @mcp.tool()
-def running_dags() -> Dict[str, Any]:
+async def running_dags() -> Dict[str, Any]:
     """
     [Tool Role]: Lists all currently running DAG runs in the Airflow cluster.
 
@@ -277,7 +278,7 @@ def running_dags() -> Dict[str, Any]:
     """
     # Use the global endpoint to get all DAG runs filtered by running state
     # This is much more efficient than querying each DAG individually
-    resp = airflow_request("GET", "/dags/~/dagRuns?state=running&limit=1000&order_by=-start_date")
+    resp = await airflow_request("GET", "/dags/~/dagRuns?state=running&limit=1000&order_by=-start_date")
     resp.raise_for_status()
     data = resp.json()
     
@@ -312,7 +313,7 @@ def running_dags() -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def failed_dags() -> Dict[str, Any]:
+async def failed_dags() -> Dict[str, Any]:
     """
     [Tool Role]: Lists all recently failed DAG runs in the Airflow cluster.
 
@@ -323,7 +324,7 @@ def failed_dags() -> Dict[str, Any]:
     """
     # Use the global endpoint to get all DAG runs filtered by failed state
     # This is much more efficient than querying each DAG individually
-    resp = airflow_request("GET", "/dags/~/dagRuns?state=failed&limit=1000&order_by=-start_date")
+    resp = await airflow_request("GET", "/dags/~/dagRuns?state=failed&limit=1000&order_by=-start_date")
     resp.raise_for_status()
     data = resp.json()
     
@@ -357,7 +358,7 @@ def failed_dags() -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def trigger_dag(dag_id: str) -> Dict[str, Any]:
+async def trigger_dag(dag_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Triggers a new DAG run for a specified Airflow DAG.
 
@@ -369,7 +370,7 @@ def trigger_dag(dag_id: str) -> Dict[str, Any]:
     """
     if not dag_id:
         raise ValueError("dag_id must not be empty")
-    resp = airflow_request("POST", f"/dags/{dag_id}/dagRuns", json={"conf": {}})
+    resp = await airflow_request("POST", f"/dags/{dag_id}/dagRuns", json={"conf": {}})
     resp.raise_for_status()
     run = resp.json()
     return {
@@ -382,7 +383,7 @@ def trigger_dag(dag_id: str) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def pause_dag(dag_id: str) -> Dict[str, Any]:
+async def pause_dag(dag_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Pauses the specified Airflow DAG (prevents scheduling new runs).
 
@@ -394,13 +395,13 @@ def pause_dag(dag_id: str) -> Dict[str, Any]:
     """
     if not dag_id:
         raise ValueError("dag_id must not be empty")
-    resp = airflow_request("PATCH", f"/dags/{dag_id}", json={"is_paused": True})
+    resp = await airflow_request("PATCH", f"/dags/{dag_id}", json={"is_paused": True})
     resp.raise_for_status()
     dag = resp.json()
     return {"dag_id": dag.get("dag_id", dag_id), "is_paused": dag.get("is_paused", True)}
 
 @mcp.tool()
-def unpause_dag(dag_id: str) -> Dict[str, Any]:
+async def unpause_dag(dag_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Unpauses the specified Airflow DAG (allows scheduling new runs).
 
@@ -412,13 +413,13 @@ def unpause_dag(dag_id: str) -> Dict[str, Any]:
     """
     if not dag_id:
         raise ValueError("dag_id must not be empty")
-    resp = airflow_request("PATCH", f"/dags/{dag_id}", json={"is_paused": False})
+    resp = await airflow_request("PATCH", f"/dags/{dag_id}", json={"is_paused": False})
     resp.raise_for_status()
     dag = resp.json()
     return {"dag_id": dag.get("dag_id", dag_id), "is_paused": dag.get("is_paused", False)}
 
 @mcp.tool()
-def dag_graph(dag_id: str) -> Dict[str, Any]:
+async def dag_graph(dag_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves the task dependency graph structure for a specific DAG.
 
@@ -430,7 +431,7 @@ def dag_graph(dag_id: str) -> Dict[str, Any]:
     """
     if not dag_id:
         raise ValueError("dag_id must not be empty")
-    resp = airflow_request("GET", f"/dags/{dag_id}/tasks")
+    resp = await airflow_request("GET", f"/dags/{dag_id}/tasks")
     resp.raise_for_status()
     tasks = resp.json().get("tasks", [])
     
@@ -454,7 +455,7 @@ def dag_graph(dag_id: str) -> Dict[str, Any]:
     return graph_data
 
 @mcp.tool()
-def list_tasks(dag_id: str) -> Dict[str, Any]:
+async def list_tasks(dag_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Lists all tasks for a specific DAG.
 
@@ -466,7 +467,7 @@ def list_tasks(dag_id: str) -> Dict[str, Any]:
     """
     if not dag_id:
         raise ValueError("dag_id must not be empty")
-    resp = airflow_request("GET", f"/dags/{dag_id}/tasks")
+    resp = await airflow_request("GET", f"/dags/{dag_id}/tasks")
     resp.raise_for_status()
     tasks = resp.json().get("tasks", [])
     
@@ -502,7 +503,7 @@ def list_tasks(dag_id: str) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def dag_code(dag_id: str) -> Dict[str, Any]:
+async def dag_code(dag_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves the source code for a specific DAG.
 
@@ -516,7 +517,7 @@ def dag_code(dag_id: str) -> Dict[str, Any]:
         raise ValueError("dag_id must not be empty")
     
     # First get DAG details to obtain file_token
-    dag_resp = airflow_request("GET", f"/dags/{dag_id}")
+    dag_resp = await airflow_request("GET", f"/dags/{dag_id}")
     dag_resp.raise_for_status()
     dag_data = dag_resp.json()
     
@@ -526,7 +527,7 @@ def dag_code(dag_id: str) -> Dict[str, Any]:
     
     # Now get the source code using the file_token
     # Note: This endpoint returns plain text, not JSON
-    source_resp = airflow_request("GET", f"/dagSources/{file_token}")
+    source_resp = await airflow_request("GET", f"/dagSources/{file_token}")
     source_resp.raise_for_status()
     
     # Get the plain text content directly
@@ -539,7 +540,7 @@ def dag_code(dag_id: str) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None, limit: int = 20, offset: int = 0) -> Dict[str, Any]:
+async def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None, limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: Lists event log entries with optional filtering.
 
@@ -565,7 +566,7 @@ def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None,
     params.append(f"offset={offset}")
     
     query_string = "&".join(params)
-    resp = airflow_request("GET", f"/eventLogs?{query_string}")
+    resp = await airflow_request("GET", f"/eventLogs?{query_string}")
     resp.raise_for_status()
     logs = resp.json()
     
@@ -607,7 +608,7 @@ def list_event_logs(dag_id: str = None, task_id: str = None, run_id: str = None,
     }
 
 @mcp.tool()
-def get_event_log(event_log_id: int) -> Dict[str, Any]:
+async def get_event_log(event_log_id: int) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves a specific event log entry by ID.
 
@@ -620,7 +621,7 @@ def get_event_log(event_log_id: int) -> Dict[str, Any]:
     if not event_log_id:
         raise ValueError("event_log_id must not be empty")
     
-    resp = airflow_request("GET", f"/eventLogs/{event_log_id}")
+    resp = await airflow_request("GET", f"/eventLogs/{event_log_id}")
     resp.raise_for_status()
     log = resp.json()
     
@@ -638,7 +639,7 @@ def get_event_log(event_log_id: int) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def all_dag_event_summary() -> Dict[str, Any]:
+async def all_dag_event_summary() -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves event count summary for all DAGs.
 
@@ -646,7 +647,7 @@ def all_dag_event_summary() -> Dict[str, Any]:
         Summary of event counts by DAG: dag_summaries, total_dags, total_events
     """
     # First get all DAGs with increased limit to avoid missing DAGs in large environments
-    dags_resp = airflow_request("GET", "/dags?limit=1000")
+    dags_resp = await airflow_request("GET", "/dags?limit=1000")
     dags_resp.raise_for_status()
     dags = dags_resp.json().get("dags", [])
     
@@ -660,7 +661,7 @@ def all_dag_event_summary() -> Dict[str, Any]:
             
         # Get event count for this DAG (using limit=1 and checking total_entries)
         try:
-            events_resp = airflow_request("GET", f"/eventLogs?dag_id={dag_id}&limit=1")
+            events_resp = await airflow_request("GET", f"/eventLogs?dag_id={dag_id}&limit=1")
             events_resp.raise_for_status()
             events_data = events_resp.json()
             event_count = events_data.get("total_entries", 0)
@@ -688,7 +689,7 @@ def all_dag_event_summary() -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def list_import_errors(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
+async def list_import_errors(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: Lists import errors with optional filtering.
 
@@ -703,7 +704,7 @@ def list_import_errors(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     params = [f"limit={limit}", f"offset={offset}"]
     query_string = "&".join(params)
     
-    resp = airflow_request("GET", f"/importErrors?{query_string}")
+    resp = await airflow_request("GET", f"/importErrors?{query_string}")
     resp.raise_for_status()
     errors = resp.json()
     
@@ -739,7 +740,7 @@ def list_import_errors(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def get_import_error(import_error_id: int) -> Dict[str, Any]:
+async def get_import_error(import_error_id: int) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves a specific import error by ID.
 
@@ -752,7 +753,7 @@ def get_import_error(import_error_id: int) -> Dict[str, Any]:
     if not import_error_id:
         raise ValueError("import_error_id must not be empty")
     
-    resp = airflow_request("GET", f"/importErrors/{import_error_id}")
+    resp = await airflow_request("GET", f"/importErrors/{import_error_id}")
     resp.raise_for_status()
     error = resp.json()
     
@@ -764,7 +765,7 @@ def get_import_error(import_error_id: int) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def all_dag_import_summary() -> Dict[str, Any]:
+async def all_dag_import_summary() -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves import error summary for all DAGs.
 
@@ -773,7 +774,7 @@ def all_dag_import_summary() -> Dict[str, Any]:
     """
     # Get all import errors (using a large limit to get all)
     try:
-        errors_resp = airflow_request("GET", "/importErrors?limit=1000")
+        errors_resp = await airflow_request("GET", "/importErrors?limit=1000")
         errors_resp.raise_for_status()
         errors_data = errors_resp.json()
         errors = errors_data.get("import_errors", [])
@@ -817,7 +818,7 @@ def all_dag_import_summary() -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def dag_run_duration(dag_id: str, limit: int = 50) -> Dict[str, Any]:
+async def dag_run_duration(dag_id: str, limit: int = 50) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves run duration statistics for a specific DAG.
 
@@ -830,7 +831,7 @@ def dag_run_duration(dag_id: str, limit: int = 50) -> Dict[str, Any]:
     """
     if not dag_id:
         raise ValueError("dag_id must not be empty")
-    resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns?limit={limit}&order_by=-execution_date")
+    resp = await airflow_request("GET", f"/dags/{dag_id}/dagRuns?limit={limit}&order_by=-execution_date")
     resp.raise_for_status()
     runs = resp.json().get("dag_runs", [])
     
@@ -868,7 +869,7 @@ def dag_run_duration(dag_id: str, limit: int = 50) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def dag_task_duration(dag_id: str, run_id: str = None) -> Dict[str, Any]:
+async def dag_task_duration(dag_id: str, run_id: str = None) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves task duration information for a specific DAG run.
 
@@ -884,7 +885,7 @@ def dag_task_duration(dag_id: str, run_id: str = None) -> Dict[str, Any]:
     
     # If no run_id provided, get the latest run
     if not run_id:
-        runs_resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns?limit=1&order_by=-execution_date")
+        runs_resp = await airflow_request("GET", f"/dags/{dag_id}/dagRuns?limit=1&order_by=-execution_date")
         runs_resp.raise_for_status()
         runs = runs_resp.json().get("dag_runs", [])
         if not runs:
@@ -892,7 +893,7 @@ def dag_task_duration(dag_id: str, run_id: str = None) -> Dict[str, Any]:
         run_id = runs[0].get("run_id")
     
     # Get task instances for the run
-    resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns/{run_id}/taskInstances")
+    resp = await airflow_request("GET", f"/dags/{dag_id}/dagRuns/{run_id}/taskInstances")
     resp.raise_for_status()
     tasks = resp.json().get("task_instances", [])
     
@@ -927,7 +928,7 @@ def dag_task_duration(dag_id: str, run_id: str = None) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None, limit: int = 20) -> Dict[str, Any]:
+async def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None, limit: int = 20) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves calendar/schedule information for a specific DAG.
 
@@ -944,7 +945,7 @@ def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None, limi
         raise ValueError("dag_id must not be empty")
     
     # Get DAG details for schedule info
-    dag_resp = airflow_request("GET", f"/dags/{dag_id}")
+    dag_resp = await airflow_request("GET", f"/dags/{dag_id}")
     dag_resp.raise_for_status()
     dag = dag_resp.json()
     
@@ -956,7 +957,7 @@ def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None, limi
         query_params += f"&start_date_lte={end_date}T23:59:59Z"
     
     # Get DAG runs within date range
-    runs_resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns{query_params}")
+    runs_resp = await airflow_request("GET", f"/dags/{dag_id}/dagRuns{query_params}")
     runs_resp.raise_for_status()
     runs = runs_resp.json().get("dag_runs", [])
     
@@ -988,14 +989,14 @@ def dag_calendar(dag_id: str, start_date: str = None, end_date: str = None, limi
     }
 
 @mcp.tool()
-def get_health() -> Dict[str, Any]:
+async def get_health() -> Dict[str, Any]:
     """
     [Tool Role]: Get the health status of the Airflow webserver instance.
     
     Returns:
         Health status information including metadatabase and scheduler status
     """
-    resp = airflow_request("GET", "/health")
+    resp = await airflow_request("GET", "/health")
     resp.raise_for_status()
     health_data = resp.json()
     
@@ -1009,14 +1010,14 @@ def get_health() -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def get_version() -> Dict[str, Any]:
+async def get_version() -> Dict[str, Any]:
     """
     [Tool Role]: Get version information of the Airflow instance.
     
     Returns:
         Version information including Airflow version, Git version, and build info
     """
-    resp = airflow_request("GET", "/version")
+    resp = await airflow_request("GET", "/version")
     resp.raise_for_status()
     version_data = resp.json()
     
@@ -1028,7 +1029,7 @@ def get_version() -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def list_pools(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
+async def list_pools(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: List all pools in the Airflow instance.
     
@@ -1040,7 +1041,7 @@ def list_pools(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
         List of pools with their configuration and usage information
     """
     query_params = f"?limit={limit}&offset={offset}"
-    resp = airflow_request("GET", f"/pools{query_params}")
+    resp = await airflow_request("GET", f"/pools{query_params}")
     resp.raise_for_status()
     pools_data = resp.json()
     
@@ -1065,7 +1066,7 @@ def list_pools(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def get_pool(pool_name: str) -> Dict[str, Any]:
+async def get_pool(pool_name: str) -> Dict[str, Any]:
     """
     [Tool Role]: Get detailed information about a specific pool.
     
@@ -1078,7 +1079,7 @@ def get_pool(pool_name: str) -> Dict[str, Any]:
     if not pool_name:
         raise ValueError("pool_name must not be empty")
     
-    resp = airflow_request("GET", f"/pools/{pool_name}")
+    resp = await airflow_request("GET", f"/pools/{pool_name}")
     resp.raise_for_status()
     pool_data = resp.json()
     
@@ -1102,7 +1103,7 @@ def get_pool(pool_name: str) -> Dict[str, Any]:
 # Note: get_current_time_context is now an internal helper in functions.py, not exposed as an MCP tool.
 
 @mcp.tool()
-def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: str = None, pool: str = None, queue: str = None, limit: int = 20, offset: int = 0) -> Dict[str, Any]:
+async def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: str = None, pool: str = None, queue: str = None, limit: int = 20, offset: int = 0) -> Dict[str, Any]:
     """
     [Tool Role]: Lists task instances across all DAGs or filtered by specific DAG with comprehensive filtering options.
     
@@ -1188,7 +1189,7 @@ def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, executio
         # Use global endpoint when no specific dag_id
         endpoint = f"/dags/~/dagRuns/~/taskInstances?{query_string}"
     
-    resp = airflow_request("GET", endpoint)
+    resp = await airflow_request("GET", endpoint)
     resp.raise_for_status()
     data = resp.json()
     
@@ -1233,7 +1234,7 @@ def list_task_instances_all(dag_id: str = None, dag_run_id: str = None, executio
     }
 
 @mcp.tool()
-def get_task_instance_details(dag_id: str, dag_run_id: str, task_id: str) -> Dict[str, Any]:
+async def get_task_instance_details(dag_id: str, dag_run_id: str, task_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves detailed information about a specific task instance.
 
@@ -1248,7 +1249,7 @@ def get_task_instance_details(dag_id: str, dag_run_id: str, task_id: str) -> Dic
     if not dag_id or not dag_run_id or not task_id:
         raise ValueError("dag_id, dag_run_id, and task_id must not be empty")
     
-    resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}")
+    resp = await airflow_request("GET", f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}")
     resp.raise_for_status()
     task = resp.json()
     
@@ -1284,7 +1285,7 @@ def get_task_instance_details(dag_id: str, dag_run_id: str, task_id: str) -> Dic
     }
 
 @mcp.tool()
-def list_task_instances_batch(dag_ids: List[str] = None, dag_run_ids: List[str] = None, task_ids: List[str] = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: List[str] = None, pool: List[str] = None, queue: List[str] = None) -> Dict[str, Any]:
+async def list_task_instances_batch(dag_ids: List[str] = None, dag_run_ids: List[str] = None, task_ids: List[str] = None, execution_date_gte: str = None, execution_date_lte: str = None, start_date_gte: str = None, start_date_lte: str = None, end_date_gte: str = None, end_date_lte: str = None, duration_gte: float = None, duration_lte: float = None, state: List[str] = None, pool: List[str] = None, queue: List[str] = None) -> Dict[str, Any]:
     """
     [Tool Role]: Lists task instances in batch with multiple filtering criteria for bulk operations.
     
@@ -1343,7 +1344,7 @@ def list_task_instances_batch(dag_ids: List[str] = None, dag_run_ids: List[str] 
             request_body[key] = value
     
     # Make POST request for batch operation
-    resp = airflow_request("POST", "/dags/~/dagRuns/~/taskInstances/list", json=request_body)
+    resp = await airflow_request("POST", "/dags/~/dagRuns/~/taskInstances/list", json=request_body)
     resp.raise_for_status()
     data = resp.json()
     
@@ -1377,7 +1378,7 @@ def list_task_instances_batch(dag_ids: List[str] = None, dag_run_ids: List[str] 
     }
 
 @mcp.tool()
-def get_task_instance_extra_links(dag_id: str, dag_run_id: str, task_id: str) -> Dict[str, Any]:
+async def get_task_instance_extra_links(dag_id: str, dag_run_id: str, task_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Lists extra links for a specific task instance (e.g., monitoring dashboards, logs, external resources).
 
@@ -1392,7 +1393,7 @@ def get_task_instance_extra_links(dag_id: str, dag_run_id: str, task_id: str) ->
     if not dag_id or not dag_run_id or not task_id:
         raise ValueError("dag_id, dag_run_id, and task_id must not be empty")
     
-    resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}/links")
+    resp = await airflow_request("GET", f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}/links")
     resp.raise_for_status()
     links_data = resp.json()
     
@@ -1416,7 +1417,7 @@ def get_task_instance_extra_links(dag_id: str, dag_run_id: str, task_id: str) ->
     }
 
 @mcp.tool()
-def get_task_instance_logs(dag_id: str, dag_run_id: str, task_id: str, try_number: int = 1, full_content: bool = False, token: str = None) -> Dict[str, Any]:
+async def get_task_instance_logs(dag_id: str, dag_run_id: str, task_id: str, try_number: int = 1, full_content: bool = False, token: str = None) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves logs for a specific task instance and its try number with content and metadata.
 
@@ -1440,7 +1441,7 @@ def get_task_instance_logs(dag_id: str, dag_run_id: str, task_id: str, try_numbe
         params.append(f"token={token}")
     
     query_string = "&".join(params)
-    resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}/logs/{try_number}?{query_string}")
+    resp = await airflow_request("GET", f"/dags/{dag_id}/dagRuns/{dag_run_id}/taskInstances/{task_id}/logs/{try_number}?{query_string}")
     resp.raise_for_status()
     
     # The response might be plain text for logs or JSON with metadata
@@ -1483,7 +1484,7 @@ def get_task_instance_logs(dag_id: str, dag_run_id: str, task_id: str, try_numbe
 #========================================================================================
 
 @mcp.tool()
-def list_variables(limit: int = 20, offset: int = 0, order_by: str = "key") -> Dict[str, Any]:
+async def list_variables(limit: int = 20, offset: int = 0, order_by: str = "key") -> Dict[str, Any]:
     """
     [Tool Role]: Lists all variables stored in Airflow.
 
@@ -1498,7 +1499,7 @@ def list_variables(limit: int = 20, offset: int = 0, order_by: str = "key") -> D
     params = [f"limit={limit}", f"offset={offset}", f"order_by={order_by}"]
     query_string = "&".join(params)
     
-    resp = airflow_request("GET", f"/variables?{query_string}")
+    resp = await airflow_request("GET", f"/variables?{query_string}")
     resp.raise_for_status()
     data = resp.json()
     
@@ -1520,7 +1521,7 @@ def list_variables(limit: int = 20, offset: int = 0, order_by: str = "key") -> D
     }
 
 @mcp.tool()
-def get_variable(variable_key: str) -> Dict[str, Any]:
+async def get_variable(variable_key: str) -> Dict[str, Any]:
     """
     [Tool Role]: Retrieves a specific variable by its key from Airflow.
 
@@ -1533,7 +1534,7 @@ def get_variable(variable_key: str) -> Dict[str, Any]:
     if not variable_key:
         raise ValueError("variable_key must not be empty")
     
-    resp = airflow_request("GET", f"/variables/{variable_key}")
+    resp = await airflow_request("GET", f"/variables/{variable_key}")
     resp.raise_for_status()
     var = resp.json()
     
@@ -1551,7 +1552,7 @@ def get_variable(variable_key: str) -> Dict[str, Any]:
 #========================================================================================
 
 @mcp.tool()
-def list_xcom_entries(
+async def list_xcom_entries(
     dag_id: str,
     dag_run_id: str,
     task_id: str,
@@ -1577,7 +1578,7 @@ def list_xcom_entries(
         "offset": offset
     }
     
-    resp = airflow_request("GET", path, params=params)
+    resp = await airflow_request("GET", path, params=params)
     resp.raise_for_status()
     data = resp.json()
     
@@ -1608,7 +1609,7 @@ def list_xcom_entries(
     }
 
 @mcp.tool()
-def get_xcom_entry(
+async def get_xcom_entry(
     dag_id: str,
     dag_run_id: str,
     task_id: str,
@@ -1633,7 +1634,7 @@ def get_xcom_entry(
     if map_index != -1:
         params["map_index"] = map_index
         
-    resp = airflow_request("GET", path, params=params)
+    resp = await airflow_request("GET", path, params=params)
     resp.raise_for_status()
     entry = resp.json()
     
@@ -1689,7 +1690,7 @@ def prompt_template_section_prompt(section: Optional[str] = None) -> str:
 #========================================================================================
 
 @mcp.tool()
-def list_connections(limit: int = 20, 
+async def list_connections(limit: int = 20, 
                     offset: int = 0, 
                     fetch_all: bool = False,
                     order_by: str = "connection_id",
@@ -1732,7 +1733,7 @@ def list_connections(limit: int = 20,
                 params.append(f"order_by={order_by}")
             
             query_string = "&".join(params)
-            resp = airflow_request("GET", f"/connections?{query_string}")
+            resp = await airflow_request("GET", f"/connections?{query_string}")
             resp.raise_for_status()
             batch_data = resp.json()
             
@@ -1756,7 +1757,7 @@ def list_connections(limit: int = 20,
             params.append(f"order_by={order_by}")
         
         query_string = "&".join(params)
-        resp = airflow_request("GET", f"/connections?{query_string}")
+        resp = await airflow_request("GET", f"/connections?{query_string}")
         resp.raise_for_status()
         data = resp.json()
         
@@ -1846,7 +1847,7 @@ def list_connections(limit: int = 20,
     }
 
 @mcp.tool()
-def get_connection(connection_id: str) -> Dict[str, Any]:
+async def get_connection(connection_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Get detailed information about a specific connection.
     
@@ -1859,7 +1860,7 @@ def get_connection(connection_id: str) -> Dict[str, Any]:
     if not connection_id:
         raise ValueError("connection_id must not be empty")
     
-    resp = airflow_request("GET", f"/connections/{connection_id}")
+    resp = await airflow_request("GET", f"/connections/{connection_id}")
     resp.raise_for_status()
     conn = resp.json()
     
@@ -1879,7 +1880,7 @@ def get_connection(connection_id: str) -> Dict[str, Any]:
     }
 
 @mcp.tool()
-def create_connection(
+async def create_connection(
     connection_id: str,
     conn_type: str,
     description: Optional[str] = None,
@@ -1931,7 +1932,7 @@ def create_connection(
         if value is not None:
             conn_data[key] = value
     
-    resp = airflow_request("POST", "/connections", json=conn_data)
+    resp = await airflow_request("POST", "/connections", json=conn_data)
     resp.raise_for_status()
     conn = resp.json()
     
@@ -1951,7 +1952,7 @@ def create_connection(
     }
 
 @mcp.tool()
-def update_connection(
+async def update_connection(
     connection_id: str,
     conn_type: Optional[str] = None,
     description: Optional[str] = None,
@@ -2003,7 +2004,7 @@ def update_connection(
     if not conn_data:
         raise ValueError("At least one field must be provided for update")
     
-    resp = airflow_request("PATCH", f"/connections/{connection_id}", json=conn_data)
+    resp = await airflow_request("PATCH", f"/connections/{connection_id}", json=conn_data)
     resp.raise_for_status()
     conn = resp.json()
     
@@ -2023,7 +2024,7 @@ def update_connection(
     }
 
 @mcp.tool()
-def delete_connection(connection_id: str) -> Dict[str, Any]:
+async def delete_connection(connection_id: str) -> Dict[str, Any]:
     """
     [Tool Role]: Delete a connection from Airflow.
     
@@ -2036,7 +2037,7 @@ def delete_connection(connection_id: str) -> Dict[str, Any]:
     if not connection_id:
         raise ValueError("connection_id must not be empty")
     
-    resp = airflow_request("DELETE", f"/connections/{connection_id}")
+    resp = await airflow_request("DELETE", f"/connections/{connection_id}")
     resp.raise_for_status()
     
     return {
@@ -2050,7 +2051,7 @@ def delete_connection(connection_id: str) -> Dict[str, Any]:
 #========================================================================================
 
 @mcp.tool()
-def get_config() -> Dict[str, Any]:
+async def get_config() -> Dict[str, Any]:
     """
     [Tool Role]: Get all configuration sections and options from the Airflow instance.
     
@@ -2061,7 +2062,7 @@ def get_config() -> Dict[str, Any]:
         Complete Airflow configuration: sections with their options and values
     """
     try:
-        resp = airflow_request("GET", "/config")
+        resp = await airflow_request("GET", "/config")
         resp.raise_for_status()
         config_data = resp.json()
         
@@ -2129,7 +2130,7 @@ def get_config() -> Dict[str, Any]:
             }
 
 @mcp.tool()
-def list_config_sections() -> Dict[str, Any]:
+async def list_config_sections() -> Dict[str, Any]:
     """
     [Tool Role]: List all available configuration sections with summary information.
     
@@ -2172,7 +2173,7 @@ def list_config_sections() -> Dict[str, Any]:
         }
 
 @mcp.tool()
-def get_config_section(section: str) -> Dict[str, Any]:
+async def get_config_section(section: str) -> Dict[str, Any]:
     """
     [Tool Role]: Get all configuration options for a specific section.
     
@@ -2222,7 +2223,7 @@ def get_config_section(section: str) -> Dict[str, Any]:
         }
 
 @mcp.tool()
-def search_config_options(search_term: str) -> Dict[str, Any]:
+async def search_config_options(search_term: str) -> Dict[str, Any]:
     """
     [Tool Role]: Search for configuration options by key name.
     
@@ -2312,7 +2313,7 @@ def main(argv: Optional[List[str]] = None):
     # Set logging level
     logging.getLogger().setLevel(log_level)
     logger.setLevel(log_level)
-    logging.getLogger("requests.packages.urllib3").setLevel("WARNING")  # reduce noise at DEBUG
+    logging.getLogger("aiohttp.client").setLevel("WARNING")  # reduce noise at DEBUG
     
     if args.log_level:
         logger.info("Log level set via CLI to %s", args.log_level)

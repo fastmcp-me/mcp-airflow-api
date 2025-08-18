@@ -15,8 +15,8 @@ services:
   mcp-server:
     image: call518/mcp-server-airflow-api:1.0.0
     container_name: mcp-airflow-api-mcp-server
-    ports: ### (WARNING) Must be same with port number in mcp-config.json.stdio
-      - "18002:18000"
+    ports:
+      - "18002:18000" ### (WARNING) Must be same with port number in mcp-config.json.http
     environment:
       - PYTHONPATH=/app/src
       - FASTMCP_HOST=0.0.0.0

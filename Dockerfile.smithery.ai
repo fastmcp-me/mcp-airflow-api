@@ -28,8 +28,9 @@ RUN uv sync
 RUN pip install .
 
 ENV PYTHONPATH=/app/src
+ENV FASTMCP_TYPE=streamable-http
 ENV FASTMCP_HOST=0.0.0.0
-ENV FASTMCP_PORT=18002
+ENV FASTMCP_PORT=8080
 EXPOSE ${FASTMCP_PORT}
 
 # CMD ["python", "-m", "mcp_airflow_api.airflow_api"]

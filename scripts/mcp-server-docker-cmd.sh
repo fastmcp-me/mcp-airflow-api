@@ -1,6 +1,7 @@
 #!/bin/bash
 
 export PYTHONPATH=${PYTHONPATH}
+export FASTMCP_TYPE=${FASTMCP_TYPE}
 export FASTMCP_HOST=${FASTMCP_HOST}
 export FASTMCP_PORT=${FASTMCP_PORT}
 export AIRFLOW_API_URL=${AIRFLOW_API_URL}
@@ -8,4 +9,4 @@ export AIRFLOW_API_USERNAME=${AIRFLOW_API_USERNAME}
 export AIRFLOW_API_PASSWORD=${AIRFLOW_API_PASSWORD}
 export AIRFLOW_LOG_LEVEL=${AIRFLOW_LOG_LEVEL}
 
-python -m mcp_airflow_api.airflow_api
+python -m mcp_airflow_api.airflow_api --type ${FASTMCP_TYPE} --host ${FASTMCP_HOST} --port ${FASTMCP_PORT}

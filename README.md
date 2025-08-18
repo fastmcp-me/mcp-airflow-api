@@ -101,11 +101,10 @@ cd MCP-Airflow-API
 ```
 
 - Create Python venv (two Options)
-
   - Option-1: with uv
 
   ```bash
-  uv vene --python 3.11 --seed
+  uv venv --python 3.11 --seed
   ```
 
   - Option-2: with pip

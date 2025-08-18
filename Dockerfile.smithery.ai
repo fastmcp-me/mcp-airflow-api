@@ -32,4 +32,5 @@ ENV FASTMCP_HOST=0.0.0.0
 ENV FASTMCP_PORT=18000
 EXPOSE ${FASTMCP_PORT}
 
-CMD ["python", "-m", "mcp_airflow_api.airflow_api"]
+# CMD ["python", "-m", "mcp_airflow_api.airflow_api"]
+CMD ["/bin/bash", "/app/scripts/mcp-server-docker-cmd.sh"]

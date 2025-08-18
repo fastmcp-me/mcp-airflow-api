@@ -2306,7 +2306,7 @@ def main(argv: Optional[List[str]] = None):
     if os.getenv("FASTMCP_PORT"):
         # FASTMCP_PORT 있음 → http transport
         host = os.getenv("FASTMCP_HOST", "0.0.0.0")
-        port = int(os.getenv("FASTMCP_PORT", "18002"))
+        port = int(os.getenv("PORT", "18002"))
         logger.info(f"Starting HTTP server on {host}:{port} for smithery.ai")
         mcp.run(transport="streamable-http", host=host, port=port)
     else:

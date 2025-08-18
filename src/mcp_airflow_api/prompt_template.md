@@ -97,6 +97,12 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | create_connection   | Create a new connection                   | connection_id, conn_type, host, login, password, schema, port, extra | Created connection info, status: "created" |
 | update_connection   | Update existing connection                | connection_id, conn_type, host, login, password, schema, port, extra | Updated connection info, status: "updated" |
 | delete_connection   | Delete a connection                       | connection_id (str)           | connection_id, status: "deleted", confirmation message |
+| **Configuration Management** |                              |                               |                                      |
+| get_config          | Get all configuration sections and options | None                        | sections, total_sections, total_options, complete config (sensitive masked) |
+| get_config_section  | Get specific configuration section        | section (str)             | section options, total_options, sensitive_options, section details |
+| get_config_option   | Get specific configuration option         | section, option (str)     | option value, source, description, is_sensitive, masked status |
+| list_config_sections | List all configuration sections          | None                      | sections summary, total_sections, total_options, common sections |
+| search_config_options | Search configuration options            | search_term, section      | matches, total_matches, match_breakdown, filtered options |
 | **Task Instance Management** |                               |                               |                                      |
 | list_task_instances_all | List task instances with filtering    | dag_id, dag_run_id, dates, state, pool, queue, limit, offset | task_instances, total_entries, applied_filters |
 | get_task_instance_details | Get detailed task instance info     | dag_id, dag_run_id, task_id   | Comprehensive task details, execution info, state, timing |

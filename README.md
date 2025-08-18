@@ -37,7 +37,7 @@ Tested and supported Airflow version: 2.10.2 (API Version: v1) and WSL(networkin
 
 ## Usages
 
-This MCP server supports two connection modes: **stdio** (traditional) and **streamable-http** (Docker-based). The transport mode is automatically determined by the `MCP_SERVER_PORT` environment variable.
+This MCP server supports two connection modes: **stdio** (traditional) and **streamable-http** (Docker-based). The transport mode is automatically determined by the `FASTMCP_PORT` environment variable.
 
 ### Method 1: Local MCP (transport="stdio")
 
@@ -73,8 +73,8 @@ This MCP server supports two connection modes: **stdio** (traditional) and **str
 
 **Transport Selection Logic:**
 
-- **stdio mode**: When `MCP_SERVER_PORT` environment variable is NOT set
-- **streamable-http mode**: When `MCP_SERVER_PORT` environment variable is set
+- **stdio mode**: When `FASTMCP_PORT` environment variable is NOT set
+- **streamable-http mode**: When `FASTMCP_PORT` environment variable is set
 
 ---
 
@@ -151,7 +151,7 @@ The project includes a comprehensive Docker Compose setup with three separate se
 2. **mcp-server**: MCP Airflow API server (port 18002, internal 18000)
    - FastMCP-based MCP server with Airflow API tools
    - Built from `Dockerfile.MCP-Server` (Rocky Linux 9.3, Python 3.11)
-   - Runs http transport when `MCP_SERVER_PORT` is set
+   - Runs http transport when `FASTMCP_PORT` is set
 
 3. **mcpo-proxy**: MCP-to-OpenAPI proxy (port 8002)
    - MCPO proxy for converting MCP tools to REST API endpoints
@@ -172,7 +172,7 @@ The Docker setup uses these configuration files:
 
 The MCP server container uses these environment variables:
 
-- `MCP_SERVER_PORT=18000`: Enables streamable-http transport mode
+- `FASTMCP_PORT=18000`: Enables streamable-http transport mode
 - `AIRFLOW_API_URL`: Your Airflow API endpoint
 - `AIRFLOW_API_USERNAME`: Airflow username
 - `AIRFLOW_API_PASSWORD`: Airflow password
@@ -217,7 +217,7 @@ These environment variables are essential for connecting to your Airflow instanc
 
 ### Transport Control Variables
 
-- `MCP_SERVER_PORT`: Controls the transport mode selection
+- `FASTMCP_PORT`: Controls the transport mode selection
   - **When NOT set**: Uses stdio transport (traditional MCP mode)
   - **When set**: Uses http transport (Docker mode)
   - Example: `18000` (for Docker container internal port)

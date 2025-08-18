@@ -19,7 +19,6 @@ services:
       - "18002:18000"
     environment:
       - PYTHONPATH=/app/src
-      - FASTMCP_HOST=0.0.0.0
       - FASTMCP_PORT=18000
       - AIRFLOW_API_URL=http://host.docker.internal:38080/api/v1
       - AIRFLOW_API_USERNAME=airflow

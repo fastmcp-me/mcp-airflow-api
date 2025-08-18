@@ -17,7 +17,7 @@ RUN git fetch --tags origin && \
     LATEST_TAG=$(git tag | tail -n 1) && \
     echo "LATEST_TAG='$LATEST_TAG'" && \
     sed -i "s|^version = \".*\"|version = \"${LATEST_TAG}\"|" pyproject.toml && \
-    rm -rf .git
+    rm -rf .git .github img test .venv
 
 RUN pip install --no-cache-dir --upgrade wheel
 
@@ -27,6 +27,7 @@ RUN uv sync
 
 RUN pip install .
 
+ENV FASTMCP_HOST=0.0.0.0
 ENV PORT=18000
 ENV MCP_SERVER_PORT=${PORT}
 EXPOSE ${PORT}

@@ -25,7 +25,14 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ## 3. Available MCP Tools
 
 ### Basic DAG Management
- `list_dags(limit=20, offset=0, fetch_all=False, id_contains=None, name_contains=None)`: List DAGs with pagination and optional filters. Set `fetch_all=True` to retrieve all pages automatically.
+- `list_dags(limit=20, offset=0, fetch_all=False, id_contains=None, name_contains=None)`: List DAGs with pagination and optional filters. Set `fetch_all=True` to retrieve all pages automatically.
+- `get_dag(dag_id)`: Get comprehensive details for a specific DAG.
+- `get_dags_detailed_batch(limit=100, offset=0, fetch_all=False, id_contains=None, name_contains=None, is_active=None, is_paused=None)`: Retrieve detailed information for multiple DAGs in batch with get_dag() level detail plus latest execution information. Combines filtering with comprehensive DAG details collection including recent run data.
+- `running_dags`: List all currently running DAG runs.
+- `failed_dags`: List all failed DAG runs.
+- `trigger_dag(dag_id)`: Trigger a specific DAG run.
+- `pause_dag(dag_id)`: Pause a specific DAG.
+- `unpause_dag(dag_id)`: Unpause a specific DAG.
 ### Cluster Management & Health
 - `get_health`: Get the health status of the Airflow webserver instance.
 - `get_version`: Get version information of the Airflow instance.
@@ -95,6 +102,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | get_xcom_entry      | Get specific XCom entry                   | dag_id, dag_run_id, task_id, xcom_key, map_index | key, value, timestamp, execution_date, run_id |
 | **DAG Analysis & Monitoring** |                                   |                               |                                      |
 | get_dag             | Get comprehensive DAG details             | dag_id (str)                  | dag_id, schedule_interval, start_date, owners, tags, description, etc. |
+| get_dags_detailed_batch | Get detailed info for multiple DAGs with latest run data | limit (int), offset (int), fetch_all (bool), id_contains (str), name_contains (str), is_active (bool), is_paused (bool) | dags_detailed, total_processed, processing_stats, applied_filters, pagination_info |
 | dag_graph           | Get task dependency graph                 | dag_id (str)                  | dag_id, tasks, dependencies, total_tasks |
 | list_tasks          | List all tasks for a specific DAG        | dag_id (str)                  | dag_id, tasks, task_configuration_details |
 | dag_code            | Get DAG source code                       | dag_id (str)                  | dag_id, file_token, source_code      |
@@ -117,6 +125,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **list_dags**: "List DAGs 21-40." → `list_dags(limit=20, offset=20)`
 - **list_dags**: "Filter DAGs whose ID contains 'tutorial'." → `list_dags(id_contains="etl")`
 - **list_dags**: "Filter DAGs whose display name contains 'tutorial'." → `list_dags(name_contains="daily")`
+- **get_dags_detailed_batch**: "Get detailed information for all DAGs with execution status." → `get_dags_detailed_batch(fetch_all=True)`
+- **get_dags_detailed_batch**: "Get details for active, unpaused DAGs with recent runs." → `get_dags_detailed_batch(is_active=True, is_paused=False)`
+- **get_dags_detailed_batch**: "Get detailed info for DAGs containing 'example' with run history." → `get_dags_detailed_batch(id_contains="example", limit=50)`
 - **running_dags**: "Show running DAGs."
 - **failed_dags**: "Show failed DAGs."
 - **trigger_dag**: "Trigger DAG 'example_complex'."
@@ -162,6 +173,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 
 ### DAG Analysis & Monitoring
 - **get_dag**: "Get details for DAG 'example_complex'."
+- **get_dags_detailed_batch**: "Get comprehensive details for all DAGs with execution history." → `get_dags_detailed_batch(fetch_all=True)`
+- **get_dags_detailed_batch**: "Get details for active DAGs with latest run information." → `get_dags_detailed_batch(is_active=True)`
+- **get_dags_detailed_batch**: "Get detailed info for ETL DAGs with recent execution data." → `get_dags_detailed_batch(id_contains="etl")`
 - **dag_graph**: "Show task graph for DAG 'example_complex'."
 - **list_tasks**: "List all tasks in DAG 'example_complex'."
 - **dag_code**: "Get source code for DAG 'example_complex'."

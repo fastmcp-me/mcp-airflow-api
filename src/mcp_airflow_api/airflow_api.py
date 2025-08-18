@@ -68,47 +68,14 @@ def get_prompt_template(section: Optional[str] = None, mode: Optional[str] = Non
     
     return template
 
-@mcp.tool()
-def list_dags(limit: int = 20,
-              offset: int = 0,
-              fetch_all: bool = False,
-              id_contains: Optional[str] = None,
-              name_contains: Optional[str] = None) -> Dict[str, Any]:
+def _list_dags_internal(limit: int = 20,
+                       offset: int = 0,
+                       fetch_all: bool = False,
+                       id_contains: Optional[str] = None,
+                       name_contains: Optional[str] = None) -> Dict[str, Any]:
     """
-    [Tool Role]: Lists all DAGs registered in the Airflow cluster with pagination support.
-    
-    Args:
-        limit: Maximum number of DAGs to return (default: 20)
-               - For small queries: use default 100
-               - For large environments: use 500-1000 to get more DAGs at once
-               - Maximum recommended: 1000 (to avoid API timeouts)
-        offset: Number of DAGs to skip for pagination (default: 0)
-                - Use 0 for first page
-                - Use limit*page_number for subsequent pages
-                - Example: offset=100 for page 2 when limit=100
-
-    Pagination Examples:
-        - First 20 DAGs: list_dags()
-        - Next 20 DAGs: list_dags(limit=20, offset=20)  
-        - Page 3 of 50 DAGs each: list_dags(limit=50, offset=100)
-        - All DAGs at once: list_dags(limit=1000)
-        
-    Use total_entries from response to determine if more pages exist:
-        - has_more_pages = (offset + limit) < total_entries
-        - next_offset = offset + limit
-        - remaining_count = total_entries - (offset + limit)
-
-    Returns:
-        Dict containing:
-        - dags: List of DAG objects with comprehensive info (dag_id, dag_display_name, is_active, 
-                is_paused, description, schedule_interval, max_active_runs, max_active_tasks, 
-                owners, tags, next_dagrun info, last_parsed_time, has_import_errors, timetable_description)
-        - total_entries: Total number of DAGs in Airflow (for pagination calculation)
-        - limit: Requested limit (echoed back)
-        - offset: Requested offset (echoed back)
-        - returned_count: Actual number of DAGs returned in this response
-        - has_more_pages: Boolean indicating if more pages are available
-        - next_offset: Suggested offset for next page (if has_more_pages is True)
+    Internal helper function to list DAGs.
+    This function contains the actual implementation logic that can be reused.
     """
     # Helper: server-side filtering by ID and display name
     def _filter_dags(dag_list):
@@ -129,7 +96,7 @@ def list_dags(limit: int = 20,
         pages_fetched = 0
         while True:
             # recursive call without fetch_all to fetch one page
-            result = list_dags(limit=limit, offset=current_offset)
+            result = _list_dags_internal(limit=limit, offset=current_offset)
             page_dags = result.get("dags", [])
             all_dags.extend(page_dags)
             pages_fetched += 1
@@ -216,15 +183,53 @@ def list_dags(limit: int = 20,
     }
 
 @mcp.tool()
-def get_dag(dag_id: str) -> Dict[str, Any]:
+def list_dags(limit: int = 20,
+              offset: int = 0,
+              fetch_all: bool = False,
+              id_contains: Optional[str] = None,
+              name_contains: Optional[str] = None) -> Dict[str, Any]:
     """
-    [Tool Role]: Retrieves detailed information for a specific DAG.
-
+    [Tool Role]: Lists all DAGs registered in the Airflow cluster with pagination support.
+    
     Args:
-        dag_id: The DAG ID to get details for
+        limit: Maximum number of DAGs to return (default: 20)
+               - For small queries: use default 100
+               - For large environments: use 500-1000 to get more DAGs at once
+               - Maximum recommended: 1000 (to avoid API timeouts)
+        offset: Number of DAGs to skip for pagination (default: 0)
+                - Use 0 for first page
+                - Use limit*page_number for subsequent pages
+                - Example: offset=100 for page 2 when limit=100
+
+    Pagination Examples:
+        - First 20 DAGs: list_dags()
+        - Next 20 DAGs: list_dags(limit=20, offset=20)  
+        - Page 3 of 50 DAGs each: list_dags(limit=50, offset=100)
+        - All DAGs at once: list_dags(limit=1000)
+        
+    Use total_entries from response to determine if more pages exist:
+        - has_more_pages = (offset + limit) < total_entries
+        - next_offset = offset + limit
+        - remaining_count = total_entries - (offset + limit)
 
     Returns:
-        Comprehensive DAG details: dag_id, schedule_interval, start_date, owners, tags, description, etc.
+        Dict containing:
+        - dags: List of DAG objects with comprehensive info (dag_id, dag_display_name, is_active, 
+                is_paused, description, schedule_interval, max_active_runs, max_active_tasks, 
+                owners, tags, next_dagrun info, last_parsed_time, has_import_errors, timetable_description)
+        - total_entries: Total number of DAGs in Airflow (for pagination calculation)
+        - limit: Requested limit (echoed back)
+        - offset: Requested offset (echoed back)
+        - returned_count: Actual number of DAGs returned in this response
+        - has_more_pages: Boolean indicating if more pages are available
+        - next_offset: Suggested offset for next page (if has_more_pages is True)
+    """
+    return _list_dags_internal(limit, offset, fetch_all, id_contains, name_contains)
+
+def _get_dag_detailed_info(dag_id: str) -> Dict[str, Any]:
+    """
+    Internal helper function to get detailed DAG information.
+    This function contains the actual implementation logic that can be reused.
     """
     if not dag_id:
         raise ValueError("dag_id must not be empty")
@@ -250,6 +255,159 @@ def get_dag(dag_id: str) -> Dict[str, Any]:
         "next_dagrun": dag.get("next_dagrun"),
         "next_dagrun_data_interval_start": dag.get("next_dagrun_data_interval_start"),
         "next_dagrun_data_interval_end": dag.get("next_dagrun_data_interval_end")
+    }
+
+@mcp.tool()
+def get_dag(dag_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves detailed information for a specific DAG.
+
+    Args:
+        dag_id: The DAG ID to get details for
+
+    Returns:
+        Comprehensive DAG details: dag_id, schedule_interval, start_date, owners, tags, description, etc.
+    """
+    return _get_dag_detailed_info(dag_id)
+
+@mcp.tool()
+def get_dags_detailed_batch(
+    limit: int = 100,
+    offset: int = 0,
+    fetch_all: bool = False,
+    id_contains: Optional[str] = None,
+    name_contains: Optional[str] = None,
+    is_active: Optional[bool] = None,
+    is_paused: Optional[bool] = None
+) -> Dict[str, Any]:
+    """
+    [Tool Role]: Retrieves detailed information for multiple DAGs in batch with get_dag() level detail plus latest run information.
+    
+    This tool combines list_dags() filtering with get_dag() detailed information retrieval,
+    providing comprehensive DAG details AND latest execution information for multiple DAGs in a single response.
+    Each DAG entry includes both static configuration details and dynamic runtime information.
+    
+    Args:
+        limit: Maximum number of DAGs to process (default: 100)
+               - Use higher values (500-1000) for large environments
+               - Ignored when fetch_all=True
+        offset: Number of DAGs to skip for pagination (default: 0)
+        fetch_all: If True, fetches all DAGs regardless of limit/offset (default: False)
+        id_contains: Filter DAGs by ID containing this string (optional)
+        name_contains: Filter DAGs by display name containing this string (optional)
+        is_active: Filter by active status - True/False (optional)
+        is_paused: Filter by paused status - True/False (optional)
+    
+    Usage Examples:
+        - All unpaused DAGs with full details and latest runs: get_dags_detailed_batch(fetch_all=True, is_paused=False)
+        - Active, unpaused DAGs only: get_dags_detailed_batch(is_active=True, is_paused=False)
+        - DAGs containing "example": get_dags_detailed_batch(id_contains="example", limit=50)
+        - Paginated batch: get_dags_detailed_batch(limit=100, offset=200)
+    
+    Returns:
+        Dictionary containing:
+        - dags_detailed: List of detailed DAG objects with:
+          * All get_dag() fields (dag_id, schedule_interval, start_date, owners, tags, etc.)
+          * latest_dag_run: Most recent execution information (run_id, state, start_date, end_date, etc.)
+        - total_processed: Number of DAGs successfully processed
+        - total_available: Total number of DAGs matching initial filters
+        - processing_stats: Success/failure counts and error details
+        - applied_filters: Summary of filters applied
+        - pagination_info: Current page info and remaining counts
+    """
+    # First get the list of DAGs with basic filtering using helper function
+    dag_list_result = _list_dags_internal(
+        limit=limit, 
+        offset=offset, 
+        fetch_all=fetch_all,
+        id_contains=id_contains,
+        name_contains=name_contains
+    )
+    
+    dags_basic = dag_list_result.get("dags", [])
+    detailed_dags = []
+    success_count = 0
+    error_count = 0
+    errors = []
+    skipped_count = 0
+    
+    for dag_basic in dags_basic:
+        dag_id = dag_basic.get("dag_id")
+        if not dag_id:
+            skipped_count += 1
+            continue
+            
+        # Apply additional filters that require detailed DAG info
+        if is_active is not None and dag_basic.get("is_active") != is_active:
+            skipped_count += 1
+            continue
+        if is_paused is not None and dag_basic.get("is_paused") != is_paused:
+            skipped_count += 1
+            continue
+            
+        try:
+            # Get detailed information for this DAG using helper function
+            detailed_dag = _get_dag_detailed_info(dag_id)
+            
+            # Also get the latest DAG run information for comprehensive details
+            try:
+                latest_run_resp = airflow_request("GET", f"/dags/{dag_id}/dagRuns?limit=1&order_by=-execution_date")
+                latest_run_resp.raise_for_status()
+                latest_runs = latest_run_resp.json().get("dag_runs", [])
+                
+                if latest_runs:
+                    latest_run = latest_runs[0]
+                    detailed_dag["latest_dag_run"] = {
+                        "run_id": latest_run.get("run_id"),
+                        "run_type": latest_run.get("run_type"),
+                        "state": latest_run.get("state"),
+                        "execution_date": latest_run.get("execution_date"),
+                        "start_date": latest_run.get("start_date"),
+                        "end_date": latest_run.get("end_date"),
+                        "data_interval_start": latest_run.get("data_interval_start"),
+                        "data_interval_end": latest_run.get("data_interval_end"),
+                        "external_trigger": latest_run.get("external_trigger"),
+                        "conf": latest_run.get("conf"),
+                        "note": latest_run.get("note")
+                    }
+                else:
+                    detailed_dag["latest_dag_run"] = None
+            except Exception:
+                # If we can't get latest run info, don't fail the whole operation
+                detailed_dag["latest_dag_run"] = None
+                
+            detailed_dags.append(detailed_dag)
+            success_count += 1
+        except Exception as e:
+            error_count += 1
+            errors.append({
+                "dag_id": dag_id,
+                "error": str(e)
+            })
+    
+    return {
+        "dags_detailed": detailed_dags,
+        "total_processed": success_count,
+        "total_available": dag_list_result.get("total_entries", 0),
+        "returned_count": len(detailed_dags),
+        "processing_stats": {
+            "success_count": success_count,
+            "error_count": error_count,
+            "skipped_count": skipped_count,
+            "errors": errors
+        },
+        "applied_filters": {
+            "id_contains": id_contains,
+            "name_contains": name_contains,
+            "is_active": is_active,
+            "is_paused": is_paused,
+            "limit": limit,
+            "offset": offset,
+            "fetch_all": fetch_all
+        },
+        "pagination_info": dag_list_result.get("pagination_info", {}),
+        "has_more_pages": dag_list_result.get("has_more_pages", False),
+        "next_offset": dag_list_result.get("next_offset")
     }
 
 @mcp.tool()

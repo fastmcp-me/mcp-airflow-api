@@ -60,21 +60,43 @@ This MCP server supports two connection modes: **stdio** (traditional) and **str
 
 ### Method 2: Remote MCP (transport="streamable-http")
 
+**On MCP-Server Host:**
+
+```bash
+# Ambari connection settings
+export AIRFLOW_API_URL="127.0.0.1"
+export AIRFLOW_API_USERNAME="airflow"
+export AIRFLOW_API_PASSWORD="changeme!@34"
+export AIRFLOW_LOG_LEVEL="INFO"
+
+# MCP transport settings (choose one method)
+# Method A: Using environment variables
+export FASTMCP_TYPE="streamable-http"
+export FASTMCP_HOST="127.0.0.1" 
+export FASTMCP_PORT="18001"
+
+# Method B: Using CLI arguments
+uvx mcp-airflow-api --type streamable-http --host 0.0.0.0 --port 8080
+```
+
+> **Default values:**  
+> - `--type`: `stdio`  
+> - `--host`: `127.0.0.1`  
+> - `--port`: `8080`  
+> These defaults apply if no CLI arguments or environment variables are provided.
+
+**On MCP-Client Host:**
+
 ```json
 {
   "mcpServers": {
-    "airflow-api": {
+    "ambari-api": {
       "type": "streamable-http",
-      "url": "http://host.docker.internal:18002/mcp"
+      "url": "http://localhost:8080/mcp"
     }
   }
 }
 ```
-
-**Transport Selection Logic:**
-
-- **stdio mode**: When `FASTMCP_PORT` environment variable is NOT set
-- **streamable-http mode**: When `FASTMCP_PORT` environment variable is set
 
 ## Dev Env
 

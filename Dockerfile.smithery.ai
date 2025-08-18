@@ -27,4 +27,8 @@ RUN uv sync
 
 RUN pip install .
 
+ENV PORT=18000
+ENV MCP_SERVER_PORT=${PORT}
+EXPOSE ${PORT}
+
 CMD ["python", "-m", "mcp_airflow_api.airflow_api"]

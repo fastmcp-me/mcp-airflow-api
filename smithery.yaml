@@ -29,17 +29,12 @@ startCommand:
   configSchema:
     type: object
     required:
-      - MCP_SERVER_PORT
       - AIRFLOW_API_URL
       - AIRFLOW_API_USERNAME
       - AIRFLOW_API_PASSWORD
       - AIRFLOW_LOG_LEVEL
+      - MCP_SERVER_PORT
     properties:
-      MCP_SERVER_PORT:
-        type: integer
-        description: "Container port that MCP binds to (e.g. 18000)"
-        default: 18000
-        secret: false
       AIRFLOW_API_URL:
         type: string
         description: "Airflow REST API base URL (e.g. http://localhost:8080/api/v1)"
@@ -60,6 +55,11 @@ startCommand:
         description: "Log level for MCP server (DEBUG, INFO, WARNING, ERROR, CRITICAL)"
         default: INFO
         secret: false
+      MCP_SERVER_PORT:
+        type: integer
+        description: "Container port that MCP binds to (e.g. 18000)"
+        default: 18000
+        secret: false
 ###### Only for stdio mode
   # commandFunction: |-
   #   (config) => {
@@ -76,11 +76,11 @@ startCommand:
   #   }
 ######
   exampleConfig:
-    MCP_SERVER_PORT: 18000
     AIRFLOW_API_URL: http://localhost:8080/api/v1
     AIRFLOW_API_USERNAME: airflow
     AIRFLOW_API_PASSWORD: airflow
     AIRFLOW_LOG_LEVEL: INFO
+    MCP_SERVER_PORT: 18000
 
 ## Notes:
 ## - Set AIRFLOW_API_PASSWORD via Smithery secret storage if available.

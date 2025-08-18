@@ -228,6 +228,17 @@ These environment variables are essential for connecting to your Airflow instanc
   - Values: `DEBUG`, `INFO`, `WARNING`, `ERROR`
   - Default: `INFO`
 
+### Configuration API Access
+
+The Configuration Management tools require special Airflow settings:
+
+- `AIRFLOW__WEBSERVER__EXPOSE_CONFIG`: Enable configuration API access
+  - Values: `True`, `False`, `non-sensitive-only`
+  - Default: `False` (Configuration API disabled)
+  - **Required**: Set to `True` or `non-sensitive-only` to use Configuration Management tools
+
+**Note**: This setting must be configured in your Airflow instance, not in the MCP server environment.
+
 ---
 
 ## Available MCP Tools
@@ -340,7 +351,15 @@ These environment variables are essential for connecting to your Airflow instanc
   Get all configuration sections and options from the Airflow instance.  
   Output: `sections`, `total_sections`, `total_options`, complete Airflow configuration with sensitive values masked
 
-  **Note**: Requires appropriate permissions. May return 403 FORBIDDEN if user lacks configuration access rights.
+  **Important**: Requires `expose_config = True` in airflow.cfg `[webserver]` section. Even admin users will get 403 FORBIDDEN if this setting is disabled.
+
+  **Configuration Fix**: If you get 403 errors:
+  1. Edit `/opt/airflow/airflow.cfg` (or your Airflow config file)  
+  2. Find `[webserver]` section
+  3. Change `expose_config = False` to `expose_config = True`
+  4. Or use `expose_config = non-sensitive-only` for partial access
+  5. Restart Airflow webserver service
+  6. Alternative: Set environment variable `AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True`
 
 - `list_config_sections()`  
   List all available configuration sections with summary information.  

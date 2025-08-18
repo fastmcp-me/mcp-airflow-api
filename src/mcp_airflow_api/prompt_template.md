@@ -182,6 +182,16 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **get_xcom_entry**: "Get XCom entry with key 'result' for task 'data_processing' in specific run."
 - **get_xcom_entry**: "Retrieve XCom value for key 'processed_count' from task 'data_processing'."
 
+### Configuration Management
+- **get_config**: "Show all Airflow configuration sections and options." → Returns complete config or 403 if expose_config=False
+- **list_config_sections**: "List all configuration sections with summary information."
+- **get_config_section**: "Get all settings in 'core' section." → `get_config_section("core")`
+- **get_config_section**: "Show webserver configuration options." → `get_config_section("webserver")`
+- **search_config_options**: "Find all database-related configuration options." → `search_config_options("database")`
+- **search_config_options**: "Search for timeout settings in configuration." → `search_config_options("timeout")`
+
+**Important**: Configuration tools require `expose_config = True` in airflow.cfg `[webserver]` section. Even admin users get 403 errors if this is disabled.
+
 ### DAG Analysis & Monitoring
 - **get_dag**: "Get details for DAG 'example_complex'."
 - **get_dags_detailed_batch**: "Get comprehensive details for all DAGs with execution history." → `get_dags_detailed_batch(fetch_all=True)`

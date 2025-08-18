@@ -2054,8 +2054,8 @@ def get_config() -> Dict[str, Any]:
     """
     [Tool Role]: Get all configuration sections and options from the Airflow instance.
     
-    Note: This endpoint requires appropriate permissions. May return 403 FORBIDDEN 
-    if the user doesn't have sufficient permissions to access configuration.
+    Note: This endpoint is controlled by the 'expose_config' setting in airflow.cfg.
+    Even admin users will get 403 FORBIDDEN if expose_config = False.
     
     Returns:
         Complete Airflow configuration: sections with their options and values
@@ -2106,13 +2106,27 @@ def get_config() -> Dict[str, Any]:
     except Exception as e:
         if "403" in str(e) or "FORBIDDEN" in str(e):
             return {
-                "error": "Configuration access denied",
-                "message": "The current user does not have sufficient permissions to access Airflow configuration.",
-                "suggestion": "Contact your Airflow administrator to grant configuration access permissions.",
-                "status": "403_FORBIDDEN"
+                "error": "Configuration access blocked by Airflow settings",
+                "message": "The configuration endpoint is disabled in Airflow.",
+                "airflow_setting": "expose_config = False in airflow.cfg",
+                "solution_steps": [
+                    "1. Edit /opt/airflow/airflow.cfg (or your Airflow config file)",
+                    "2. Find [webserver] section",
+                    "3. Change 'expose_config = False' to 'expose_config = True'",
+                    "4. Or set 'expose_config = non-sensitive-only' for partial access",
+                    "5. Restart Airflow webserver service",
+                    "6. Alternative: Set environment variable AIRFLOW__WEBSERVER__EXPOSE_CONFIG=True"
+                ],
+                "security_note": "expose_config = True shows all configuration values including sensitive data",
+                "status": "403_FORBIDDEN_BY_CONFIG",
+                "admin_note": "Even admin users cannot access config when expose_config = False"
             }
         else:
-            raise e
+            return {
+                "error": "Configuration retrieval failed",
+                "message": str(e),
+                "suggestion": "Check Airflow connection and server status"
+            }
 
 @mcp.tool()
 def list_config_sections() -> Dict[str, Any]:

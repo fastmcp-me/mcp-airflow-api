@@ -76,6 +76,21 @@ This MCP server supports two connection modes: **stdio** (traditional) and **str
 - **stdio mode**: When `FASTMCP_PORT` environment variable is NOT set
 - **streamable-http mode**: When `FASTMCP_PORT` environment variable is set
 
+## Dev Env
+
+- WSL2(networkingMode = bridged) + Docker-Desktop
+- Python 3.11 venv
+
+  ```bash
+  ### Option-1: with uv
+  uv venv --python 3.11 --seed
+
+  ### Option-2: with pip
+  python3.11 -m venv .venv
+  source .venv/bin/activate
+  pip install -U pip
+  ```
+
 ---
 
 ## QuickStart (Demo - streamable-http): Running OpenWebUI and MCP-Airflow-API with Docker
@@ -99,21 +114,6 @@ This MCP server supports two connection modes: **stdio** (traditional) and **str
 git clone <repository-url>
 cd MCP-Airflow-API
 ```
-
-- Create Python venv (two Options)
-  - Option-1: with uv
-
-  ```bash
-  uv venv --python 3.11 --seed
-  ```
-
-  - Option-2: with pip
-
-  ```bash
-  python3.11 -m venv .venv
-  source .venv/bin/activate
-  pip install -U pip
-  ```
 
 4. **Ensure mcp-config.json**
 

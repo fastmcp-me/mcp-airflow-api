@@ -33,7 +33,7 @@ Tested and supported Airflow version: 2.10.2 (API Version: v1) and WSL(networkin
 
 ## Example Query - List DAGs
 
-![ScreenShot-009](img/screenshot-009.png)
+![ScreenShot-009](img/screenshot-000.png)
 
 ## Usages
 
@@ -555,6 +555,8 @@ uv run pytest tests/test_prompt_template.py -v
 ![ScreenShot-007](img/screenshot-007.png)
 
 ![ScreenShot-008](img/screenshot-008.png)
+
+![ScreenShot-009](img/screenshot-009.png)
 
 ![ScreenShot-010](img/screenshot-010.png)
 

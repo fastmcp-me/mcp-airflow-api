@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "airflow-api": {
+      "type": "streamable-http",
+      "url": "http://127.0.0.1:18002/mcp"
+    }
+  }
+}

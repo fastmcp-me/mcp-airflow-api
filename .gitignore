@@ -15,4 +15,4 @@ wheels/
 .vscode*
 .github/copilot-instructions.md
 
-mcp-config.json
+#mcp-config.json

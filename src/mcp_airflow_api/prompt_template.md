@@ -57,7 +57,7 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - `get_xcom_entry(dag_id, dag_run_id, task_id, xcom_key, map_index)`: Get a specific XCom entry for a task instance.
 
 ### DAG Analysis & Monitoring
-- `dag_details(dag_id)`: Get comprehensive details for a specific DAG.
+- `get_dag(dag_id)`: Get comprehensive details for a specific DAG.
 - `dag_graph(dag_id)`: Get task dependency graph structure for a DAG.
 - `list_tasks(dag_id)`: List all tasks for a specific DAG.
 - `dag_code(dag_id)`: Retrieve source code for a specific DAG.

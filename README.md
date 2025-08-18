@@ -16,14 +16,14 @@
 - 🔍 **Natural Language Queries**: Query Airflow DAGs, tasks, and runs using plain English
 - 📊 **Comprehensive Monitoring**: Real-time cluster health, DAG status, and performance analytics  
 - 🐳 **Docker Ready**: Streamable HTTP transport with Docker Compose orchestration
-- 🔧 **49+ MCP Tools**: Complete Airflow API coverage including DAGs, tasks, pools, variables, connections, configuration, and XCom
+- 🔧 **43+ MCP Tools**: Complete Airflow API coverage including DAGs, tasks, pools, variables, connections, configuration, and XCom
 - ⚡ **Enterprise Scale**: Optimized pagination for large Airflow environments (1000+ DAGs)
 - 🛡️ **Production Safe**: Read-only operations by default to minimize operational risk
 
 ### Topics
 `apache-airflow` `mcp` `model-context-protocol` `airflow-api` `dag-management` `data-engineering` `devops` `airflow-monitoring` `llm-integration` `natural-language` `docker` `python` `workflow-automation` `airflow-tools` `data-pipelines`
 
-**Note:** To minimize operational risk, this MCP server currently focuses on read-only (query) operations only. APIs that modify the target Airflow cluster (e.g., triggering or pausing DAGs) are planned but currently on hold.
+**Note:** This MCP server includes both read-only operations and essential DAG management functions (trigger, pause, unpause) for comprehensive Airflow cluster control. Write operations like connection management are implemented with appropriate safety measures.
 
 ---
 
@@ -217,10 +217,19 @@ These environment variables are essential for connecting to your Airflow instanc
 
 ### Transport Control Variables
 
+- `FASTMCP_TYPE`: Specifies the FastMCP transport type
+  - Values: `http`, `stdio`
+  - Default: Automatically determined based on `FASTMCP_PORT` setting
+  - Example: `http` (for explicit HTTP transport)
+
+- `FASTMCP_HOST`: Defines the host address for HTTP transport
+  - Default: `0.0.0.0` (listens on all interfaces)
+  - Example: `localhost` (local access only)
+  - Example: `0.0.0.0` (accessible from all network interfaces)
+
 - `FASTMCP_PORT`: Controls the transport mode selection
-  - **When NOT set**: Uses stdio transport (traditional MCP mode)
-  - **When set**: Uses http transport (Docker mode)
-  - Example: `8080` (for Docker container internal port)
+  - Default: `8080`
+  - Example: `18002` (for Docker container internal port)
 
 ### Optional Configuration Variables
 

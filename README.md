@@ -93,10 +93,28 @@ This MCP server supports two connection modes: **stdio** (traditional) and **str
 
 3. **Clone and Configure**
 
+- Clone Source codes
+
 ```bash
 git clone <repository-url>
 cd MCP-Airflow-API
 ```
+
+- Create Python venv (two Options)
+
+  - Option-1: with uv
+
+  ```bash
+  uv vene --python 3.11 --seed
+  ```
+
+  - Option-2: with pip
+
+  ```bash
+  python3.11 -m venv .venv
+  source .venv/bin/activate
+  pip install -U pip
+  ```
 
 4. **Ensure mcp-config.json**
 

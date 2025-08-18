@@ -91,6 +91,12 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | **Variable Management** |                                       |                               |                                      |
 | list_variables      | List all variables in Airflow            | limit, offset, order_by       | variables, total_entries, key-value pairs |
 | get_variable        | Get specific variable details             | variable_key (str)            | key, value, description, is_encrypted |
+| **Connection Management** |                                    |                               |                                      |
+| list_connections    | List all connections in Airflow          | limit, offset, order_by       | connections, total_entries, connection details (passwords masked) |
+| get_connection      | Get specific connection details           | connection_id (str)           | connection_id, conn_type, host, schema, login, port (password masked) |
+| create_connection   | Create a new connection                   | connection_id, conn_type, host, login, password, schema, port, extra | Created connection info, status: "created" |
+| update_connection   | Update existing connection                | connection_id, conn_type, host, login, password, schema, port, extra | Updated connection info, status: "updated" |
+| delete_connection   | Delete a connection                       | connection_id (str)           | connection_id, status: "deleted", confirmation message |
 | **Task Instance Management** |                               |                               |                                      |
 | list_task_instances_all | List task instances with filtering    | dag_id, dag_run_id, dates, state, pool, queue, limit, offset | task_instances, total_entries, applied_filters |
 | get_task_instance_details | Get detailed task instance info     | dag_id, dag_run_id, task_id   | Comprehensive task details, execution info, state, timing |

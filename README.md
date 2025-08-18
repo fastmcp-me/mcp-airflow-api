@@ -16,7 +16,7 @@
 - 🔍 **Natural Language Queries**: Query Airflow DAGs, tasks, and runs using plain English
 - 📊 **Comprehensive Monitoring**: Real-time cluster health, DAG status, and performance analytics  
 - 🐳 **Docker Ready**: Streamable HTTP transport with Docker Compose orchestration
-- 🔧 **40+ MCP Tools**: Complete Airflow API coverage including DAGs, tasks, pools, variables, and XCom
+- 🔧 **45+ MCP Tools**: Complete Airflow API coverage including DAGs, tasks, pools, variables, connections, and XCom
 - ⚡ **Enterprise Scale**: Optimized pagination for large Airflow environments (1000+ DAGs)
 - 🛡️ **Production Safe**: Read-only operations by default to minimize operational risk
 
@@ -294,9 +294,39 @@ These environment variables are essential for connecting to your Airflow instanc
 	List all variables stored in Airflow with pagination support.  
 	Output: `variables`, `total_entries`, `limit`, `offset`, variable details with keys, values, and descriptions
 
-- `get_variable(variable_key)`  
+- - `get_variable(variable_key)`  
 	Get detailed information about a specific variable by its key.  
 	Output: `key`, `value`, `description`, `is_encrypted`
+
+### Connection Management
+
+- `list_connections(limit=20, offset=0, order_by="connection_id")`  
+  List all connections in the Airflow instance with pagination support.  
+  Output: `connections`, `total_entries`, `limit`, `offset`, connection details with IDs, types, hosts, and schemas (passwords masked for security)
+
+  **Pagination Examples:**
+  - First 20 connections: `list_connections()`
+  - Next 20 connections: `list_connections(limit=20, offset=20)`
+  - Ordered by type: `list_connections(order_by="conn_type")`
+  - Large batch: `list_connections(limit=100)`
+
+- `get_connection(connection_id)`  
+  Get detailed information about a specific connection.  
+  Output: `connection_id`, `conn_type`, `description`, `host`, `schema`, `login`, `port`, `is_encrypted`, `is_extra_encrypted`, `extra` (password masked)
+
+- `create_connection(connection_id, conn_type, description=None, host=None, login=None, password=None, schema=None, port=None, extra=None)`  
+  Create a new connection in Airflow.  
+  Output: Created connection information (excluding sensitive data) with `status: "created"`
+
+- `update_connection(connection_id, conn_type=None, description=None, host=None, login=None, password=None, schema=None, port=None, extra=None)`  
+  Update an existing connection in Airflow.  
+  Output: Updated connection information (excluding sensitive data) with `status: "updated"`
+
+- `delete_connection(connection_id)`  
+  Delete a connection from Airflow.  
+  Output: `connection_id`, `status: "deleted"`, confirmation message
+
+### Task Execution
 
 ### Task Instance Management
 

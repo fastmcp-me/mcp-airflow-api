@@ -1685,6 +1685,272 @@ def prompt_template_section_prompt(section: Optional[str] = None) -> str:
     return get_prompt_template(section=section)
 
 #========================================================================================
+# Connection Management Functions
+#========================================================================================
+
+@mcp.tool()
+def list_connections(limit: int = 20, offset: int = 0, order_by: str = "connection_id") -> Dict[str, Any]:
+    """
+    [Tool Role]: List all connections in the Airflow instance with pagination support.
+    
+    Args:
+        limit: Maximum number of connections to return (default: 20)
+        offset: Number of connections to skip for pagination (default: 0)
+        order_by: Field to order by (default: "connection_id")
+                 Valid values: connection_id, conn_type, host, schema, login
+    
+    Returns:
+        List of connections with their configuration: connections, total_entries, limit, offset
+    """
+    # Build query parameters
+    params = [f"limit={limit}", f"offset={offset}"]
+    if order_by:
+        params.append(f"order_by={order_by}")
+    
+    query_string = "&".join(params)
+    resp = airflow_request("GET", f"/connections?{query_string}")
+    resp.raise_for_status()
+    data = resp.json()
+    
+    connections = []
+    for conn in data.get("connections", []):
+        # Only return safe connection info (exclude sensitive data like passwords)
+        conn_info = {
+            "connection_id": conn.get("connection_id"),
+            "conn_type": conn.get("conn_type"),
+            "description": conn.get("description"),
+            "host": conn.get("host"),
+            "schema": conn.get("schema"),
+            "login": conn.get("login"),
+            "port": conn.get("port"),
+            "is_encrypted": conn.get("is_encrypted"),
+            "is_extra_encrypted": conn.get("is_extra_encrypted"),
+            "extra": conn.get("extra")  # Note: may contain sensitive data
+        }
+        connections.append(conn_info)
+    
+    # Calculate pagination info
+    total_entries = data.get("total_entries", len(connections))
+    returned_count = len(connections)
+    has_more_pages = (offset + limit) < total_entries
+    next_offset = offset + limit if has_more_pages else None
+    
+    return {
+        "connections": connections,
+        "total_entries": total_entries,
+        "limit": limit,
+        "offset": offset,
+        "returned_count": returned_count,
+        "has_more_pages": has_more_pages,
+        "next_offset": next_offset,
+        "pagination_info": {
+            "current_page": (offset // limit) + 1 if limit > 0 else 1,
+            "total_pages": ((total_entries - 1) // limit) + 1 if limit > 0 and total_entries > 0 else 1,
+            "remaining_count": max(0, total_entries - (offset + returned_count))
+        }
+    }
+
+@mcp.tool()
+def get_connection(connection_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Get detailed information about a specific connection.
+    
+    Args:
+        connection_id: The connection ID to retrieve
+    
+    Returns:
+        Detailed connection information (excluding sensitive password data)
+    """
+    if not connection_id:
+        raise ValueError("connection_id must not be empty")
+    
+    resp = airflow_request("GET", f"/connections/{connection_id}")
+    resp.raise_for_status()
+    conn = resp.json()
+    
+    # Return connection info but mask sensitive data
+    return {
+        "connection_id": conn.get("connection_id"),
+        "conn_type": conn.get("conn_type"),
+        "description": conn.get("description"),
+        "host": conn.get("host"),
+        "schema": conn.get("schema"),
+        "login": conn.get("login"),
+        "port": conn.get("port"),
+        "is_encrypted": conn.get("is_encrypted"),
+        "is_extra_encrypted": conn.get("is_extra_encrypted"),
+        "extra": conn.get("extra"),  # Note: may contain sensitive data
+        "password": "[MASKED]" if conn.get("password") else None
+    }
+
+@mcp.tool()
+def create_connection(
+    connection_id: str,
+    conn_type: str,
+    description: Optional[str] = None,
+    host: Optional[str] = None,
+    login: Optional[str] = None,
+    password: Optional[str] = None,
+    schema: Optional[str] = None,
+    port: Optional[int] = None,
+    extra: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    [Tool Role]: Create a new connection in Airflow.
+    
+    Args:
+        connection_id: Unique identifier for the connection
+        conn_type: Type of connection (e.g., 'postgres', 'mysql', 'http', 's3', etc.)
+        description: Optional description of the connection
+        host: Host address for the connection
+        login: Login/username for authentication
+        password: Password for authentication (will be encrypted)
+        schema: Database schema or namespace
+        port: Port number for the connection
+        extra: Additional connection parameters as JSON string
+    
+    Returns:
+        Created connection information (excluding sensitive data)
+    """
+    if not connection_id or not conn_type:
+        raise ValueError("connection_id and conn_type are required")
+    
+    # Build request body
+    conn_data = {
+        "connection_id": connection_id,
+        "conn_type": conn_type
+    }
+    
+    # Add optional fields
+    optional_fields = {
+        "description": description,
+        "host": host,
+        "login": login,
+        "password": password,
+        "schema": schema,
+        "port": port,
+        "extra": extra
+    }
+    
+    for key, value in optional_fields.items():
+        if value is not None:
+            conn_data[key] = value
+    
+    resp = airflow_request("POST", "/connections", json=conn_data)
+    resp.raise_for_status()
+    conn = resp.json()
+    
+    return {
+        "connection_id": conn.get("connection_id"),
+        "conn_type": conn.get("conn_type"),
+        "description": conn.get("description"),
+        "host": conn.get("host"),
+        "login": conn.get("login"),
+        "schema": conn.get("schema"),
+        "port": conn.get("port"),
+        "is_encrypted": conn.get("is_encrypted"),
+        "is_extra_encrypted": conn.get("is_extra_encrypted"),
+        "extra": conn.get("extra"),
+        "password": "[MASKED]" if conn.get("password") else None,
+        "status": "created"
+    }
+
+@mcp.tool()
+def update_connection(
+    connection_id: str,
+    conn_type: Optional[str] = None,
+    description: Optional[str] = None,
+    host: Optional[str] = None,
+    login: Optional[str] = None,
+    password: Optional[str] = None,
+    schema: Optional[str] = None,
+    port: Optional[int] = None,
+    extra: Optional[str] = None
+) -> Dict[str, Any]:
+    """
+    [Tool Role]: Update an existing connection in Airflow.
+    
+    Args:
+        connection_id: The connection ID to update
+        conn_type: Type of connection (optional for updates)
+        description: Optional description of the connection
+        host: Host address for the connection
+        login: Login/username for authentication
+        password: Password for authentication (will be encrypted)
+        schema: Database schema or namespace
+        port: Port number for the connection
+        extra: Additional connection parameters as JSON string
+    
+    Returns:
+        Updated connection information (excluding sensitive data)
+    """
+    if not connection_id:
+        raise ValueError("connection_id must not be empty")
+    
+    # Build request body with only provided fields
+    conn_data = {}
+    
+    update_fields = {
+        "conn_type": conn_type,
+        "description": description,
+        "host": host,
+        "login": login,
+        "password": password,
+        "schema": schema,
+        "port": port,
+        "extra": extra
+    }
+    
+    for key, value in update_fields.items():
+        if value is not None:
+            conn_data[key] = value
+    
+    if not conn_data:
+        raise ValueError("At least one field must be provided for update")
+    
+    resp = airflow_request("PATCH", f"/connections/{connection_id}", json=conn_data)
+    resp.raise_for_status()
+    conn = resp.json()
+    
+    return {
+        "connection_id": conn.get("connection_id"),
+        "conn_type": conn.get("conn_type"),
+        "description": conn.get("description"),
+        "host": conn.get("host"),
+        "login": conn.get("login"),
+        "schema": conn.get("schema"),
+        "port": conn.get("port"),
+        "is_encrypted": conn.get("is_encrypted"),
+        "is_extra_encrypted": conn.get("is_extra_encrypted"),
+        "extra": conn.get("extra"),
+        "password": "[MASKED]" if conn.get("password") else None,
+        "status": "updated"
+    }
+
+@mcp.tool()
+def delete_connection(connection_id: str) -> Dict[str, Any]:
+    """
+    [Tool Role]: Delete a connection from Airflow.
+    
+    Args:
+        connection_id: The connection ID to delete
+    
+    Returns:
+        Confirmation of deletion: connection_id, status
+    """
+    if not connection_id:
+        raise ValueError("connection_id must not be empty")
+    
+    resp = airflow_request("DELETE", f"/connections/{connection_id}")
+    resp.raise_for_status()
+    
+    return {
+        "connection_id": connection_id,
+        "status": "deleted",
+        "message": f"Connection '{connection_id}' has been successfully deleted"
+    }
+
+#========================================================================================
 
 def main(argv: Optional[List[str]] = None):
     """Entrypoint for MCP Airflow API server.

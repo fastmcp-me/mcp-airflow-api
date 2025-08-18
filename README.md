@@ -30,8 +30,6 @@
 
 ![ScreenShot-009](img/screenshot-000.png)
 
-### More Queries
-
 **[Go to More Example Queries](./src/mcp_airflow_api/prompt_template.md#5-example-queries)**
 
 ---

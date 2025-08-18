@@ -29,7 +29,7 @@ RUN pip install .
 
 ENV FASTMCP_HOST=0.0.0.0
 ENV PORT=18000
-ENV MCP_SERVER_PORT=${PORT}
+#ENV MCP_SERVER_PORT=${PORT}
 EXPOSE ${PORT}
 
 CMD ["python", "-m", "mcp_airflow_api.airflow_api"]

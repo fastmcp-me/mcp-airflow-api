@@ -235,68 +235,69 @@ These environment variables are essential for connecting to your Airflow instanc
 ### DAG Management
 
 - `list_dags(limit=20, offset=0, fetch_all=False, id_contains=None, name_contains=None)`  
-	Returns all DAGs registered in the Airflow cluster with pagination support.  
-	Output: `dag_id`, `dag_display_name`, `is_active`, `is_paused`, `owners`, `tags`, plus pagination info (`total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`)
+  Returns all DAGs registered in the Airflow cluster with pagination support.  
+  Output: `dag_id`, `dag_display_name`, `is_active`, `is_paused`, `owners`, `tags`, plus pagination info (`total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`)
 
-	**Pagination Examples:**
-	- First 20 DAGs: `list_dags()`
-	- Next 20 DAGs: `list_dags(limit=20, offset=20)`
-	- Large batch: `list_dags(limit=100, offset=0)`
-	- All DAGs at once: `list_dags(limit=1000)`
+  **Pagination Examples:**
+  - First 20 DAGs: `list_dags()`
+  - Next 20 DAGs: `list_dags(limit=20, offset=20)`
+  - Large batch: `list_dags(limit=100, offset=0)`
+  - All DAGs at once: `list_dags(limit=1000)`
 
-	- `id_contains="etl"` → Only DAGs whose `dag_id` contains "etl"
-	- `name_contains="daily"` → Only DAGs whose `display_name` contains "daily"
-	- If both are specified, only DAGs matching both conditions are returned
+  **Filtering Examples:**
+  - `id_contains="etl"` → Only DAGs whose `dag_id` contains "etl"
+  - `name_contains="daily"` → Only DAGs whose `display_name` contains "daily"
+  - If both are specified, only DAGs matching both conditions are returned
 
 - `running_dags`  
-	Returns all currently running DAG runs.  
-	Output: `dag_id`, `run_id`, `state`, `execution_date`, `start_date`, `end_date`
+  Returns all currently running DAG runs.  
+  Output: `dag_id`, `run_id`, `state`, `execution_date`, `start_date`, `end_date`
 
 - `failed_dags`  
-	Returns all recently failed DAG runs.  
-	Output: `dag_id`, `run_id`, `state`, `execution_date`, `start_date`, `end_date`
+  Returns all recently failed DAG runs.  
+  Output: `dag_id`, `run_id`, `state`, `execution_date`, `start_date`, `end_date`
 
 - `trigger_dag(dag_id)`  
-	Immediately triggers the specified DAG.  
-	Output: `dag_id`, `run_id`, `state`, `execution_date`, `start_date`, `end_date`
+  Immediately triggers the specified DAG.  
+  Output: `dag_id`, `run_id`, `state`, `execution_date`, `start_date`, `end_date`
 
 - `pause_dag(dag_id)`  
-	Pauses the specified DAG (prevents scheduling new runs).  
-	Output: `dag_id`, `is_paused`
+  Pauses the specified DAG (prevents scheduling new runs).  
+  Output: `dag_id`, `is_paused`
 
 - `unpause_dag(dag_id)`  
-	Unpauses the specified DAG (allows scheduling new runs).  
-	Output: `dag_id`, `is_paused`
+  Unpauses the specified DAG (allows scheduling new runs).  
+  Output: `dag_id`, `is_paused`
 
 ### Cluster Management & Health
 
 - `get_health`  
-	Get the health status of the Airflow webserver instance.  
-	Output: `metadatabase`, `scheduler`, overall health `status`
+  Get the health status of the Airflow webserver instance.  
+  Output: `metadatabase`, `scheduler`, overall health `status`
 
 - `get_version`  
-	Get version information of the Airflow instance.  
-	Output: `version`, `git_version`, `build_date`, `api_version`
+  Get version information of the Airflow instance.  
+  Output: `version`, `git_version`, `build_date`, `api_version`
 
 ### Pool Management
 
 - `list_pools(limit=20, offset=0)`  
-	List all pools in the Airflow instance with pagination support.  
-	Output: `pools`, `total_entries`, `limit`, `offset`, pool details with slots usage
+  List all pools in the Airflow instance with pagination support.  
+  Output: `pools`, `total_entries`, `limit`, `offset`, pool details with slots usage
 
 - `get_pool(pool_name)`  
-	Get detailed information about a specific pool.  
-	Output: `name`, `slots`, `occupied_slots`, `running_slots`, `queued_slots`, `open_slots`, `description`, `utilization_percentage`
+  Get detailed information about a specific pool.  
+  Output: `name`, `slots`, `occupied_slots`, `running_slots`, `queued_slots`, `open_slots`, `description`, `utilization_percentage`
 
 ### Variable Management
 
 - `list_variables(limit=20, offset=0, order_by="key")`  
-	List all variables stored in Airflow with pagination support.  
-	Output: `variables`, `total_entries`, `limit`, `offset`, variable details with keys, values, and descriptions
+  List all variables stored in Airflow with pagination support.  
+  Output: `variables`, `total_entries`, `limit`, `offset`, variable details with keys, values, and descriptions
 
-- - `get_variable(variable_key)`  
-	Get detailed information about a specific variable by its key.  
-	Output: `key`, `value`, `description`, `is_encrypted`
+- `get_variable(variable_key)`  
+  Get detailed information about a specific variable by its key.  
+  Output: `key`, `value`, `description`, `is_encrypted`
 
 ### Connection Management
 
@@ -326,103 +327,105 @@ These environment variables are essential for connecting to your Airflow instanc
   Delete a connection from Airflow.  
   Output: `connection_id`, `status: "deleted"`, confirmation message
 
-### Task Execution
-
 ### Task Instance Management
 
 - `list_task_instances_all(dag_id=None, dag_run_id=None, execution_date_gte=None, execution_date_lte=None, start_date_gte=None, start_date_lte=None, end_date_gte=None, end_date_lte=None, duration_gte=None, duration_lte=None, state=None, pool=None, queue=None, limit=20, offset=0)`  
-	Lists task instances across all DAGs or filtered by specific criteria with comprehensive filtering options.  
-	Output: `task_instances`, `total_entries`, `limit`, `offset`, `applied_filters`
+  Lists task instances across all DAGs or filtered by specific criteria with comprehensive filtering options.  
+  Output: `task_instances`, `total_entries`, `limit`, `offset`, `applied_filters`
 
 - `get_task_instance_details(dag_id, dag_run_id, task_id)`  
-	Retrieves detailed information about a specific task instance.  
-	Output: Comprehensive task instance details including execution info, state, timing, configuration, and metadata
+  Retrieves detailed information about a specific task instance.  
+  Output: Comprehensive task instance details including execution info, state, timing, configuration, and metadata
 
 - `list_task_instances_batch(dag_ids=None, dag_run_ids=None, task_ids=None, execution_date_gte=None, execution_date_lte=None, start_date_gte=None, start_date_lte=None, end_date_gte=None, end_date_lte=None, duration_gte=None, duration_lte=None, state=None, pool=None, queue=None)`  
-	Lists task instances in batch with multiple filtering criteria for bulk operations.  
-	Output: `task_instances`, `total_entries`, `applied_filters`, batch processing results
+  Lists task instances in batch with multiple filtering criteria for bulk operations.  
+  Output: `task_instances`, `total_entries`, `applied_filters`, batch processing results
 
 - `get_task_instance_extra_links(dag_id, dag_run_id, task_id)`  
-	Lists extra links for a specific task instance (e.g., monitoring dashboards, logs, external resources).  
-	Output: `task_id`, `dag_id`, `dag_run_id`, `extra_links`, `total_links`
+  Lists extra links for a specific task instance (e.g., monitoring dashboards, logs, external resources).  
+  Output: `task_id`, `dag_id`, `dag_run_id`, `extra_links`, `total_links`
 
 - `get_task_instance_logs(dag_id, dag_run_id, task_id, try_number=1, full_content=False, token=None)`  
-	Retrieves logs for a specific task instance and its try number with content and metadata.  
-	Output: `task_id`, `dag_id`, `dag_run_id`, `try_number`, `content`, `continuation_token`, `metadata`
+  Retrieves logs for a specific task instance and its try number with content and metadata.  
+  Output: `task_id`, `dag_id`, `dag_run_id`, `try_number`, `content`, `continuation_token`, `metadata`
 
 ### XCom Management
 
 - `list_xcom_entries(dag_id, dag_run_id, task_id, limit=20, offset=0)`  
-	Lists XCom entries for a specific task instance.  
-	Output: `dag_id`, `dag_run_id`, `task_id`, `xcom_entries`, `total_entries`, `limit`, `offset`
+  Lists XCom entries for a specific task instance.  
+  Output: `dag_id`, `dag_run_id`, `task_id`, `xcom_entries`, `total_entries`, `limit`, `offset`
 
 - `get_xcom_entry(dag_id, dag_run_id, task_id, xcom_key, map_index=-1)`  
-	Retrieves a specific XCom entry for a task instance.  
-	Output: `dag_id`, `dag_run_id`, `task_id`, `xcom_key`, `map_index`, `key`, `value`, `timestamp`, `execution_date`, `run_id`
+  Retrieves a specific XCom entry for a task instance.  
+  Output: `dag_id`, `dag_run_id`, `task_id`, `xcom_key`, `map_index`, `key`, `value`, `timestamp`, `execution_date`, `run_id`
 
 ### DAG Analysis & Monitoring
 
 - `get_dag(dag_id)`  
-	Retrieves comprehensive details for a specific DAG.  
-	Output: `dag_id`, `description`, `schedule_interval`, `owners`, `tags`, `start_date`, `next_dagrun`, etc.
+  Retrieves comprehensive details for a specific DAG.  
+  Output: `dag_id`, `description`, `schedule_interval`, `owners`, `tags`, `start_date`, `next_dagrun`, etc.
 
 - `get_dags_detailed_batch(limit=100, offset=0, fetch_all=False, id_contains=None, name_contains=None, is_active=None, is_paused=None)`  
-	Retrieves detailed information for multiple DAGs in batch with get_dag() level detail plus latest execution information. Combines list_dags() filtering with comprehensive DAG details and recent run data.  
-	Output: `dags_detailed` (list of detailed DAG objects with `latest_dag_run` info), `total_processed`, `processing_stats`, `applied_filters`, `pagination_info`
+  Retrieves detailed information for multiple DAGs in batch with get_dag() level detail plus latest execution information. Combines list_dags() filtering with comprehensive DAG details and recent run data.  
+  Output: `dags_detailed` (list of detailed DAG objects with `latest_dag_run` info), `total_processed`, `processing_stats`, `applied_filters`, `pagination_info`
 
 - `dag_graph(dag_id)`  
-	Retrieves task dependency graph structure for a specific DAG.  
-	Output: `dag_id`, `tasks`, `dependencies`, task relationships
+  Retrieves task dependency graph structure for a specific DAG.  
+  Output: `dag_id`, `tasks`, `dependencies`, task relationships
 
 - `list_tasks(dag_id)`  
-	Lists all tasks for a specific DAG.  
-	Output: `dag_id`, `tasks`, task configuration details  
-	Output: `dag_id`, `tasks`, `dependencies`, task relationships
+  Lists all tasks for a specific DAG.  
+  Output: `dag_id`, `tasks`, task configuration details
 
 - `dag_code(dag_id)`  
-	Retrieves the source code for a specific DAG.  
-	Output: `dag_id`, `file_token`, `source_code`
+  Retrieves the source code for a specific DAG.  
+  Output: `dag_id`, `file_token`, `source_code`
 
 - `list_event_logs(dag_id=None, task_id=None, run_id=None, limit=20, offset=0)`  
-	Lists event log entries with optional filtering.  
-	**Optimized limit**: Default is 20 for better performance while maintaining good coverage.  
-	Output: `event_logs`, `total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`
+  Lists event log entries with optional filtering.  
+  Output: `event_logs`, `total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`
+
+  **Optimized limit**: Default is 20 for better performance while maintaining good coverage.
 
 - `get_event_log(event_log_id)`  
-	Retrieves a specific event log entry by ID.  
-	Output: `event_log_id`, `when`, `event`, `dag_id`, `task_id`, `run_id`, etc.
+  Retrieves a specific event log entry by ID.  
+  Output: `event_log_id`, `when`, `event`, `dag_id`, `task_id`, `run_id`, etc.
 
 - `all_dag_event_summary()`  
-	Retrieves event count summary for all DAGs.  
-	**Improved limit**: Uses limit=1000 for DAG retrieval to avoid missing DAGs in large environments.  
-	Output: `dag_summaries`, `total_dags`, `total_events`
+  Retrieves event count summary for all DAGs.  
+  Output: `dag_summaries`, `total_dags`, `total_events`
+
+  **Improved limit**: Uses limit=1000 for DAG retrieval to avoid missing DAGs in large environments.
 
 - `list_import_errors(limit=20, offset=0)`  
-	Lists import errors with optional filtering.  
-	**Optimized limit**: Default is 20 for better performance while maintaining good coverage.  
-	Output: `import_errors`, `total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`
+  Lists import errors with optional filtering.  
+  Output: `import_errors`, `total_entries`, `limit`, `offset`, `has_more_pages`, `next_offset`, `pagination_info`
+
+  **Optimized limit**: Default is 20 for better performance while maintaining good coverage.
 
 - `get_import_error(import_error_id)`  
-	Retrieves a specific import error by ID.  
-	Output: `import_error_id`, `filename`, `stacktrace`, `timestamp`
+  Retrieves a specific import error by ID.  
+  Output: `import_error_id`, `filename`, `stacktrace`, `timestamp`
 
 - `all_dag_import_summary()`  
-	Retrieves import error summary for all DAGs.  
-	Output: `import_summaries`, `total_errors`, `affected_files`
+  Retrieves import error summary for all DAGs.  
+  Output: `import_summaries`, `total_errors`, `affected_files`
 
 - `dag_run_duration(dag_id, limit=50)`  
-	Retrieves run duration statistics for a specific DAG.  
-	**Improved limit**: Default increased from 10 to 50 for better statistical analysis.  
-	Output: `dag_id`, `runs`, duration analysis, success/failure stats
+  Retrieves run duration statistics for a specific DAG.  
+  Output: `dag_id`, `runs`, duration analysis, success/failure stats
+
+  **Improved limit**: Default increased from 10 to 50 for better statistical analysis.
 
 - `dag_task_duration(dag_id, run_id=None)`  
-	Retrieves task duration information for a specific DAG run.  
-	Output: `dag_id`, `run_id`, `tasks`, individual task performance
+  Retrieves task duration information for a specific DAG run.  
+  Output: `dag_id`, `run_id`, `tasks`, individual task performance
 
 - `dag_calendar(dag_id, start_date=None, end_date=None, limit=20)`  
-	Retrieves calendar/schedule information for a specific DAG.  
-	**Configurable limit**: Default is 20, can be increased up to 1000 for bulk analysis.  
-	Output: `dag_id`, `schedule_interval`, `runs`, upcoming executions
+  Retrieves calendar/schedule information for a specific DAG.  
+  Output: `dag_id`, `schedule_interval`, `runs`, upcoming executions
+
+  **Configurable limit**: Default is 20, can be increased up to 1000 for bulk analysis.
 
 ---
 

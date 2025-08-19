@@ -10,7 +10,7 @@ services:
       - open-webui-data:/app/backend/data
     extra_hosts:
       - "host.docker.internal:host-gateway"
-    restart: always
+    restart: unless-stopped
 
   mcp-server:
     image: call518/mcp-server-airflow-api:1.0.0
@@ -29,7 +29,7 @@ services:
     volumes:
       - ./src:/app/src
       - ./scripts:/app/scripts
-    restart: always
+    restart: unless-stopped
 
   mcpo-proxy:
     image: call518/mcpo-proxy-airflow-api:1.0.2
@@ -40,7 +40,7 @@ services:
       - "8002:8000"
     volumes:
       - ./mcp-config.json.http:/app/config/mcp-config.json
-    restart: always
+    restart: unless-stopped
 
 volumes:
   open-webui-data:

@@ -15,7 +15,7 @@
 ### Key Features
 - 🔍 **Natural Language Queries**: Query Airflow DAGs, tasks, and runs using plain English
 - 📊 **Comprehensive Monitoring**: Real-time cluster health, DAG status, and performance analytics  
-- 🔧 **40+ MCP Tools**: Complete Airflow API coverage including DAGs, tasks, pools, variables, connections, configuration, and XCom
+- 🔧 **43 MCP Tools**: Complete Airflow API coverage including DAGs, tasks, pools, variables, connections, configuration, and XCom
 - ⚡ **Pagination**: Optimized pagination for large Airflow environments (1000+ DAGs)
 
 ### Topics

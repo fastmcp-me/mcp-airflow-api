@@ -6,7 +6,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 
 **IMPORTANT: Current Date Context** - Relative dates should be resolved against the server's current time (handled internally by the tools).
 
-**Resource-Optimized Design**: This MCP server has been optimized for efficient resource usage:
+**Performance-Optimized Architecture**: This MCP server uses modern async HTTP architecture:
+- **Async HTTP Client**: Built with aiohttp for high-performance concurrent request handling
+- **Connection Pooling**: Persistent session management with automatic connection reuse
 - **Optimized Default Limits**: Functions use default limits of 20 for better memory usage and faster response times
 - **Comprehensive Pagination**: All listing functions include detailed pagination metadata
 - **Flexible Scaling**: Users can specify higher limits (up to 1000) when needed for bulk operations
@@ -23,6 +25,8 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 - **No Unsolicited Advice**: Only provide advice or suggestions when requested.
 
 ## 3. Available MCP Tools
+
+**Total: 43 MCP Tools** - Complete Airflow API coverage with async performance optimization.
 
 ### Basic DAG Management
 - `list_dags(limit=20, offset=0, fetch_all=False, id_contains=None, name_contains=None)`: List DAGs with pagination and optional filters. Set `fetch_all=True` to retrieve all pages automatically.
@@ -239,8 +243,11 @@ The server always uses its current date/time for these calculations.
 
 ## 8. Logging & Environment
 
+- **HTTP Client**: Uses aiohttp with async connection pooling for optimal performance
+- **Connection Management**: Persistent sessions with automatic cleanup and retry logic
 - Control log level via AIRFLOW_LOG_LEVEL env or --log-level CLI flag.
 - Supported levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
+- aiohttp.client logging is set to WARNING level to reduce noise during debugging.
 
 ## 9. References
 

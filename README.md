@@ -114,7 +114,9 @@ uvx mcp-airflow-api --type streamable-http --host 0.0.0.0 --port 8080
 
 ---
 
-## QuickStart (Demo - streamable-http): Running OpenWebUI and MCP-Airflow-API with Docker
+## QuickStart (Demo - streamable-http)
+
+Running OpenWebUI and MCP-Airflow-API with Docker
 
 > **Note:** The following instructions assume you are using the `streamable-http` mode for MCP Server.
 

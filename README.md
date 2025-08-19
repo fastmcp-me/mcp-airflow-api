@@ -2,7 +2,7 @@
 
 Have you ever wondered how amazing it would be if you could manage your Apache Airflow workflows using natural language instead of complex REST API calls or web interface manipulations? **MCP-Airflow-API** is the revolutionary open-source project that makes this goal a reality.
 
-![MCP-Airflow-API Screenshot](img/ScreenShot-009.png)
+![MCP-Airflow-API Screenshot](img/screenshot-000.png)
 
 ---
 
@@ -128,11 +128,22 @@ dag_task_duration("my_etl_pipeline", "latest_run")
 1. **Daily Monitoring for DevOps Teams**  
    Example question: "Were there any failed ETL jobs that ran last night?" — MCP-Airflow-API performs complex filtering and returns results in natural language or structured formats.
 
+![Real-World Use Cases](img/screenshot-001.png)
+
+
 2. **Debugging for Data Engineers**  
    Request specific task logs and immediately identify failure causes.
 
+![Debugging for Data Engineers](img/screenshot-002.png)
+
 3. **Capacity Management for Operations Teams**  
    Query resource pool utilization in natural language to quickly identify bottlenecks.
+
+![Capacity Management for Operations Teams](img/screenshot-003.png)
+![Capacity Management for Operations Teams](img/screenshot-004.png)
+![Capacity Management for Operations Teams](img/screenshot-005.png)
+![Capacity Management for Operations Teams](img/screenshot-007.png)
+![Capacity Management for Operations Teams](img/screenshot-010.png)
 
 ---
 

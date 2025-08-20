@@ -126,15 +126,25 @@ dag_task_duration("my_etl_pipeline", "latest_run")
 ## 📊 Real-World Use Cases
 
 ![Capacity Management for Operations Teams](img/screenshot-001.png)
+---
 ![Capacity Management for Operations Teams](img/screenshot-002.png)
+---
 ![Capacity Management for Operations Teams](img/screenshot-003.png)
+---
 ![Capacity Management for Operations Teams](img/screenshot-004.png)
+---
 ![Capacity Management for Operations Teams](img/screenshot-005.png)
+---
 ![Capacity Management for Operations Teams](img/screenshot-006.png)
+---
 ![Capacity Management for Operations Teams](img/screenshot-007.png)
+---
 ![Capacity Management for Operations Teams](img/screenshot-008.png)
+---
 ![Capacity Management for Operations Teams](img/screenshot-009.png)
+---
 ![Capacity Management for Operations Teams](img/screenshot-010.png)
+---
 ![Capacity Management for Operations Teams](img/screenshot-011.png)
 
 ---

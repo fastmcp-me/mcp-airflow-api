@@ -13,6 +13,5 @@ wheels/
 **/.pytest_cache/
 
 .vscode*
-.github/copilot-instructions.md
 
 #mcp-config.json

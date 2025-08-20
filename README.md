@@ -125,25 +125,17 @@ dag_task_duration("my_etl_pipeline", "latest_run")
 
 ## 📊 Real-World Use Cases
 
-1. **Daily Monitoring for DevOps Teams**  
-   Example question: "Were there any failed ETL jobs that ran last night?" — MCP-Airflow-API performs complex filtering and returns results in natural language or structured formats.
-
-![Real-World Use Cases](img/screenshot-001.png)
-
-
-2. **Debugging for Data Engineers**  
-   Request specific task logs and immediately identify failure causes.
-
-![Debugging for Data Engineers](img/screenshot-002.png)
-
-3. **Capacity Management for Operations Teams**  
-   Query resource pool utilization in natural language to quickly identify bottlenecks.
-
+![Capacity Management for Operations Teams](img/screenshot-001.png)
+![Capacity Management for Operations Teams](img/screenshot-002.png)
 ![Capacity Management for Operations Teams](img/screenshot-003.png)
 ![Capacity Management for Operations Teams](img/screenshot-004.png)
 ![Capacity Management for Operations Teams](img/screenshot-005.png)
+![Capacity Management for Operations Teams](img/screenshot-006.png)
 ![Capacity Management for Operations Teams](img/screenshot-007.png)
+![Capacity Management for Operations Teams](img/screenshot-008.png)
+![Capacity Management for Operations Teams](img/screenshot-009.png)
 ![Capacity Management for Operations Teams](img/screenshot-010.png)
+![Capacity Management for Operations Teams](img/screenshot-011.png)
 
 ---
 

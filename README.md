@@ -1,7 +1,5 @@
 # 🚀 MCP-Airflow-API: Revolutionary Open Source Tool for Managing Apache Airflow with Natural Language
 
-[![MSeeP.ai Security Assessment Badge](https://mseep.net/pr/call518-mcp-airflow-api-badge.png)](https://mseep.ai/app/call518-mcp-airflow-api)
-
 [![Deploy to PyPI with tag](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml)
 
 Have you ever wondered how amazing it would be if you could manage your Apache Airflow workflows using natural language instead of complex REST API calls or web interface manipulations? **MCP-Airflow-API** is the revolutionary open-source project that makes this goal a reality.

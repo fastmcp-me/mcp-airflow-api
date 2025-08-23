@@ -23,7 +23,7 @@ curl -X GET "http://localhost:8080/api/v1/dags?limit=100&offset=0" \
 
 ---
 
-## ⭐ QuickStart: Get started in 5 minutes
+## 🚀 QuickStart: Get started in 5 minutes
 
 ### 1. Environment Setup
 

@@ -264,6 +264,112 @@ No need to memorize REST API calls — just ask in natural language:
 
 ---
 
+## 📚 Example Queries & Use Cases
+
+This section provides comprehensive examples of how to use MCP-Airflow-API tools with natural language queries.
+
+### Basic DAG Operations
+- **list_dags**: "List all DAGs with limit 10 in a table format." → Returns up to 10 DAGs
+- **list_dags**: "List all DAGs a table format." → Returns up to All DAGs (WARN: Need High Tokens)
+- **list_dags**: "Show next page of DAGs." → Use offset for pagination
+- **list_dags**: "List DAGs 21-40." → `list_dags(limit=20, offset=20)`
+- **list_dags**: "Filter DAGs whose ID contains 'tutorial'." → `list_dags(id_contains="etl")`
+- **list_dags**: "Filter DAGs whose display name contains 'tutorial'." → `list_dags(name_contains="daily")`
+- **get_dags_detailed_batch**: "Get detailed information for all DAGs with execution status." → `get_dags_detailed_batch(fetch_all=True)`
+- **get_dags_detailed_batch**: "Get details for active, unpaused DAGs with recent runs." → `get_dags_detailed_batch(is_active=True, is_paused=False)`
+- **get_dags_detailed_batch**: "Get detailed info for DAGs containing 'example' with run history." → `get_dags_detailed_batch(id_contains="example", limit=50)`
+- **running_dags**: "Show running DAGs."
+- **failed_dags**: "Show failed DAGs."
+- **trigger_dag**: "Trigger DAG 'example_complex'."
+- **pause_dag**: "Pause DAG 'example_complex' in a table format."
+- **unpause_dag**: "Unpause DAG 'example_complex' in a table format."
+
+### Cluster Management & Health
+- **get_health**: "Check Airflow cluster health."
+- **get_version**: "Get Airflow version information."
+
+### Pool Management
+- **list_pools**: "List all pools."
+- **list_pools**: "Show pool usage statistics."
+- **get_pool**: "Get details for pool 'default_pool'."
+- **get_pool**: "Check pool utilization."
+
+### Variable Management
+- **list_variables**: "List all variables."
+- **list_variables**: "Show all Airflow variables with their values."
+- **get_variable**: "Get variable 'database_url'."
+- **get_variable**: "Show the value of variable 'api_key'."
+
+### Task Instance Management
+- **list_task_instances_all**: "List all task instances for DAG 'example_complex'."
+- **list_task_instances_all**: "Show running task instances."
+- **list_task_instances_all**: "Show task instances filtered by pool 'default_pool'."
+- **list_task_instances_all**: "List task instances with duration greater than 300 seconds."
+- **list_task_instances_all**: "Show failed task instances from last week."
+- **list_task_instances_all**: "List failed task instances from yesterday."
+- **list_task_instances_all**: "Show task instances that started after 9 AM today."
+- **list_task_instances_all**: "List task instances from the last 3 days with state 'failed'."
+- **get_task_instance_details**: "Get details for task 'data_processing' in DAG 'example_complex' run 'scheduled__xxxxx'."
+- **list_task_instances_batch**: "List failed task instances from last month."
+- **list_task_instances_batch**: "Show task instances in batch for multiple DAGs from this week."
+- **get_task_instance_extra_links**: "Get extra links for task 'data_processing' in latest run."
+- **get_task_instance_logs**: "Retrieve logs for task 'create_entry_gcs' try number 2 of DAG 'example_complex'."
+
+### XCom Management
+- **list_xcom_entries**: "List XCom entries for task 'data_processing' in DAG 'example_complex' run 'scheduled__xxxxx'."
+- **list_xcom_entries**: "Show all XCom entries for task 'data_processing' in latest run."
+- **get_xcom_entry**: "Get XCom entry with key 'result' for task 'data_processing' in specific run."
+- **get_xcom_entry**: "Retrieve XCom value for key 'processed_count' from task 'data_processing'."
+
+### Configuration Management
+- **get_config**: "Show all Airflow configuration sections and options." → Returns complete config or 403 if expose_config=False
+- **list_config_sections**: "List all configuration sections with summary information."
+- **get_config_section**: "Get all settings in 'core' section." → `get_config_section("core")`
+- **get_config_section**: "Show webserver configuration options." → `get_config_section("webserver")`
+- **search_config_options**: "Find all database-related configuration options." → `search_config_options("database")`
+- **search_config_options**: "Search for timeout settings in configuration." → `search_config_options("timeout")`
+
+**Important**: Configuration tools require `expose_config = True` in airflow.cfg `[webserver]` section. Even admin users get 403 errors if this is disabled.
+
+### DAG Analysis & Monitoring
+- **get_dag**: "Get details for DAG 'example_complex'."
+- **get_dags_detailed_batch**: "Get comprehensive details for all DAGs with execution history." → `get_dags_detailed_batch(fetch_all=True)`
+- **get_dags_detailed_batch**: "Get details for active DAGs with latest run information." → `get_dags_detailed_batch(is_active=True)`
+- **get_dags_detailed_batch**: "Get detailed info for ETL DAGs with recent execution data." → `get_dags_detailed_batch(id_contains="etl")`
+
+**Note**: `get_dags_detailed_batch` returns each DAG with both configuration details (from `get_dag()`) and a `latest_dag_run` field containing the most recent execution information (run_id, state, execution_date, start_date, end_date, etc.).
+
+- **dag_graph**: "Show task graph for DAG 'example_complex'."
+- **list_tasks**: "List all tasks in DAG 'example_complex'."
+- **dag_code**: "Get source code for DAG 'example_complex'."
+- **list_event_logs**: "List event logs for DAG 'example_complex'."
+- **list_event_logs**: "Show event logs with ID from yesterday for all DAGs."
+- **get_event_log**: "Get event log entry with ID 12345."
+- **all_dag_event_summary**: "Show event count summary for all DAGs."
+- **list_import_errors**: "List import errors with ID."
+- **get_import_error**: "Get import error with ID 67890."
+- **all_dag_import_summary**: "Show import error summary for all DAGs."
+- **dag_run_duration**: "Get run duration stats for DAG 'example_complex'."
+- **dag_task_duration**: "Show latest run of DAG 'example_complex'."
+- **dag_task_duration**: "Show task durations for latest run of 'manual__xxxxx'."
+- **dag_calendar**: "Get calendar info for DAG 'example_complex' from last month."
+- **dag_calendar**: "Show DAG schedule for 'example_complex' from this week."
+
+### Date Calculation Examples
+
+Tools automatically base relative date calculations on the server's current date/time:
+
+| User Input | Calculation Method | Example Format |
+|------------|-------------------|----------------|
+| "yesterday" | current_date - 1 day | YYYY-MM-DD (1 day before current) |
+| "last week" | current_date - 7 days to current_date - 1 day | YYYY-MM-DD to YYYY-MM-DD (7 days range) |
+| "last 3 days" | current_date - 3 days to current_date | YYYY-MM-DD to YYYY-MM-DD (3 days range) |
+| "this morning" | current_date 00:00 to 12:00 | YYYY-MM-DDTHH:mm:ssZ format |
+
+The server always uses its current date/time for these calculations.
+
+---
+
 ## Contributing
 
 🤝 **Got ideas? Found bugs? Want to add cool features?**

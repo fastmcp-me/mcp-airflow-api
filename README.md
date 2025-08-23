@@ -23,24 +23,43 @@ curl -X GET "http://localhost:8080/api/v1/dags?limit=100&offset=0" \
 
 ---
 
-## QuickStart: Get started in 5 minutes
+## ⭐ QuickStart: Get started in 5 minutes
+
+### 1. Environment Setup
+
 ```bash
 git clone https://github.com/call518/MCP-Airflow-API.git
 cd MCP-Airflow-API
 
-# Copy environment template
+### Check and modify .env file
 cp .env.example .env
 
-# Edit .env with your Airflow settings
-vim .env
-
-# Start services
-docker-compose up -d
-
-# Access services
-# Open WebUI: http://localhost:3002
-# MCP Proxy API: http://localhost:8002/docs
+### Airflow API Configuration
+AIRFLOW_API_URL=http://host.docker.internal:38080/api/v1
+AIRFLOW_API_USERNAME=airflow
+AIRFLOW_API_PASSWORD=changeme!@34
 ```
+
+### 2. Start Demo Containers
+
+```bash
+# Start all containers
+docker-compose up -d
+```
+
+### 3. Access to OpenWebUI
+
+http://localhost:3002/
+
+- The list of MCP tool features provided by `swagger` can be found in the MCPO API Docs URL.
+  - e.g: `http://localhost:8002/docs`
+
+### 4. Registering the Tool in OpenWebUI
+
+1. logging in to OpenWebUI with an admin account
+1. go to "Settings" → "Tools" from the top menu.
+1. Enter the `airflow-api` Tool address (e.g., `http://localhost:8002/airflow-api`) to connect MCP Tools.
+1. Setup Ollama or OpenAI.
 
 ---
 

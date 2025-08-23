@@ -27,10 +27,19 @@ curl -X GET "http://localhost:8080/api/v1/dags?limit=100&offset=0" \
 ```bash
 git clone https://github.com/call518/MCP-Airflow-API.git
 cd MCP-Airflow-API
+
+# Copy environment template
+cp .env.example .env
+
+# Edit .env with your Airflow settings
+vim .env
+
+# Start services
 docker-compose up -d
 
-# Access in your browser
-http://localhost:3002
+# Access services
+# Open WebUI: http://localhost:3002
+# MCP Proxy API: http://localhost:8002/docs
 ```
 
 ---

@@ -15,3 +15,8 @@ wheels/
 .vscode*
 
 #mcp-config.json
+
+# Environment files
+.env
+.env.local
+.env.production

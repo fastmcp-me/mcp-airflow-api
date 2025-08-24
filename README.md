@@ -27,6 +27,8 @@ curl -X GET "http://localhost:8080/api/v1/dags?limit=100&offset=0" \
 
 ## 🚀 QuickStart: Get started in 5 minutes
 
+> **📝 Note**: Need a test Airflow cluster? Use our companion project [**Airflow-Docker-Compose**](https://github.com/call518/Airflow-Docker-Compose) for a quick, ready-to-use Airflow environment.
+
 ### 1. Environment Setup
 
 ```bash

@@ -5,17 +5,7 @@
 [![Ask DeepWiki](https://deepwiki.com/badge.svg)](https://deepwiki.com/call518/MCP-Airflow-API)
 [![BuyMeACoffee](https://raw.githubusercontent.com/pachadotdev/buymeacoffee-badges/main/bmc-donate-yellow.svg)](https://www.buymeacoffee.com/call518)
 
-## 📑 Table of Contents
-- [What is MCP-Airflow-API?](#-what-is-mcp-airflow-api)
-- [Installation & Quick Start](#-installation--quick-start)
-- [Key Features](#-key-features)
-- [Technical Advantages](#️-technical-advantages)
-- [Use Cases in Action](#-use-cases-in-action)
-- [Advanced Configuration](#️-advanced-configuration)
-- [Example Queries & Use Cases](#-example-queries--use-cases)
-- [Contributing](#contributing)
-
----
+## 📋 Overview
 
 Have you ever wondered how amazing it would be if you could manage your Apache Airflow workflows using natural language instead of complex REST API calls or web interface manipulations? **MCP-Airflow-API** is the revolutionary open-source project that makes this goal a reality.
 

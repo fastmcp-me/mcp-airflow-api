@@ -63,7 +63,7 @@ http://localhost:3002/
 1. logging in to OpenWebUI with an admin account
 1. go to "Settings" → "Tools" from the top menu.
 1. Enter the `airflow-api` Tool address (e.g., `http://localhost:8002/airflow-api`) to connect MCP Tools.
-1. Setup Ollama or OpenAI.
+1. Setup Ollama or OpenAI, etc...
 
 ---
 

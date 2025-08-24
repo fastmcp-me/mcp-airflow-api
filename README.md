@@ -4,6 +4,19 @@
 [![Deploy to PyPI with tag](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml/badge.svg)](https://github.com/call518/MCP-Airflow-API/actions/workflows/pypi-publish.yml)
 [![BuyMeACoffee](https://raw.githubusercontent.com/pachadotdev/buymeacoffee-badges/main/bmc-donate-yellow.svg)](https://www.buymeacoffee.com/call518)
 
+## 📑 Table of Contents
+- [What is MCP-Airflow-API?](#-what-is-mcp-airflow-api)
+- [Installation & Quick Start](#-installation--quick-start)
+- [Key Features](#-key-features)
+- [Technical Advantages](#️-technical-advantages)
+- [Real Usage Examples](#-real-usage-examples)
+- [Real-World Use Cases](#-real-world-use-cases)
+- [Advanced Configuration](#️-advanced-configuration)
+- [Example Queries & Use Cases](#-example-queries--use-cases)
+- [Contributing](#contributing)
+
+---
+
 Have you ever wondered how amazing it would be if you could manage your Apache Airflow workflows using natural language instead of complex REST API calls or web interface manipulations? **MCP-Airflow-API** is the revolutionary open-source project that makes this goal a reality.
 
 ![MCP-Airflow-API Screenshot](img/screenshot-000.png)
@@ -25,45 +38,54 @@ curl -X GET "http://localhost:8080/api/v1/dags?limit=100&offset=0" \
 
 ---
 
-## 🚀 QuickStart: Get started in 5 minutes
+## 🚀 Installation & Quick Start
 
 > **📝 Note**: Need a test Airflow cluster? Use our companion project [**Airflow-Docker-Compose**](https://github.com/call518/Airflow-Docker-Compose) for a quick, ready-to-use Airflow environment.
 
-### 1. Environment Setup
+### Option 1: Direct Installation from PyPI
+```bash
+uvx --python 3.11 mcp-airflow-api
+```
 
+### Option 2: Docker Compose (Complete Demo Environment)
 ```bash
 git clone https://github.com/call518/MCP-Airflow-API.git
 cd MCP-Airflow-API
 
-### Check and modify .env file
+# Configure your Airflow credentials
 cp .env.example .env
+# Edit .env with your Airflow API settings
 
-### Airflow API Configuration
-AIRFLOW_API_URL=http://host.docker.internal:38080/api/v1
-AIRFLOW_API_USERNAME=airflow
-AIRFLOW_API_PASSWORD=changeme!@34
-```
-
-### 2. Start Demo Containers
-
-```bash
-# Start all containers
+# Start all services
 docker-compose up -d
+
+# Access OpenWebUI at http://localhost:3002/
+# API documentation at http://localhost:8002/docs
 ```
 
-### 3. Access to OpenWebUI
+### Option 3: MCP Client Integration
+```json
+{
+  "mcpServers": {
+    "airflow-api": {
+      "command": "uvx",
+      "args": ["--python", "3.11", "mcp-airflow-api"],
+      "env": {
+        "AIRFLOW_API_URL": "http://localhost:8080/api/v1",
+        "AIRFLOW_API_USERNAME": "airflow",
+        "AIRFLOW_API_PASSWORD": "airflow"
+      }
+    }
+  }
+}
+```
 
-http://localhost:3002/
-
-- The list of MCP tool features provided by `swagger` can be found in the MCPO API Docs URL.
-  - e.g: `http://localhost:8002/docs`
-
-### 4. Registering the Tool in OpenWebUI
-
-1. logging in to OpenWebUI with an admin account
-1. go to "Settings" → "Tools" from the top menu.
-1. Enter the `airflow-api` Tool address (e.g., `http://localhost:8002/airflow-api`) to connect MCP Tools.
-1. Setup Ollama or OpenAI, etc...
+### Getting Started with OpenWebUI (Docker Option)
+1. Access http://localhost:3002/
+2. Log in with admin account
+3. Go to "Settings" → "Tools" from the top menu
+4. Add Tool URL: `http://localhost:8002/airflow-api`
+5. Configure your LLM provider (Ollama, OpenAI, etc.)
 
 ---
 
@@ -107,14 +129,21 @@ http://localhost:3002/
   - Secure data access
   - Scalable architecture
 
-- **Support for Two Connection Modes**
-  - `stdio` mode: Traditional approach for local environments
-  - `streamable-http` mode: Docker-based remote deployment
+- **Support for Two Transport Modes**
+  - `stdio` mode: Direct MCP client integration for local environments
+  - `streamable-http` mode: HTTP-based deployment for Docker and remote access
+  
+  **Environment Variable Control:**
+  ```bash
+  FASTMCP_TYPE=stdio          # Default: Direct MCP client mode
+  FASTMCP_TYPE=streamable-http # Docker/HTTP mode
+  FASTMCP_PORT=8080           # HTTP server port (Docker internal)
+  ```
 
 - **Complete Docker Support**  
   Full Docker Compose setup with 3 separate services:
   - **Open WebUI**: Web interface (port `3002`)
-  - **MCP Server**: Airflow API tools (port `8080`)
+  - **MCP Server**: Airflow API tools (internal port `8080`, exposed via `18002`)
   - **MCPO Proxy**: REST API endpoint provider (port `8002`)
 
 ---
@@ -183,14 +212,22 @@ dag_task_duration("my_etl_pipeline", "latest_run")
 
 ---
 
-## 🔧 Easy Installation and Setup
+## ⚙️ Advanced Configuration
 
-### Simple Installation via PyPI
+### Environment Variables
 ```bash
-uvx --python 3.11 mcp-airflow-api
+# Required
+AIRFLOW_API_URL=http://localhost:8080/api/v1
+AIRFLOW_API_USERNAME=airflow
+AIRFLOW_API_PASSWORD=your-password
+
+# Optional
+AIRFLOW_LOG_LEVEL=INFO               # DEBUG/INFO/WARNING
+FASTMCP_TYPE=stdio                   # stdio/streamable-http
+FASTMCP_PORT=8080                    # HTTP server port (Docker mode)
 ```
 
-### One-Click Deployment with Docker Compose (example)
+### Custom Docker Compose Setup
 ```yaml
 version: '3.8'
 services:
@@ -205,21 +242,14 @@ services:
       - AIRFLOW_API_PASSWORD=your-password
 ```
 
-### MCP Configuration File (example)
-```json
-{
-  "mcpServers": {
-    "airflow-api": {
-      "command": "uvx",
-      "args": ["--python", "3.11", "mcp-airflow-api"],
-      "env": {
-        "AIRFLOW_API_URL": "http://localhost:8080/api/v1",
-        "AIRFLOW_API_USERNAME": "airflow",
-        "AIRFLOW_API_PASSWORD": "airflow"
-      }
-    }
-  }
-}
+### Development Installation
+```bash
+git clone https://github.com/call518/MCP-Airflow-API.git
+cd MCP-Airflow-API
+pip install -e .
+
+# Run in stdio mode
+python -m mcp_airflow_api.airflow_api
 ```
 
 ---
@@ -382,7 +412,7 @@ We're always excited to welcome new contributors! Whether you're fixing a typo, 
 
 **Ways to contribute:**
 - 🐛 Report issues or bugs
-- 💡 Suggest new PostgreSQL monitoring features
+- 💡 Suggest new Airflow monitoring features
 - 📝 Improve documentation 
 - 🚀 Submit pull requests
 - ⭐ Star the repo if you find it useful!

@@ -13,6 +13,12 @@ Have you ever wondered how amazing it would be if you could manage your Apache A
 
 ---
 
+[![Stargazers repo roster for @call518/MCP-Airflow-API](https://reporoster.com/stars/call518/MCP-Airflow-API)](https://github.com/call518/MCP-Airflow-API/stargazers)
+
+[![Forkers repo roster for @call518/MCP-Airflow-API](https://reporoster.com/forks/call518/MCP-Airflow-API)](https://github.com/call518/MCP-Airflow-API/network/members)
+
+---
+
 ## 🎯 What is MCP-Airflow-API?
 
 MCP-Airflow-API is an MCP server that leverages the **Model Context Protocol (MCP)** to transform Apache Airflow REST API operations into natural language tools. This project hides the complexity of API structures and enables intuitive management of Airflow clusters through natural language commands.

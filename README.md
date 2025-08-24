@@ -87,7 +87,7 @@ docker-compose up -d
 ```json
 {
   "mcpServers": {
-    "airflow-cluster-A": {
+    "Airflow-Cluster-B": {
       "command": "uvx",
       "args": ["--python", "3.11", "mcp-airflow-api"],
       "env": {
@@ -96,7 +96,7 @@ docker-compose up -d
         "AIRFLOW_API_PASSWORD": "airflow"
       }
     },
-    "airflow-cluster-B": {
+    "Airflow-Cluster-B": {
       "command": "uvx",
       "args": ["--python", "3.11", "mcp-airflow-api"],
       "env": {

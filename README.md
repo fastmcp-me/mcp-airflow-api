@@ -9,8 +9,7 @@
 - [Installation & Quick Start](#-installation--quick-start)
 - [Key Features](#-key-features)
 - [Technical Advantages](#️-technical-advantages)
-- [Real Usage Examples](#-real-usage-examples)
-- [Real-World Use Cases](#-real-world-use-cases)
+- [Use Cases in Action](#-use-cases-in-action)
 - [Advanced Configuration](#️-advanced-configuration)
 - [Example Queries & Use Cases](#-example-queries--use-cases)
 - [Contributing](#contributing)
@@ -63,7 +62,10 @@ docker-compose up -d
 # API documentation at http://localhost:8002/docs
 ```
 
-### Option 3: MCP Client Integration
+### Option 3: MCP Client Integration (e.g. Claude-Desktop)
+
+**Single Airflow Cluster**
+
 ```json
 {
   "mcpServers": {
@@ -72,6 +74,33 @@ docker-compose up -d
       "args": ["--python", "3.11", "mcp-airflow-api"],
       "env": {
         "AIRFLOW_API_URL": "http://localhost:8080/api/v1",
+        "AIRFLOW_API_USERNAME": "airflow",
+        "AIRFLOW_API_PASSWORD": "airflow"
+      }
+    }
+  }
+}
+```
+
+**Multiple Airflow Cluster**
+
+```json
+{
+  "mcpServers": {
+    "airflow-cluster-A": {
+      "command": "uvx",
+      "args": ["--python", "3.11", "mcp-airflow-api"],
+      "env": {
+        "AIRFLOW_API_URL": "http://a.cluster.airflow:8080/api/v1",
+        "AIRFLOW_API_USERNAME": "airflow",
+        "AIRFLOW_API_PASSWORD": "airflow"
+      }
+    },
+    "airflow-cluster-B": {
+      "command": "uvx",
+      "args": ["--python", "3.11", "mcp-airflow-api"],
+      "env": {
+        "AIRFLOW_API_URL": "http://b.cluster.airflow:8080/api/v1",
         "AIRFLOW_API_USERNAME": "airflow",
         "AIRFLOW_API_PASSWORD": "airflow"
       }
@@ -148,45 +177,7 @@ docker-compose up -d
 
 ---
 
-## 🚀 Real Usage Examples
-
-### DAG Management
-```python
-# List all currently running DAGs
-list_dags(limit=50, is_active=True)
-
-# Search for DAGs containing specific keywords
-list_dags(id_contains="etl", name_contains="daily")
-
-# Trigger DAG immediately
-trigger_dag("my_etl_pipeline")
-```
-
-### Task Monitoring
-```python
-# Query failed task instances
-list_task_instances_all(state="failed", limit=20)
-
-# Check logs for specific task
-get_task_instance_logs(
-    dag_id="my_dag", 
-    dag_run_id="run_123", 
-    task_id="extract_data"
-)
-```
-
-### Performance Analysis
-```python
-# DAG execution time statistics
-dag_run_duration("my_etl_pipeline", limit=50)
-
-# Task-level performance analysis
-dag_task_duration("my_etl_pipeline", "latest_run")
-```
-
----
-
-## 📊 Real-World Use Cases
+##  Use Cases in Action
 
 ![Capacity Management for Operations Teams](img/screenshot-001.png)
 ---

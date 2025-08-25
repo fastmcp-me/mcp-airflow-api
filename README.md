@@ -11,6 +11,8 @@
 
 Have you ever wondered how amazing it would be if you could manage your Apache Airflow workflows using natural language instead of complex REST API calls or web interface manipulations? **MCP-Airflow-API** is the revolutionary open-source project that makes this goal a reality.
 
+[![Stargazers repo roster for @call518/MCP-Airflow-API](https://reporoster.com/stars/call518/MCP-Airflow-API)](https://github.com/call518/MCP-Airflow-API/stargazers)
+
 ![MCP-Airflow-API Screenshot](img/screenshot-000.png)
 
 ---

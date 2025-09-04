@@ -16,7 +16,7 @@ services:
     image: call518/mcp-server-airflow-api:1.0.0
     container_name: mcp-airflow-api-mcp-server
     ports:
-      - "${DOCKER_EXTERNAL_PORT_MCP_SERVER}:8080" ### (WARNING) Must be same with port number of 'FASTMCP_PORT', 'mcp-config.json' and 'mcp-config.json.http'
+      - "${DOCKER_EXTERNAL_PORT_MCP_SERVER}:8000" ### (WARNING) Must be same with port number of 'FASTMCP_PORT', 'mcp-config.json' and 'mcp-config.json.http'
     environment:
       - PYTHONPATH=${PYTHONPATH}
       - FASTMCP_TYPE=${FASTMCP_TYPE}

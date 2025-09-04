@@ -161,13 +161,13 @@ docker-compose up -d
   ```bash
   FASTMCP_TYPE=stdio          # Default: Direct MCP client mode
   FASTMCP_TYPE=streamable-http # Docker/HTTP mode
-  FASTMCP_PORT=8080           # HTTP server port (Docker internal)
+  FASTMCP_PORT=8000           # HTTP server port (Docker internal)
   ```
 
 - **Complete Docker Support**  
   Full Docker Compose setup with 3 separate services:
   - **Open WebUI**: Web interface (port `3002`)
-  - **MCP Server**: Airflow API tools (internal port `8080`, exposed via `18002`)
+  - **MCP Server**: Airflow API tools (internal port `8000`, exposed via `18002`)
   - **MCPO Proxy**: REST API endpoint provider (port `8002`)
 
 ---
@@ -210,7 +210,7 @@ AIRFLOW_API_PASSWORD=your-password
 # Optional
 AIRFLOW_LOG_LEVEL=INFO               # DEBUG/INFO/WARNING
 FASTMCP_TYPE=stdio                   # stdio/streamable-http
-FASTMCP_PORT=8080                    # HTTP server port (Docker mode)
+FASTMCP_PORT=8000                    # HTTP server port (Docker mode)
 ```
 
 ### Custom Docker Compose Setup
@@ -222,7 +222,7 @@ services:
       context: .
       dockerfile: Dockerfile.MCP-Server
     environment:
-      - FASTMCP_PORT=8080
+      - FASTMCP_PORT=8000
       - AIRFLOW_API_URL=http://your-airflow:8080/api/v1
       - AIRFLOW_API_USERNAME=airflow
       - AIRFLOW_API_PASSWORD=your-password

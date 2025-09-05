@@ -20,12 +20,190 @@ logging.basicConfig(
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
 
+def register_prompts(mcp, api_version: str):
+    """Register prompt templates for the MCP server."""
+    
+    @mcp.prompt()
+    async def airflow_cluster_monitoring(dag_name: Optional[str] = None, time_range: Optional[str] = "today") -> str:
+        """Comprehensive Airflow cluster monitoring assistant.
+        
+        Args:
+            dag_name: Specific DAG to focus on (optional)
+            time_range: Time range for analysis (default: "today")
+        """
+        
+        # Read the prompt template
+        import os
+        template_path = os.path.join(os.path.dirname(__file__), "prompt_template.md")
+        
+        try:
+            with open(template_path, 'r', encoding='utf-8') as f:
+                template_content = f.read()
+        except FileNotFoundError:
+            template_content = "# MCP Airflow API Prompt Template\n\nTemplate file not found."
+        
+        context = f"""
+{template_content}
+
+## Current Session Context
+
+**API Version**: {api_version}
+**Target DAG**: {dag_name or "All DAGs"}
+**Time Range**: {time_range}
+**Available Tools**: {"45 tools (43 common + 2 asset tools)" if api_version == "v2" else "43 tools"}
+
+## Session Instructions
+
+You are an expert Airflow cluster monitoring assistant. Use the available MCP tools to:
+
+1. **Monitor cluster health and performance**
+2. **Analyze DAG execution patterns** 
+3. **Investigate failures and bottlenecks**
+4. **Provide actionable insights**
+
+Always start by checking cluster health with `get_health` and version with `get_version`.
+For DAG analysis, use `list_dags`, `running_dags`, and `failed_dags` to get an overview.
+"""
+        
+        if api_version == "v2":
+            context += """
+## V2 Enhanced Features Available
+
+- **Asset Management**: Use `list_assets` and `list_asset_events` for data-aware scheduling
+- **Enhanced DAG Analysis**: All tools support improved filtering and metadata
+- **JWT Authentication**: Automatic token management for Airflow 3.0+
+"""
+        
+        return context
+    
+    @mcp.prompt()
+    async def airflow_troubleshooting(issue_type: Optional[str] = "general", severity: Optional[str] = "medium") -> str:
+        """Specialized Airflow troubleshooting assistant.
+        
+        Args:
+            issue_type: Type of issue (failed_tasks, slow_dags, resource_issues, general)
+            severity: Issue severity (low, medium, high, critical)
+        """
+        
+        context = f"""
+# Airflow Troubleshooting Assistant
+
+**API Version**: {api_version}
+**Issue Type**: {issue_type}
+**Severity**: {severity}
+
+## Troubleshooting Workflow
+
+### 1. Initial Assessment
+- Check cluster health: `get_health`
+- Review system status: `get_version`
+- Identify failed DAGs: `failed_dags`
+
+### 2. Issue-Specific Analysis
+
+**Failed Tasks**: Use `list_task_instances_all` with state="failed"
+**Slow DAGs**: Use `dag_run_duration` and `dag_task_duration`
+**Resource Issues**: Check `list_pools` and pool utilization
+**Import Errors**: Use `list_import_errors` and `all_dag_import_summary`
+
+### 3. Deep Dive Investigation
+- Examine task logs: `get_task_instance_logs`
+- Review task details: `get_task_instance_details`
+- Check XCom data: `list_xcom_entries`
+- Analyze event logs: `list_event_logs`
+
+### 4. Monitoring and Prevention
+- Set up regular health checks
+- Monitor resource utilization trends
+- Review configuration settings
+"""
+        
+        if issue_type == "failed_tasks":
+            context += """
+## Failed Tasks Investigation
+
+1. `failed_dags` - Get overview of failed DAG runs
+2. `list_task_instances_all(state="failed")` - List all failed tasks
+3. `get_task_instance_logs(dag_id, dag_run_id, task_id)` - Check error logs
+4. `get_task_instance_details(dag_id, dag_run_id, task_id)` - Get task metadata
+"""
+        
+        elif issue_type == "slow_dags":
+            context += """
+## Performance Analysis
+
+1. `dag_run_duration(dag_id)` - Get runtime statistics
+2. `dag_task_duration(dag_id, run_id)` - Identify slow tasks
+3. `list_task_instances_all(duration_gte=300)` - Find long-running tasks
+4. `list_pools` - Check resource allocation
+"""
+        
+        return context
+    
+    @mcp.prompt()
+    async def airflow_dag_analysis(analysis_type: Optional[str] = "overview", dag_pattern: Optional[str] = None) -> str:
+        """DAG analysis and optimization assistant.
+        
+        Args:
+            analysis_type: Type of analysis (overview, performance, dependencies, configuration)
+            dag_pattern: Pattern to filter DAGs (optional)
+        """
+        
+        context = f"""
+# DAG Analysis Assistant
+
+**API Version**: {api_version}
+**Analysis Type**: {analysis_type}
+**DAG Pattern**: {dag_pattern or "All DAGs"}
+
+## Analysis Workflows
+
+### Overview Analysis
+1. `list_dags` - Get DAG inventory
+2. `get_dags_detailed_batch(fetch_all=True)` - Comprehensive DAG details
+3. `running_dags` and `failed_dags` - Current status
+
+### Performance Analysis  
+1. `dag_run_duration(dag_id)` - Runtime trends
+2. `dag_task_duration(dag_id, run_id)` - Task-level performance
+3. `list_task_instances_all` - Task execution patterns
+
+### Dependencies Analysis
+1. `dag_graph(dag_id)` - Task dependency visualization
+2. `list_tasks(dag_id)` - Task configuration details
+3. `dag_code(dag_id)` - Source code review
+"""
+        
+        if analysis_type == "performance":
+            context += """
+## Performance Optimization Focus
+
+- Identify bottleneck tasks with high duration
+- Check resource utilization patterns
+- Analyze failure rates and retry patterns
+- Review scheduling efficiency
+"""
+        
+        if api_version == "v2" and analysis_type == "dependencies":
+            context += """
+## V2 Enhanced Dependencies (Data-Aware Scheduling)
+
+- `list_assets` - Show data assets and dependencies
+- `list_asset_events` - Track data lineage and updates
+- Enhanced DAG metadata with asset relationships
+"""
+        
+        return context
+
 def create_mcp_server():
     """Create and configure MCP server based on API version."""
     api_version = get_api_version()
     mcp = FastMCP("mcp-airflow-api")
     
     logger.info(f"Initializing MCP server for Airflow API {api_version}")
+    
+    # Register prompt templates
+    register_prompts(mcp, api_version)
     
     if api_version == "v1":
         logger.info("Loading Airflow API v1 tools (Airflow 2.x)")

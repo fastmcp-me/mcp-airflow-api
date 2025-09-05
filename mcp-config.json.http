@@ -2,7 +2,8 @@
   "mcpServers": {
     "airflow-api": {
       "type": "streamable-http",
-      "url": "http://host.docker.internal:18002/mcp"
+      "url": "http://host.docker.internal:18002/mcp",
+      "description": "Airflow API - Version controlled by AIRFLOW_API_VERSION env var"
     }
   }
 }

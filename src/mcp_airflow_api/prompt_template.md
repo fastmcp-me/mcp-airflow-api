@@ -4,6 +4,11 @@
 
 This MCP server provides natural language tools for managing Apache Airflow clusters via REST API. All prompts and tool outputs are designed for minimal, LLM-friendly English responses.
 
+**Airflow API Version Support**:
+- **API v1**: Based on [Airflow 2.x REST API](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html) - 43 tools
+- **API v2**: Based on [Airflow 3.0+ REST API](https://airflow.apache.org/docs/apache-airflow/stable/stable-rest-api-ref.html) - 45 tools
+- **Dynamic Selection**: Controlled by `AIRFLOW_API_VERSION` environment variable
+
 **IMPORTANT: Current Date Context** - Relative dates should be resolved against the server's current time (handled internally by the tools).
 
 **Performance-Optimized Architecture**: This MCP server uses modern async HTTP architecture:
@@ -26,7 +31,11 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 
 ## 3. Available MCP Tools
 
-**Total: 43 MCP Tools** - Complete Airflow API coverage with async performance optimization.
+**Tool Count by API Version**:
+- **API v1** (Airflow 2.x): 43 MCP Tools - [Documentation](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
+- **API v2** (Airflow 3.0+): 45 MCP Tools - [Documentation](https://airflow.apache.org/docs/apache-airflow/stable/stable-rest-api-ref.html)
+
+**Complete Airflow API coverage with async performance optimization and dynamic version selection.**
 
 ### Basic DAG Management
 - `list_dags(limit=20, offset=0, fetch_all=False, id_contains=None, name_contains=None)`: List DAGs with pagination and optional filters. Set `fetch_all=True` to retrieve all pages automatically.

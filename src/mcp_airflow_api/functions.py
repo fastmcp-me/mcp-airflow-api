@@ -4,10 +4,16 @@ Utility functions for Airflow MCP
 import os
 import aiohttp
 import asyncio
+import json
 from typing import Any, Dict, Optional, List
+
+# Common constants
+PROMPT_TEMPLATE_PATH = os.path.join(os.path.dirname(__file__), "prompt_template.md")
 
 # Global session instance for connection pooling and performance optimization
 _airflow_session = None
+_jwt_token = None
+_token_expiry = None
 
 async def get_airflow_session() -> aiohttp.ClientSession:
     """
@@ -40,32 +46,122 @@ async def get_airflow_session() -> aiohttp.ClientSession:
     
     return _airflow_session
 
-async def airflow_request(method: str, path: str, **kwargs) -> aiohttp.ClientResponse:
-    """
-    Make a Basic Auth request to Airflow REST API using a persistent session.
-    This improves performance through connection pooling and Keep-Alive connections.
-    
-    'path' should be relative to AIRFLOW_API_URL (e.g., '/dags', '/pools').
-    """
-    base_url = os.getenv("AIRFLOW_API_URL", "").rstrip("/")
+def get_api_base_url():
+    """Get base API URL from environment."""
+    base_url = os.getenv("AIRFLOW_API_BASE_URL", "").rstrip("/")
     if not base_url:
-        raise RuntimeError("AIRFLOW_API_URL environment variable is not set")
+        # Fallback to legacy AIRFLOW_API_URL for backward compatibility
+        legacy_url = os.getenv("AIRFLOW_API_URL", "").rstrip("/")
+        if legacy_url.endswith("/v1"):
+            base_url = legacy_url[:-3]  # Remove /v1
+        else:
+            base_url = legacy_url
+    return base_url
+
+def get_api_version():
+    """Get API version from environment."""
+    return os.getenv("AIRFLOW_API_VERSION", "v1").lower()
+
+def construct_api_url(path: str) -> str:
+    """Construct full API URL with version."""
+    base_url = get_api_base_url()
+    version = get_api_version()
+    
+    if not base_url:
+        raise RuntimeError("AIRFLOW_API_BASE_URL or AIRFLOW_API_URL environment variable is not set")
     
     # Ensure path starts with /
     if not path.startswith("/"):
         path = "/" + path
     
-    # Construct full URL
-    full_url = base_url + path
+    return f"{base_url}/{version}{path}"
+
+async def get_jwt_token() -> str:
+    """
+    Get JWT token for Airflow 3.x authentication.
+    Caches the token and automatically refreshes when needed.
+    """
+    global _jwt_token, _token_expiry
+    import time
     
-    # Get authentication
+    # Check if we have a valid cached token
+    if _jwt_token and _token_expiry and time.time() < _token_expiry:
+        return _jwt_token
+    
+    # Get credentials
     username = os.getenv("AIRFLOW_API_USERNAME")
     password = os.getenv("AIRFLOW_API_PASSWORD")
     if not username or not password:
-        raise RuntimeError("AIRFLOW_API_USERNAME or AIRFLOW_API_PASSWORD environment variable is not set")
+        raise RuntimeError("AIRFLOW_API_USERNAME and AIRFLOW_API_PASSWORD required for JWT token authentication")
     
-    auth = aiohttp.BasicAuth(username, password)
+    # Get base URL for token endpoint
+    base_url = get_api_base_url()
+    if not base_url:
+        raise RuntimeError("AIRFLOW_API_BASE_URL or AIRFLOW_API_URL environment variable is not set")
+    
+    # Remove /api suffix for auth endpoint
+    auth_base_url = base_url.replace("/api", "")
+    token_url = f"{auth_base_url}/auth/token"
+    
+    # Request token
+    session = await get_airflow_session()
+    payload = {
+        "username": username,
+        "password": password
+    }
+    
+    async with session.post(token_url, json=payload) as response:
+        if response.status in [200, 201]:  # Accept both 200 OK and 201 Created
+            data = await response.json()
+            _jwt_token = data.get("access_token")
+            # Set expiry to 23 hours from now (tokens typically last 24 hours)
+            _token_expiry = time.time() + (23 * 60 * 60)
+            return _jwt_token
+        else:
+            error_text = await response.text()
+            raise RuntimeError(f"Failed to obtain JWT token: {response.status} - {error_text}")
+
+async def airflow_request(method: str, path: str, **kwargs) -> aiohttp.ClientResponse:
+    """
+    Make an authenticated request to Airflow REST API using a persistent session.
+    Automatically selects the appropriate authentication method based on API version:
+    - v1 API (Airflow 2.x): Basic Auth using username/password
+    - v2 API (Airflow 3.x): Auto JWT Token (internally managed) with Basic Auth fallback
+    
+    Requires only AIRFLOW_API_USERNAME and AIRFLOW_API_PASSWORD environment variables.
+    JWT tokens are automatically obtained and cached for v2 API.
+    
+    'path' should be relative to API version (e.g., '/dags', '/pools').
+    URL construction: {AIRFLOW_API_BASE_URL}/{AIRFLOW_API_VERSION}{path}
+    """
+    # Use new version-aware URL construction
+    full_url = construct_api_url(path)
+    
+    # Get authentication credentials
+    username = os.getenv("AIRFLOW_API_USERNAME")
+    password = os.getenv("AIRFLOW_API_PASSWORD")
+    api_version = get_api_version()
+    
+    if not username or not password:
+        raise RuntimeError(f"Authentication required for API {api_version}: Both AIRFLOW_API_USERNAME and AIRFLOW_API_PASSWORD environment variables must be set")
+    
     headers = kwargs.pop("headers", {})
+    auth = None
+    
+    if api_version == "v2":
+        # Auto JWT Token for Airflow 3.x (v2 API) - internally managed
+        try:
+            jwt_token = await get_jwt_token()
+            headers["Authorization"] = f"Bearer {jwt_token}"
+        except Exception as e:
+            # Fallback to Basic Auth if JWT fails (for hybrid environments)
+            print(f"JWT token failed for v2 API, falling back to Basic Auth: {e}")
+            auth = aiohttp.BasicAuth(username, password)
+    elif api_version == "v1":
+        # Basic Auth authentication for Airflow 2.x (v1 API)
+        auth = aiohttp.BasicAuth(username, password)
+    else:
+        raise RuntimeError(f"Unsupported API version: {api_version}. Supported versions: v1, v2")
     
     # Use persistent session for better performance
     session = await get_airflow_session()
@@ -78,20 +174,17 @@ async def airflow_request(method: str, path: str, **kwargs) -> aiohttp.ClientRes
         
         # Create a response-like object
         class AsyncResponse:
-            def __init__(self, status, text, headers):
+            def __init__(self, status, text, headers, url):
                 self.status_code = status
                 self._text = text
                 self._headers = headers
                 self.headers = headers
+                self.url = url
+                self.real_url = url  # Add real_url attribute
             
             def raise_for_status(self):
                 if self.status_code >= 400:
-                    raise aiohttp.ClientResponseError(
-                        request_info=None,
-                        history=None,
-                        status=self.status_code,
-                        message=f"HTTP {self.status_code}"
-                    )
+                    raise RuntimeError(f"HTTP {self.status_code}: {self._text}")
             
             def json(self):
                 import json
@@ -101,7 +194,35 @@ async def airflow_request(method: str, path: str, **kwargs) -> aiohttp.ClientRes
             def text(self):
                 return self._text
         
-        return AsyncResponse(response_status, response_data, response_headers)
+        return AsyncResponse(response_status, response_data, response_headers, full_url)
+
+async def airflow_request_v1(method: str, path: str, **kwargs) -> aiohttp.ClientResponse:
+    """Make API v1 request."""
+    # Temporarily override version for this request
+    original_version = os.getenv("AIRFLOW_API_VERSION")
+    os.environ["AIRFLOW_API_VERSION"] = "v1"
+    try:
+        return await airflow_request(method, path, **kwargs)
+    finally:
+        # Restore original version
+        if original_version:
+            os.environ["AIRFLOW_API_VERSION"] = original_version
+        elif "AIRFLOW_API_VERSION" in os.environ:
+            del os.environ["AIRFLOW_API_VERSION"]
+
+async def airflow_request_v2(method: str, path: str, **kwargs) -> aiohttp.ClientResponse:
+    """Make API v2 request."""
+    # Temporarily override version for this request
+    original_version = os.getenv("AIRFLOW_API_VERSION")
+    os.environ["AIRFLOW_API_VERSION"] = "v2"
+    try:
+        return await airflow_request(method, path, **kwargs)
+    finally:
+        # Restore original version
+        if original_version:
+            os.environ["AIRFLOW_API_VERSION"] = original_version
+        elif "AIRFLOW_API_VERSION" in os.environ:
+            del os.environ["AIRFLOW_API_VERSION"]
 
 async def close_airflow_session():
     """

@@ -21,6 +21,15 @@ Have you ever wondered how amazing it would be if you could manage your Apache A
 
 MCP-Airflow-API is an MCP server that leverages the **Model Context Protocol (MCP)** to transform Apache Airflow REST API operations into natural language tools. This project hides the complexity of API structures and enables intuitive management of Airflow clusters through natural language commands.
 
+### 🆕 Multi-Version API Support (NEW!)
+
+**Now supports both Airflow API v1 (2.x) and v2 (3.0+)** with dynamic version selection via environment variable:
+
+- **API v1**: Full compatibility with Airflow 2.x clusters (43 tools) - [Documentation](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
+- **API v2**: Enhanced features for Airflow 3.0+ including datasets, asset events, and improved scheduling (45 tools) - [Documentation](https://airflow.apache.org/docs/apache-airflow/stable/stable-rest-api-ref.html)
+
+**Key Feature**: Single MCP server dynamically loads the appropriate tool set based on `AIRFLOW_API_VERSION` environment variable - no need for separate server instances!
+
 **Traditional approach (example):**
 ```bash
 curl -X GET "http://localhost:8080/api/v1/dags?limit=100&offset=0" \
@@ -68,7 +77,8 @@ docker-compose up -d
       "command": "uvx",
       "args": ["--python", "3.11", "mcp-airflow-api"],
       "env": {
-        "AIRFLOW_API_URL": "http://localhost:8080/api/v1",
+        "AIRFLOW_API_VERSION": "v2",
+        "AIRFLOW_API_BASE_URL": "http://localhost:8080/api",
         "AIRFLOW_API_USERNAME": "airflow",
         "AIRFLOW_API_PASSWORD": "airflow"
       }
@@ -77,25 +87,30 @@ docker-compose up -d
 }
 ```
 
-**Multiple Airflow Cluster**
+**Multiple Airflow Clusters with Different Versions**
+
+```json
+**Multiple Airflow Clusters with Different Versions**
 
 ```json
 {
   "mcpServers": {
-    "Airflow-Cluster-B": {
+    "airflow-cluster-a": {
       "command": "uvx",
       "args": ["--python", "3.11", "mcp-airflow-api"],
       "env": {
-        "AIRFLOW_API_URL": "http://a.cluster.airflow:8080/api/v1",
+        "AIRFLOW_API_VERSION": "v1",
+        "AIRFLOW_API_BASE_URL": "http://a.cluster.airflow:8080/api",
         "AIRFLOW_API_USERNAME": "airflow",
         "AIRFLOW_API_PASSWORD": "airflow"
       }
     },
-    "Airflow-Cluster-B": {
+    "airflow-cluster-b": {
       "command": "uvx",
       "args": ["--python", "3.11", "mcp-airflow-api"],
       "env": {
-        "AIRFLOW_API_URL": "http://b.cluster.airflow:8080/api/v1",
+        "AIRFLOW_API_VERSION": "v2",
+        "AIRFLOW_API_BASE_URL": "http://b.cluster.airflow:8080/api",
         "AIRFLOW_API_USERNAME": "airflow",
         "AIRFLOW_API_PASSWORD": "airflow"
       }
@@ -128,7 +143,14 @@ docker-compose up -d
    - Task execution log tracking
    - XCom data management
 
-3. **43 Powerful MCP Tools**  
+3. **Dynamic API Version Support**  
+   Single MCP server adapts to your Airflow version:
+   - **API v1**: 43 tools for Airflow 2.x compatibility
+   - **API v2**: 45 tools for Airflow 3.0+ with enhanced features
+   - **Environment Variable Control**: Switch versions instantly with `AIRFLOW_API_VERSION`
+   - **Zero Configuration Changes**: Same tool names, different capabilities
+
+4. **Comprehensive Tool Coverage**  
    Covers almost all Airflow API functionality:
    - DAG management (trigger, pause, resume)
    - Task instance monitoring
@@ -163,6 +185,13 @@ docker-compose up -d
   FASTMCP_TYPE=streamable-http # Docker/HTTP mode
   FASTMCP_PORT=8000           # HTTP server port (Docker internal)
   ```
+
+- **Comprehensive Airflow API Coverage**  
+  Full implementation of official Airflow REST APIs:
+  - **API v1 Support**: Based on [Airflow 2.x REST API](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
+  - **API v2 Support**: Based on [Airflow 3.0+ REST API](https://airflow.apache.org/docs/apache-airflow/stable/stable-rest-api-ref.html)
+  - **Dynamic Version Selection**: Runtime switching between API versions
+  - **Feature Parity**: Complete endpoint coverage for both versions
 
 - **Complete Docker Support**  
   Full Docker Compose setup with 3 separate services:
@@ -202,16 +231,40 @@ docker-compose up -d
 
 ### Environment Variables
 ```bash
-# Required
+# Required - Dynamic API Version Selection (NEW!)
+# Single server supports both v1 and v2 - just change this variable!
+AIRFLOW_API_VERSION=v1           # v1 for Airflow 2.x, v2 for Airflow 3.0+
+AIRFLOW_API_BASE_URL=http://localhost:8080/api
+
+# Or use legacy format (auto-detected)
 AIRFLOW_API_URL=http://localhost:8080/api/v1
+
+# Authentication
 AIRFLOW_API_USERNAME=airflow
-AIRFLOW_API_PASSWORD=your-password
+AIRFLOW_API_PASSWORD=airflow
 
 # Optional
 AIRFLOW_LOG_LEVEL=INFO               # DEBUG/INFO/WARNING
 FASTMCP_TYPE=stdio                   # stdio/streamable-http
 FASTMCP_PORT=8000                    # HTTP server port (Docker mode)
 ```
+
+### API Version Comparison
+
+**Official Documentation:**
+- **API v1**: [Airflow 2.x REST API Reference](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
+- **API v2**: [Airflow 3.0+ REST API Reference](https://airflow.apache.org/docs/apache-airflow/stable/stable-rest-api-ref.html)
+
+| Feature | API v1 (Airflow 2.x) | API v2 (Airflow 3.0+) |
+|---------|----------------------|----------------------|
+| Basic DAG Operations | ✅ | ✅ Enhanced |
+| Task Management | ✅ | ✅ Enhanced |
+| Connection Management | ✅ | ✅ Enhanced |
+| Pool Management | ✅ | ✅ Enhanced |
+| **Dataset/Asset Support** | ❌ | ✅ **New** |
+| **Asset Events** | ❌ | ✅ **New** |
+| **Enhanced DAG Warnings** | ❌ | ✅ **New** |
+| **Advanced Filtering** | Basic | ✅ **Enhanced** |
 
 ### Custom Docker Compose Setup
 ```yaml
@@ -223,9 +276,10 @@ services:
       dockerfile: Dockerfile.MCP-Server
     environment:
       - FASTMCP_PORT=8000
-      - AIRFLOW_API_URL=http://your-airflow:8080/api/v1
+      - AIRFLOW_API_VERSION=v1
+      - AIRFLOW_API_BASE_URL=http://your-airflow:8080/api
       - AIRFLOW_API_USERNAME=airflow
-      - AIRFLOW_API_PASSWORD=your-password
+      - AIRFLOW_API_PASSWORD=airflow
 ```
 
 ### Development Installation

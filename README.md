@@ -90,9 +90,6 @@ docker-compose up -d
 **Multiple Airflow Clusters with Different Versions**
 
 ```json
-**Multiple Airflow Clusters with Different Versions**
-
-```json
 {
   "mcpServers": {
     "airflow-2x-cluster": {

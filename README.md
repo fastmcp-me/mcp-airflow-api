@@ -43,7 +43,7 @@ curl -X GET "http://localhost:8080/api/v1/dags?limit=100&offset=0" \
 
 ## 🚀 Installation & Quick Start
 
-> **📝 Note**: Need a test Airflow cluster? Use our companion project [**Airflow-Docker-Compose**](https://github.com/call518/Airflow-Docker-Compose) for a quick, ready-to-use Airflow environment.
+> **📝 Need a test Airflow cluster?** Use our companion project [**Airflow-Docker-Compose**](https://github.com/call518/Airflow-Docker-Compose) with support for both **Airflow 2.x** and **Airflow 3.x** environments!
 
 ### Option 1: Direct Installation from PyPI
 ```bash
@@ -95,22 +95,22 @@ docker-compose up -d
 ```json
 {
   "mcpServers": {
-    "airflow-cluster-a": {
+    "airflow-2x-cluster": {
       "command": "uvx",
       "args": ["--python", "3.11", "mcp-airflow-api"],
       "env": {
         "AIRFLOW_API_VERSION": "v1",
-        "AIRFLOW_API_BASE_URL": "http://a.cluster.airflow:8080/api",
+        "AIRFLOW_API_BASE_URL": "http://localhost:38080/api",
         "AIRFLOW_API_USERNAME": "airflow",
         "AIRFLOW_API_PASSWORD": "airflow"
       }
     },
-    "airflow-cluster-b": {
+    "airflow-3x-cluster": {
       "command": "uvx",
       "args": ["--python", "3.11", "mcp-airflow-api"],
       "env": {
         "AIRFLOW_API_VERSION": "v2",
-        "AIRFLOW_API_BASE_URL": "http://b.cluster.airflow:8080/api",
+        "AIRFLOW_API_BASE_URL": "http://localhost:48080/api",
         "AIRFLOW_API_USERNAME": "airflow",
         "AIRFLOW_API_PASSWORD": "airflow"
       }
@@ -118,6 +118,8 @@ docker-compose up -d
   }
 }
 ```
+
+> **💡 Pro Tip**: Use the test clusters from [Airflow-Docker-Compose](https://github.com/call518/Airflow-Docker-Compose) for the above configuration - they run on ports 38080 (2.x) and 48080 (3.x) respectively!
 
 ### Getting Started with OpenWebUI (Docker Option)
 1. Access http://localhost:3002/
@@ -237,6 +239,15 @@ docker-compose up -d
 AIRFLOW_API_VERSION=v1           # v1 for Airflow 2.x, v2 for Airflow 3.0+
 AIRFLOW_API_BASE_URL=http://localhost:8080/api
 
+# Test Cluster Connection Examples:
+# For Airflow 2.x test cluster (from Airflow-Docker-Compose)
+AIRFLOW_API_VERSION=v1
+AIRFLOW_API_BASE_URL=http://localhost:38080/api
+
+# For Airflow 3.x test cluster (from Airflow-Docker-Compose)  
+AIRFLOW_API_VERSION=v2
+AIRFLOW_API_BASE_URL=http://localhost:48080/api
+
 # Or use legacy format (auto-detected)
 AIRFLOW_API_URL=http://localhost:8080/api/v1
 
@@ -295,6 +306,109 @@ pip install -e .
 
 # Run in stdio mode
 python -m mcp_airflow_api.airflow_api
+```
+
+---
+
+## 🧪 Test Airflow Cluster Deployment
+
+For testing and development, use our companion project [**Airflow-Docker-Compose**](https://github.com/call518/Airflow-Docker-Compose) which supports both Airflow 2.x and 3.x environments.
+
+### Quick Setup
+
+1. **Clone the test environment repository:**
+   ```bash
+   git clone https://github.com/call518/Airflow-Docker-Compose.git
+   cd Airflow-Docker-Compose
+   ```
+
+### Option 1: Deploy Airflow 2.x (LTS)
+
+For testing **API v1** compatibility with stable production features:
+
+```bash
+# Navigate to Airflow 2.x environment
+cd airflow-2.x
+
+# (Optional) Customize environment variables
+cp .env.template .env
+# Edit .env file as needed
+
+# Deploy Airflow 2.x cluster
+./run-airflow-cluster.sh
+
+# Access Web UI
+# URL: http://localhost:38080
+# Username: airflow / Password: airflow
+```
+
+**Environment details:**
+- **Image**: `apache/airflow:2.10.2`
+- **Port**: `38080` (configurable via `AIRFLOW_WEBSERVER_PORT`)
+- **API**: `/api/v1/*` endpoints
+- **Authentication**: Basic Auth
+- **Use case**: Production-ready, stable features
+
+### Option 2: Deploy Airflow 3.x (Latest)
+
+For testing **API v2** with latest features including Assets management:
+
+```bash
+# Navigate to Airflow 3.x environment  
+cd airflow-3.x
+
+# (Optional) Customize environment variables
+cp .env.template .env
+# Edit .env file as needed
+
+# Deploy Airflow 3.x cluster
+./run-airflow-cluster.sh
+
+# Access API Server
+# URL: http://localhost:48080
+# Username: airflow / Password: airflow
+```
+
+**Environment details:**
+- **Image**: `apache/airflow:3.0.6`
+- **Port**: `48080` (configurable via `AIRFLOW_APISERVER_PORT`)
+- **API**: `/api/v2/*` endpoints + Assets management
+- **Authentication**: JWT Token (FabAuthManager)
+- **Use case**: Development, testing new features
+
+### Option 3: Deploy Both Versions Simultaneously
+
+For comprehensive testing across different Airflow versions:
+
+```bash
+# Start Airflow 2.x (port 38080)
+cd airflow-2.x && ./run-airflow-cluster.sh
+
+# Start Airflow 3.x (port 48080) 
+cd ../airflow-3.x && ./run-airflow-cluster.sh
+```
+
+### Key Differences
+
+| Feature | Airflow 2.x | Airflow 3.x |
+|---------|-------------|-------------|
+| **Authentication** | Basic Auth | JWT Tokens (FabAuthManager) |
+| **Default Port** | 38080 | 48080 |
+| **API Endpoints** | `/api/v1/*` | `/api/v2/*` |
+| **Assets Support** | ❌ Limited/Experimental | ✅ Full Support |
+| **Provider Packages** | providers | distributions |
+| **Stability** | ✅ Production Ready | 🧪 Beta/Development |
+
+### Cleanup
+
+To stop and clean up the test environments:
+
+```bash
+# For Airflow 2.x
+cd airflow-2.x && ./cleanup-airflow-cluster.sh
+
+# For Airflow 3.x
+cd airflow-3.x && ./cleanup-airflow-cluster.sh
 ```
 
 ---

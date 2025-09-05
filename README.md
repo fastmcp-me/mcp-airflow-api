@@ -245,15 +245,12 @@ AIRFLOW_API_BASE_URL=http://localhost:38080/api
 AIRFLOW_API_VERSION=v2
 AIRFLOW_API_BASE_URL=http://localhost:48080/api
 
-# Or use legacy format (auto-detected)
-AIRFLOW_API_URL=http://localhost:8080/api/v1
-
 # Authentication
 AIRFLOW_API_USERNAME=airflow
 AIRFLOW_API_PASSWORD=airflow
 
 # Optional
-AIRFLOW_LOG_LEVEL=INFO               # DEBUG/INFO/WARNING
+MCP_LOG_LEVEL=INFO           # DEBUG/INFO/WARNING/ERROR/CRITICAL
 FASTMCP_TYPE=stdio                   # stdio/streamable-http
 FASTMCP_PORT=8000                    # HTTP server port (Docker mode)
 ```

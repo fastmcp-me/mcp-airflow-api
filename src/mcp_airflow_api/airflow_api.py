@@ -232,7 +232,7 @@ def main(argv: Optional[List[str]] = None):
     parser.add_argument(
         "--log-level",
         dest="log_level",
-        help="Logging level override (DEBUG, INFO, WARNING, ERROR, CRITICAL). Overrides AIRFLOW_LOG_LEVEL env if provided.",
+        help="Logging level override (DEBUG, INFO, WARNING, ERROR, CRITICAL). Overrides MCP_LOG_LEVEL env if provided.",
         choices=["DEBUG", "INFO", "WARNING", "ERROR", "CRITICAL"],
     )
     parser.add_argument(
@@ -256,7 +256,7 @@ def main(argv: Optional[List[str]] = None):
     args = parser.parse_args(argv)
 
     # Determine log level: CLI arg > environment variable > default
-    log_level = args.log_level or os.getenv("AIRFLOW_LOG_LEVEL", "INFO")
+    log_level = args.log_level or os.getenv("MCP_LOG_LEVEL", "INFO")
     
     # Set logging level
     logging.getLogger().setLevel(log_level)
@@ -265,7 +265,7 @@ def main(argv: Optional[List[str]] = None):
     
     if args.log_level:
         logger.info("Log level set via CLI to %s", args.log_level)
-    elif os.getenv("AIRFLOW_LOG_LEVEL"):
+    elif os.getenv("MCP_LOG_LEVEL"):
         logger.info("Log level set via environment variable to %s", log_level)
     else:
         logger.info("Using default log level: %s", log_level)

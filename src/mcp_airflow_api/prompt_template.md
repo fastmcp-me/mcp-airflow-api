@@ -283,7 +283,7 @@ dag_task_duration("my_dag", "latest_run_id")
 
 - **HTTP Client**: Uses aiohttp with async connection pooling for optimal performance
 - **Connection Management**: Persistent sessions with automatic cleanup and retry logic
-- Control log level via AIRFLOW_LOG_LEVEL env or --log-level CLI flag.
+- Control log level via MCP_LOG_LEVEL env or --log-level CLI flag.
 - Supported levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
 - aiohttp.client logging is set to WARNING level to reduce noise during debugging.
 

@@ -55,7 +55,7 @@ Tests in `tests/test_prompt_template.py` are "resilient to template content chan
 
 ## Environment Requirements
 **Required:** `AIRFLOW_API_URL`, `AIRFLOW_API_USERNAME`, `AIRFLOW_API_PASSWORD`
-**Optional:** `AIRFLOW_LOG_LEVEL` (DEBUG/INFO/WARNING), `FASTMCP_TYPE` (stdio/streamable-http), `FASTMCP_PORT` (transport control)
+**Optional:** `MCP_LOG_LEVEL` (DEBUG/INFO/WARNING/ERROR/CRITICAL), `FASTMCP_TYPE` (stdio/streamable-http), `FASTMCP_PORT` (transport control)
 
 **Airflow Version:** Tested with 2.10.2 API v1 - all endpoints assume this version
 

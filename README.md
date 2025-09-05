@@ -26,9 +26,9 @@ MCP-Airflow-API is an MCP server that leverages the **Model Context Protocol (MC
 **Now supports both Airflow API v1 (2.x) and v2 (3.0+)** with dynamic version selection via environment variable:
 
 - **API v1**: Full compatibility with Airflow 2.x clusters (43 tools) - [Documentation](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
-- **API v2**: Enhanced features for Airflow 3.0+ including datasets, asset events, and improved scheduling (45 tools) - [Documentation](https://airflow.apache.org/docs/apache-airflow/stable/stable-rest-api-ref.html)
+- **API v2**: Enhanced features for Airflow 3.0+ including asset management for data-aware scheduling (45 tools) - [Documentation](https://airflow.apache.org/docs/apache-airflow/stable/stable-rest-api-ref.html)
 
-**Key Feature**: Single MCP server dynamically loads the appropriate tool set based on `AIRFLOW_API_VERSION` environment variable - no need for separate server instances!
+**Key Architecture**: Single MCP server with shared common tools (43) plus v2-exclusive asset tools (2) - dynamically loads appropriate toolset based on `AIRFLOW_API_VERSION` environment variable!
 
 **Traditional approach (example):**
 ```bash
@@ -145,10 +145,11 @@ docker-compose up -d
 
 3. **Dynamic API Version Support**  
    Single MCP server adapts to your Airflow version:
-   - **API v1**: 43 tools for Airflow 2.x compatibility
-   - **API v2**: 45 tools for Airflow 3.0+ with enhanced features
+   - **API v1**: 43 shared tools for Airflow 2.x compatibility
+   - **API v2**: 43 shared tools + 2 asset management tools for Airflow 3.0+
    - **Environment Variable Control**: Switch versions instantly with `AIRFLOW_API_VERSION`
-   - **Zero Configuration Changes**: Same tool names, different capabilities
+   - **Zero Configuration Changes**: Same tool names, enhanced capabilities
+   - **Efficient Architecture**: Shared common codebase eliminates duplication
 
 4. **Comprehensive Tool Coverage**  
    Covers almost all Airflow API functionality:
@@ -257,12 +258,16 @@ FASTMCP_PORT=8000                    # HTTP server port (Docker mode)
 
 | Feature | API v1 (Airflow 2.x) | API v2 (Airflow 3.0+) |
 |---------|----------------------|----------------------|
+| **Total Tools** | **43 tools** | **45 tools** |
+| **Shared Tools** | 43 (100%) | 43 (96%) |
+| **Exclusive Tools** | 0 | 2 (Asset Management) |
 | Basic DAG Operations | ✅ | ✅ Enhanced |
 | Task Management | ✅ | ✅ Enhanced |
 | Connection Management | ✅ | ✅ Enhanced |
 | Pool Management | ✅ | ✅ Enhanced |
-| **Dataset/Asset Support** | ❌ | ✅ **New** |
+| **Asset Management** | ❌ | ✅ **New** |
 | **Asset Events** | ❌ | ✅ **New** |
+| **Data-Aware Scheduling** | ❌ | ✅ **New** |
 | **Enhanced DAG Warnings** | ❌ | ✅ **New** |
 | **Advanced Filtering** | Basic | ✅ **Enhanced** |
 
@@ -441,6 +446,22 @@ Tools automatically base relative date calculations on the server's current date
 | "this morning" | current_date 00:00 to 12:00 | YYYY-MM-DDTHH:mm:ssZ format |
 
 The server always uses its current date/time for these calculations.
+
+### Asset Management (API v2 Only)
+
+Available only when `AIRFLOW_API_VERSION=v2` (Airflow 3.0+):
+
+- **list_assets**: "Show all assets registered in the system." → Lists all data assets for data-aware scheduling
+- **list_assets**: "Find assets with URI containing 's3://data-lake'." → `list_assets(uri_pattern="s3://data-lake")`
+- **list_asset_events**: "Show recent asset events." → Lists when assets were created or updated
+- **list_asset_events**: "Show asset events for specific URI." → `list_asset_events(asset_uri="s3://bucket/file.csv")`
+- **list_asset_events**: "Find events produced by ETL DAGs." → `list_asset_events(source_dag_id="etl_pipeline")`
+
+**Data-Aware Scheduling Examples:**
+- "Show me which assets trigger the customer_analysis DAG."
+- "List all assets created by the data_ingestion DAG this week."
+- "Find assets that haven't been updated recently."
+- "Show the data lineage for our ML training pipeline."
 
 ---
 

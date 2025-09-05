@@ -11,8 +11,8 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 
 **IMPORTANT: Current Date Context** - Relative dates should be resolved against the server's current time (handled internally by the tools).
 
-**Performance-Optimized Architecture**: This MCP server uses modern async HTTP architecture:
-- **Async HTTP Client**: Built with aiohttp for high-performance concurrent request handling
+**Performance-Optimized Architecture**: This MCP server uses modern optimized architecture:
+- **Shared Code Architecture**: All common functionality consolidated into `common_tools.py` for better maintainability
 - **Connection Pooling**: Persistent session management with automatic connection reuse
 - **Optimized Default Limits**: Functions use default limits of 20 for better memory usage and faster response times
 - **Comprehensive Pagination**: All listing functions include detailed pagination metadata
@@ -57,6 +57,10 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ### Variable Management
 - `list_variables(limit, offset, order_by)`: List all variables stored in Airflow.
 - `get_variable(variable_key)`: Get detailed information about a specific variable by its key.
+
+### Asset Management (API v2 Only)
+- `list_assets(limit=20, offset=0, uri_pattern=None, order_by=None)`: List all assets with optional filtering.
+- `list_asset_events(limit=20, offset=0, asset_id=None, source_dag_id=None, source_task_id=None, source_run_id=None, source_map_index=None)`: List asset events with filtering.
 
 ### Task Instance Management
 - `list_task_instances_all(dag_id, dag_run_id, execution_date_gte, execution_date_lte, start_date_gte, start_date_lte, end_date_gte, end_date_lte, duration_gte, duration_lte, state, pool, queue, limit, offset)`: List task instances across all DAGs with comprehensive filtering.
@@ -104,6 +108,9 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 | **Variable Management** |                                       |                               |                                      |
 | list_variables      | List all variables in Airflow            | limit, offset, order_by       | variables, total_entries, key-value pairs |
 | get_variable        | Get specific variable details             | variable_key (str)            | key, value, description, is_encrypted |
+| **Asset Management (API v2 Only)** |                       |                               |                                      |
+| list_assets         | List all assets with filtering            | limit, offset, uri_pattern, order_by | assets, total_entries, pagination_info |
+| list_asset_events   | List asset events with filtering          | limit, offset, asset_id, source_dag_id, source_task_id, source_run_id | events, total_entries, pagination_info |
 | **Connection Management** |                                    |                               |                                      |
 | list_connections    | List all connections in Airflow          | limit, offset, fetch_all, order_by, id_contains, conn_type_contains, description_contains | connections, total_entries, applied_filters, connection details (passwords masked) |
 | get_connection      | Get specific connection details           | connection_id (str)           | connection_id, conn_type, host, db_schema, login, port (password masked) |
@@ -250,7 +257,29 @@ The server always uses its current date/time for these calculations.
 - No extra explanation unless explicitly requested.
 - Use JSON objects for tool outputs.
 
-## 8. Logging & Environment
+## 8. Example Usage Scenarios
+
+### Asset Management (API v2 Only)
+```
+# List all assets
+list_assets(limit=50, uri_pattern="s3://")
+
+# List asset events for a specific DAG
+list_asset_events(source_dag_id="data_pipeline", limit=30)
+```
+
+### Combined Monitoring
+```
+# Check cluster health and recent failures
+get_health()
+failed_dags()
+
+# Monitor specific DAG performance
+dag_run_duration("my_dag", limit=20)
+dag_task_duration("my_dag", "latest_run_id")
+```
+
+## 9. Logging & Environment
 
 - **HTTP Client**: Uses aiohttp with async connection pooling for optimal performance
 - **Connection Management**: Persistent sessions with automatic cleanup and retry logic
@@ -258,8 +287,11 @@ The server always uses its current date/time for these calculations.
 - Supported levels: DEBUG, INFO, WARNING, ERROR, CRITICAL.
 - aiohttp.client logging is set to WARNING level to reduce noise during debugging.
 
-## 9. References
+## 10. References
 
-- Main MCP tool file: `src/mcp_airflow_api/airflow_api.py`
+- **MCP Server Main**: `src/mcp_airflow_api/airflow_api.py`
+- **Common Tools**: `src/mcp_airflow_api/tools/common_tools.py` (43 shared functions)
+- **API v1 Tools**: `src/mcp_airflow_api/tools/v1_tools.py` (imports common tools)
+- **API v2 Tools**: `src/mcp_airflow_api/tools/v2_tools.py` (common tools + 2 asset tools)
 - Utility functions: `src/mcp_airflow_api/functions.py`
 - See README.md for full usage and configuration.

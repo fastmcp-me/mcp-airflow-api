@@ -19,8 +19,10 @@ except ImportError:
     HAS_AUTH_SUPPORT = False
 
 import os
+import argparse
+import logging
 
-from .functions import get_api_version
+from mcp_airflow_api.functions import get_api_version
 
 # Setup logging
 logger = logging.getLogger(__name__)
@@ -260,11 +262,11 @@ def create_mcp_server() -> FastMCP:
     
     if api_version == "v1":
         logger.info("Loading Airflow API v1 tools (Airflow 2.x)")
-        from .tools import v1_tools
+        from mcp_airflow_api.tools import v1_tools
         v1_tools.register_tools(mcp_instance)
     elif api_version == "v2":
         logger.info("Loading Airflow API v2 tools (Airflow 3.0+)")
-        from .tools import v2_tools
+        from mcp_airflow_api.tools import v2_tools
         v2_tools.register_tools(mcp_instance)
     else:
         raise ValueError(f"Unsupported API version: {api_version}. Use 'v1' or 'v2'")
@@ -377,11 +379,11 @@ def main(argv: Optional[List[str]] = None):
     
     if api_version == "v1":
         logger.info("Loading Airflow API v1 tools (Airflow 2.x)")
-        from .tools import v1_tools
+        from mcp_airflow_api.tools import v1_tools
         v1_tools.register_tools(mcp)
     elif api_version == "v2":
         logger.info("Loading Airflow API v2 tools (Airflow 3.0+)")
-        from .tools import v2_tools
+        from mcp_airflow_api.tools import v2_tools
         v2_tools.register_tools(mcp)
     
     # Transport 모드에 따른 실행
@@ -391,6 +393,3 @@ def main(argv: Optional[List[str]] = None):
     else:
         logger.info("Starting stdio transport for local usage")
         mcp.run(transport='stdio')
-
-if __name__ == "__main__":
-    main()

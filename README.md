@@ -68,7 +68,7 @@ docker-compose up -d
 
 ### Option 3: MCP Client Integration (e.g. Claude-Desktop)
 
-**Single Airflow Cluster**
+**Local Access (stdio mode)**
 
 ```json
 {
@@ -81,6 +81,35 @@ docker-compose up -d
         "AIRFLOW_API_BASE_URL": "http://localhost:8080/api",
         "AIRFLOW_API_USERNAME": "airflow",
         "AIRFLOW_API_PASSWORD": "airflow"
+      }
+    }
+  }
+}
+```
+
+**Remote Access (streamable-http mode without authentication)**
+
+```json
+{
+  "mcpServers": {
+    "airflow-api": {
+      "type": "streamable-http",
+      "url": "http://localhost:8000/mcp"
+    }
+  }
+}
+```
+
+**Remote Access (streamable-http mode with Bearer token authentication - Recommended)**
+
+```json
+{
+  "mcpServers": {
+    "airflow-api": {
+      "type": "streamable-http",
+      "url": "http://localhost:8000/mcp",
+      "headers": {
+        "Authorization": "Bearer your-secure-secret-key-here"
       }
     }
   }
@@ -249,10 +278,15 @@ AIRFLOW_API_BASE_URL=http://localhost:48080/api
 AIRFLOW_API_USERNAME=airflow
 AIRFLOW_API_PASSWORD=airflow
 
-# Optional
-MCP_LOG_LEVEL=INFO           # DEBUG/INFO/WARNING/ERROR/CRITICAL
+# Optional - MCP Server Configuration
+MCP_LOG_LEVEL=INFO                   # DEBUG/INFO/WARNING/ERROR/CRITICAL
 FASTMCP_TYPE=stdio                   # stdio/streamable-http
 FASTMCP_PORT=8000                    # HTTP server port (Docker mode)
+
+# Bearer Token Authentication for streamable-http mode
+# Enable authentication (recommended for production)
+REMOTE_AUTH_ENABLE=false             # true/false
+REMOTE_SECRET_KEY=your-secure-secret-key-here
 ```
 
 ### API Version Comparison
@@ -275,6 +309,71 @@ FASTMCP_PORT=8000                    # HTTP server port (Docker mode)
 | **Data-Aware Scheduling** | ❌ | ✅ **New** |
 | **Enhanced DAG Warnings** | ❌ | ✅ **New** |
 | **Advanced Filtering** | Basic | ✅ **Enhanced** |
+
+---
+
+## 🔐 Security & Authentication
+
+### Bearer Token Authentication
+
+For `streamable-http` mode, this MCP server supports Bearer token authentication to secure remote access. This is especially important when running the server in production environments.
+
+#### Configuration
+
+**Enable Authentication:**
+
+```bash
+# In .env file
+REMOTE_AUTH_ENABLE=true
+REMOTE_SECRET_KEY=your-secure-secret-key-here
+```
+
+**Or via CLI:**
+
+```bash
+python -m mcp_airflow_api.mcp_main --type streamable-http --auth-enable --secret-key your-secure-secret-key-here
+```
+
+#### Security Levels
+
+1. **stdio mode** (Default): Local-only access, no authentication needed
+2. **streamable-http + REMOTE_AUTH_ENABLE=false**: Remote access without authentication ⚠️ **NOT RECOMMENDED for production**
+3. **streamable-http + REMOTE_AUTH_ENABLE=true**: Remote access with Bearer token authentication ✅ **RECOMMENDED for production**
+
+#### Client Configuration
+
+When authentication is enabled, MCP clients must include the Bearer token in the Authorization header:
+
+```json
+{
+  "mcpServers": {
+    "airflow-api": {
+      "type": "streamable-http",
+      "url": "http://your-server:8000/mcp",
+      "headers": {
+        "Authorization": "Bearer your-secure-secret-key-here"
+      }
+    }
+  }
+}
+```
+
+#### Security Best Practices
+
+- **Always enable authentication** when using streamable-http mode in production
+- **Use strong, randomly generated secret keys** (32+ characters recommended)
+- **Use HTTPS** when possible (configure reverse proxy with SSL/TLS)
+- **Restrict network access** using firewalls or network policies
+- **Rotate secret keys regularly** for enhanced security
+- **Monitor access logs** for unauthorized access attempts
+
+#### Error Handling
+
+When authentication fails, the server returns:
+- **401 Unauthorized** for missing or invalid tokens
+- **Detailed error messages** in JSON format for debugging
+
+---
 
 ### Custom Docker Compose Setup
 ```yaml

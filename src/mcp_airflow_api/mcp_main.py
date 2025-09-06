@@ -9,6 +9,15 @@ import asyncio
 import logging
 from typing import Any, Dict, List, Optional
 from fastmcp import FastMCP
+
+# Try to import StaticTokenVerifier, fallback if not available
+try:
+    from fastmcp.server.auth import StaticTokenVerifier
+    HAS_AUTH_SUPPORT = True
+except ImportError:
+    StaticTokenVerifier = None
+    HAS_AUTH_SUPPORT = False
+
 import os
 
 from .functions import get_api_version
@@ -19,6 +28,48 @@ logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s'
 )
+
+# =============================================================================
+# Authentication Setup
+# =============================================================================
+
+def create_mcp_instance(auth_enable: bool = False, secret_key: str = "") -> FastMCP:
+    """Create FastMCP instance with optional authentication."""
+    
+    if auth_enable and secret_key:
+        if not HAS_AUTH_SUPPORT:
+            logger.warning("Bearer token authentication requested but StaticTokenVerifier not available")
+            logger.warning("Creating MCP instance without authentication")
+            return FastMCP("mcp-airflow-api")
+        
+        # Simple token-based authentication using StaticTokenVerifier
+        # This is much simpler than JWT with RSA keys
+        logger.info("Creating MCP instance with Bearer token authentication")
+        
+        # Create token configuration
+        # The key is the token, the value contains metadata about the token
+        tokens = {
+            secret_key: {
+                "client_id": "airflow-api-client",
+                "user": "admin",
+                "scopes": ["read", "write"],
+                "description": "Airflow API access token"
+            }
+        }
+        
+        try:
+            auth = StaticTokenVerifier(tokens=tokens)
+            return FastMCP("mcp-airflow-api", auth=auth)
+        except Exception as e:
+            logger.warning(f"Failed to create StaticTokenVerifier: {e}")
+            logger.warning("Creating MCP instance without authentication")
+            return FastMCP("mcp-airflow-api")
+    else:
+        logger.info("Creating MCP instance without authentication")
+        return FastMCP("mcp-airflow-api")
+
+# Initialize with default (no auth) - will be recreated in main() if needed
+mcp = FastMCP("mcp-airflow-api")
 
 def register_prompts(mcp, api_version: str):
     """Register prompt templates for the MCP server."""
@@ -195,29 +246,31 @@ For DAG analysis, use `list_dags`, `running_dags`, and `failed_dags` to get an o
         
         return context
 
-def create_mcp_server():
-    """Create and configure MCP server based on API version."""
+def create_mcp_server() -> FastMCP:
+    """Create and configure the MCP server with tools based on API version."""
     api_version = get_api_version()
-    mcp = FastMCP("mcp-airflow-api")
+    
+    # Note: Initial server creation without auth - will be recreated in main() if needed
+    mcp_instance = FastMCP("mcp-airflow-api")
     
     logger.info(f"Initializing MCP server for Airflow API {api_version}")
     
     # Register prompt templates
-    register_prompts(mcp, api_version)
+    register_prompts(mcp_instance, api_version)
     
     if api_version == "v1":
         logger.info("Loading Airflow API v1 tools (Airflow 2.x)")
         from .tools import v1_tools
-        v1_tools.register_tools(mcp)
+        v1_tools.register_tools(mcp_instance)
     elif api_version == "v2":
         logger.info("Loading Airflow API v2 tools (Airflow 3.0+)")
         from .tools import v2_tools
-        v2_tools.register_tools(mcp)
+        v2_tools.register_tools(mcp_instance)
     else:
         raise ValueError(f"Unsupported API version: {api_version}. Use 'v1' or 'v2'")
     
     logger.info(f"MCP server initialized with API version {api_version}")
-    return mcp
+    return mcp_instance
 
 # Create the MCP server instance
 mcp = create_mcp_server()
@@ -252,6 +305,17 @@ def main(argv: Optional[List[str]] = None):
         type=int,
         help="Port number for streamable-http transport. Default: 8000",
     )
+    parser.add_argument(
+        "--auth-enable",
+        dest="auth_enable",
+        action="store_true",
+        help="Enable Bearer token authentication for streamable-http mode. Default: False",
+    )
+    parser.add_argument(
+        "--secret-key",
+        dest="secret_key",
+        help="Secret key for Bearer token authentication. Required when auth is enabled.",
+    )
     # Allow future extension without breaking unknown args usage
     args = parser.parse_args(argv)
 
@@ -279,6 +343,46 @@ def main(argv: Optional[List[str]] = None):
     
     # Port 결정 (간결하게)
     port = args.port or int(os.getenv("FASTMCP_PORT", 8000))
+    
+    # Authentication 설정 결정
+    auth_enable = args.auth_enable or os.getenv("REMOTE_AUTH_ENABLE", "false").lower() in ("true", "1", "yes", "on")
+    secret_key = args.secret_key or os.getenv("REMOTE_SECRET_KEY", "")
+    
+    # Validation for streamable-http mode with authentication
+    if transport_type == "streamable-http":
+        if auth_enable:
+            if not HAS_AUTH_SUPPORT:
+                logger.error("ERROR: Bearer token authentication requested but not supported by current fastmcp version")
+                logger.error("Please upgrade fastmcp to a version that supports StaticTokenVerifier")
+                return
+            if not secret_key:
+                logger.error("ERROR: Authentication is enabled but no secret key provided.")
+                logger.error("Please set REMOTE_SECRET_KEY environment variable or use --secret-key argument.")
+                return
+            logger.info("Authentication enabled for streamable-http transport")
+        else:
+            logger.warning("WARNING: streamable-http mode without authentication enabled!")
+            logger.warning("This server will accept requests without Bearer token verification.")
+            logger.warning("Set REMOTE_AUTH_ENABLE=true and REMOTE_SECRET_KEY to enable authentication.")
+    elif auth_enable:
+        logger.warning("WARNING: Authentication is only supported in streamable-http mode, ignoring auth settings")
+    
+    # Create MCP instance with or without authentication
+    global mcp
+    mcp = create_mcp_instance(auth_enable=auth_enable, secret_key=secret_key)
+    
+    # Load tools into the authenticated instance
+    api_version = get_api_version()
+    register_prompts(mcp, api_version)
+    
+    if api_version == "v1":
+        logger.info("Loading Airflow API v1 tools (Airflow 2.x)")
+        from .tools import v1_tools
+        v1_tools.register_tools(mcp)
+    elif api_version == "v2":
+        logger.info("Loading Airflow API v2 tools (Airflow 3.0+)")
+        from .tools import v2_tools
+        v2_tools.register_tools(mcp)
     
     # Transport 모드에 따른 실행
     if transport_type == "streamable-http":

@@ -1,4 +1,4 @@
 """MCP Airflow API package."""
-from .airflow_api import mcp
+from .mcp_main import mcp
 
 __all__ = ["mcp"]

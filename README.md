@@ -201,7 +201,7 @@ docker-compose up -d
 
 ---
 
-##  Use Cases in Action
+`src/mcp_airflow_api/mcp_main.py`
 
 ![Capacity Management for Operations Teams](img/screenshot-001.png)
 ---
@@ -299,7 +299,7 @@ cd MCP-Airflow-API
 pip install -e .
 
 # Run in stdio mode
-python -m mcp_airflow_api.airflow_api
+python -m mcp_airflow_api.mcp_main
 ```
 
 ---

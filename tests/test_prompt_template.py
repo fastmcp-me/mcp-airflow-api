@@ -1,5 +1,5 @@
 import pytest
-from mcp_airflow_api.airflow_api import get_prompt_template
+from mcp_airflow_api.mcp_main import get_prompt_template
 from mcp_airflow_api.functions import read_prompt_template, parse_prompt_sections
 from .config import TEMPLATE_CONFIG
 import os

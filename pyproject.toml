@@ -14,7 +14,7 @@ dependencies = [
 ]
 
 [project.scripts]
-mcp-airflow-api = "mcp_airflow_api.airflow_api:main"
+mcp-airflow-api = "mcp_airflow_api.mcp_main:main"
 
 [tool.hatch.build.targets.sdist]
 include = [

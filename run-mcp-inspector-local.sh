@@ -12,4 +12,4 @@ npx -y @modelcontextprotocol/inspector \
 	-e AIRFLOW_API_PASSWORD='airflow' \
 	-e MCP_LOG_LEVEL='INFO' \
 	-e PYTHONPATH='./src' \
-	-- uv run python -m mcp_airflow_api.airflow_api
+	-- uv run python -m mcp_airflow_api.mcp_main

@@ -23,4 +23,4 @@ echo "  MCP_LOG_LEVEL: ${MCP_LOG_LEVEL}"
 echo "  AIRFLOW_API_URL: ${AIRFLOW_API_URL}"
 echo "  AIRFLOW_API_USERNAME: ${AIRFLOW_API_USERNAME}"
 
-python -m mcp_airflow_api.airflow_api --type ${FASTMCP_TYPE} --host ${FASTMCP_HOST} --port ${FASTMCP_PORT}
+python -m mcp_airflow_api.mcp_main --type ${FASTMCP_TYPE} --host ${FASTMCP_HOST} --port ${FASTMCP_PORT}

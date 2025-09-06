@@ -7,7 +7,7 @@
 - `src/mcp_airflow_api/airflow_api.py`: 40+ `@mcp.tool()` decorators defining Airflow operations
 - `src/mcp_airflow_api/functions.py`: Global session management with connection pooling
 - `src/mcp_airflow_api/prompt_template.md`: Canonical English instructions for LLMs
-- `pyproject.toml`: Entry point `mcp-airflow-api = "mcp_airflow_api.airflow_api:main"`
+- `pyproject.toml`: Entry point `mcp-airflow-api = "mcp_airflow_mcp_main:main"`
 
 **Transport Logic:** Environment variable `FASTMCP_TYPE` controls stdio vs http mode:
 ```python
@@ -33,7 +33,7 @@ def list_dags(limit=20, offset=0):
 ```
 
 **Configuration Files:** Multiple configs for different deployment modes:
-- `mcp-config.json.stdio`: Local `python -m mcp_airflow_api.airflow_api`
+- `mcp-config.json.stdio`: Local `python -m mcp_airflow_mcp_main`
 - `mcp-config.json.http`: Docker `"url": "http://host.docker.internal:18002/mcp"`
 
 ## Docker Multi-Service Pattern
@@ -60,7 +60,7 @@ Tests in `tests/test_prompt_template.py` are "resilient to template content chan
 **Airflow Version:** Tested with 2.10.2 API v1 - all endpoints assume this version
 
 ## Development Workflow
-1. Local testing: `python -m mcp_airflow_api.airflow_api` (stdio mode)
+1. Local testing: `python -m mcp_airflow_mcp_main` (stdio mode)
 2. Docker development: `docker-compose up -d` then check http://localhost:8002/docs
 3. Testing: `pytest tests/` (uses resilient template validation)
 

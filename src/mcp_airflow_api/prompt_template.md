@@ -289,7 +289,7 @@ dag_task_duration("my_dag", "latest_run_id")
 
 ## 10. References
 
-- **MCP Server Main**: `src/mcp_airflow_api/airflow_api.py`
+- **MCP Server Main**: `src/mcp_airflow_api/mcp_main.py`
 - **Common Tools**: `src/mcp_airflow_api/tools/common_tools.py` (43 shared functions)
 - **API v1 Tools**: `src/mcp_airflow_api/tools/v1_tools.py` (imports common tools)
 - **API v2 Tools**: `src/mcp_airflow_api/tools/v2_tools.py` (common tools + 2 asset tools)

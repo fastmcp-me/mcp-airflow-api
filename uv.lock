@@ -688,7 +688,7 @@ dependencies = [
 [package.metadata]
 requires-dist = [
     { name = "aiohttp", specifier = ">=3.12.15" },
-    { name = "fastmcp", specifier = ">=2.11.1" },
+    { name = "fastmcp", specifier = ">=2.11.3" },
 ]
 
 [[package]]

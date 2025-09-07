@@ -1,16 +1,25 @@
 #!/bin/bash
 set -euo pipefail
 
-# (NOTE) 로컬 개발 소스로 기동됨 (uv run 사용).
+# Get the directory where this script is located and navigate to project root
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+cd "$SCRIPT_DIR"
 
-# 현재 스크립트 위치로 이동하여 올바른 작업 디렉토리 설정
-cd "$(dirname "$0")"
+echo "🔍 Starting MCP Inspector with Airflow Operations server..."
+echo "📁 Working directory: $(pwd)"
+
+# Load environment variables if .env exists
+if [ -f ".env" ]; then
+    echo "📄 Loading environment from .env file"
+    set -o allexport
+    source .env
+    set +o allexport
+fi
+
+echo "🚀 Launching MCP Inspector..."
+echo "   Airflow Host: ${AIRFLOW_HOST:-localhost}:${AIRFLOW_PORT:-8080}"
 
 npx -y @modelcontextprotocol/inspector \
-	-e AIRFLOW_API_BASE_URL='http://localhost:38080/api' \
-	-e AIRFLOW_API_VERSION='v1' \
-	-e AIRFLOW_API_USERNAME='airflow' \
-	-e AIRFLOW_API_PASSWORD='airflow' \
-	-e MCP_LOG_LEVEL='INFO' \
-	-e PYTHONPATH='./src' \
+    -e PYTHONPATH='./src' \
+	-e FASTMCP_TYPE='stdio' \
 	-- uv run python -m mcp_airflow_api

@@ -68,7 +68,9 @@ def construct_api_url(path: str) -> str:
     version = get_api_version()
     
     if not base_url:
-        raise RuntimeError("AIRFLOW_API_BASE_URL or AIRFLOW_API_URL environment variable is not set")
+        raise RuntimeError("AIRFLOW_API_BASE_URL environment variable is not set. " +
+                         "Please set AIRFLOW_API_BASE_URL (e.g., 'http://localhost:8080/api') and " +
+                         "optionally AIRFLOW_API_VERSION (defaults to 'v1')")
     
     # Ensure path starts with /
     if not path.startswith("/"):
@@ -97,7 +99,9 @@ async def get_jwt_token() -> str:
     # Get base URL for token endpoint
     base_url = get_api_base_url()
     if not base_url:
-        raise RuntimeError("AIRFLOW_API_BASE_URL or AIRFLOW_API_URL environment variable is not set")
+        raise RuntimeError("AIRFLOW_API_BASE_URL environment variable is not set. " +
+                         "Please set AIRFLOW_API_BASE_URL (e.g., 'http://localhost:8080/api') and " +
+                         "optionally AIRFLOW_API_VERSION (defaults to 'v1')")
     
     # Remove /api suffix for auth endpoint
     auth_base_url = base_url.replace("/api", "")

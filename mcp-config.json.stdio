@@ -2,7 +2,7 @@
   "mcpServers": {
     "airflow-api": {
       "command": "python",
-  "args": ["-m", "mcp_airflow_api.mcp_main"],
+      "args": ["-m", "mcp_airflow_api"],
       "env": {
         "PYTHONPATH": "/app/src",
         "AIRFLOW_API_VERSION": "v1",

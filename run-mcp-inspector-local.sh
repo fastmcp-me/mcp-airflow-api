@@ -7,9 +7,10 @@ set -euo pipefail
 cd "$(dirname "$0")"
 
 npx -y @modelcontextprotocol/inspector \
-	-e AIRFLOW_API_URL='http://localhost:38080/api/v1' \
+	-e AIRFLOW_API_BASE_URL='http://localhost:38080/api' \
+	-e AIRFLOW_API_VERSION='v1' \
 	-e AIRFLOW_API_USERNAME='airflow' \
 	-e AIRFLOW_API_PASSWORD='airflow' \
 	-e MCP_LOG_LEVEL='INFO' \
 	-e PYTHONPATH='./src' \
-	-- uv run python -m mcp_airflow_api.mcp_main
+	-- uv run python -m mcp_airflow_api

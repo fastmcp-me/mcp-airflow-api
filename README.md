@@ -331,7 +331,7 @@ REMOTE_SECRET_KEY=your-secure-secret-key-here
 **Or via CLI:**
 
 ```bash
-python -m mcp_airflow_api.mcp_main --type streamable-http --auth-enable --secret-key your-secure-secret-key-here
+python -m mcp_airflow_api --type streamable-http --auth-enable --secret-key your-secure-secret-key-here
 ```
 
 #### Security Levels
@@ -398,7 +398,7 @@ cd MCP-Airflow-API
 pip install -e .
 
 # Run in stdio mode
-python -m mcp_airflow_api.mcp_main
+python -m mcp_airflow_api
 ```
 
 ---

@@ -347,6 +347,8 @@ def main(argv: Optional[List[str]] = None):
     port = args.port or int(os.getenv("FASTMCP_PORT", 8000))
     
     # Authentication 설정 결정
+    # REMOTE_AUTH_ENABLE defaults to "false" when undefined, empty, or null
+    # Supported values: true/false, 1/0, yes/no, on/off (case insensitive)
     auth_enable = args.auth_enable or os.getenv("REMOTE_AUTH_ENABLE", "false").lower() in ("true", "1", "yes", "on")
     secret_key = args.secret_key or os.getenv("REMOTE_SECRET_KEY", "")
     

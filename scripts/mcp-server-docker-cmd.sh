@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+set -eo pipefail
 
 # 어디서 실행하든지, 스크립트 위치의 상위 경로에 있는 .env 파일 export 로드
 script_dir="$(cd -- "$(dirname -- "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd -P)"
@@ -20,7 +20,7 @@ echo "  FASTMCP_TYPE: ${FASTMCP_TYPE}"
 echo "  FASTMCP_HOST: ${FASTMCP_HOST}"
 echo "  FASTMCP_PORT: ${FASTMCP_PORT}"
 echo "  MCP_LOG_LEVEL: ${MCP_LOG_LEVEL}"
-echo "  REMOTE_AUTH_ENABLE: ${REMOTE_AUTH_ENABLE}"
+echo "  REMOTE_AUTH_ENABLE: ${REMOTE_AUTH_ENABLE:-false}"
 echo "  AIRFLOW_API_BASE_URL: ${AIRFLOW_API_BASE_URL}"
 echo "  AIRFLOW_API_VERSION: ${AIRFLOW_API_VERSION}"
 echo "  AIRFLOW_API_USERNAME: ${AIRFLOW_API_USERNAME}"

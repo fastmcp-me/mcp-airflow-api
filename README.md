@@ -285,6 +285,8 @@ FASTMCP_PORT=8000                    # HTTP server port (Docker mode)
 
 # Bearer Token Authentication for streamable-http mode
 # Enable authentication (recommended for production)
+# Default: false (when undefined, empty, or null)
+# Values: true/false, 1/0, yes/no, on/off (case insensitive)
 REMOTE_AUTH_ENABLE=false             # true/false
 REMOTE_SECRET_KEY=your-secure-secret-key-here
 ```
@@ -339,6 +341,8 @@ python -m mcp_airflow_api --type streamable-http --auth-enable --secret-key your
 1. **stdio mode** (Default): Local-only access, no authentication needed
 2. **streamable-http + REMOTE_AUTH_ENABLE=false**: Remote access without authentication ⚠️ **NOT RECOMMENDED for production**
 3. **streamable-http + REMOTE_AUTH_ENABLE=true**: Remote access with Bearer token authentication ✅ **RECOMMENDED for production**
+
+> **Note**: `REMOTE_AUTH_ENABLE` defaults to `false` when undefined, empty, or null. Supported values are `true/false`, `1/0`, `yes/no`, `on/off` (case insensitive).
 
 #### Client Configuration
 

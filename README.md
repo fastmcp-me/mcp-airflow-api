@@ -230,7 +230,7 @@ docker-compose up -d
 
 ---
 
-`src/mcp_airflow_api/mcp_main.py`
+## Use Cases in Action
 
 ![Capacity Management for Operations Teams](img/screenshot-001.png)
 ---

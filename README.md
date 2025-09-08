@@ -41,16 +41,18 @@ curl -X GET "http://localhost:8080/api/v1/dags?limit=100&offset=0" \
 
 ---
 
-## 🚀 Installation & Quick Start
+## 🚀 Quickstart
 
 > **📝 Need a test Airflow cluster?** Use our companion project [**Airflow-Docker-Compose**](https://github.com/call518/Airflow-Docker-Compose) with support for both **Airflow 2.x** and **Airflow 3.x** environments!
 
-### Option 1: Direct Installation from PyPI
-```bash
-uvx --python 3.11 mcp-airflow-api
-```
+### Flow Diagram of Quickstart/Tutorial
 
-### Option 2: Docker Compose (Complete Demo Environment)
+![Flow Diagram of Quickstart/Tutorial](img/MCP-Workflow-of-Quickstart-Tutorial.png)
+
+### 🎯 Recommended: Docker Compose (Complete Demo Environment)
+
+**For quick evaluation and testing:**
+
 ```bash
 git clone https://github.com/call518/MCP-Airflow-API.git
 cd MCP-Airflow-API
@@ -66,7 +68,23 @@ docker-compose up -d
 # API documentation at http://localhost:8002/docs
 ```
 
-### Option 3: MCP Client Integration (e.g. Claude-Desktop)
+### Getting Started with OpenWebUI (Docker Option)
+1. Access http://localhost:3002/
+2. Log in with admin account
+3. Go to "Settings" → "Tools" from the top menu
+4. Add Tool URL: `http://localhost:8002/airflow-api`
+5. Configure your LLM provider (Ollama, OpenAI, etc.)
+
+---
+
+## 📦 Installation Methods
+
+### Method 1: Direct Installation from PyPI
+```bash
+uvx --python 3.11 mcp-airflow-api
+```
+
+### Method 2: MCP Client Integration (e.g. Claude-Desktop)
 
 **Local Access (stdio mode)**
 
@@ -147,12 +165,15 @@ docker-compose up -d
 
 > **💡 Pro Tip**: Use the test clusters from [Airflow-Docker-Compose](https://github.com/call518/Airflow-Docker-Compose) for the above configuration - they run on ports 38080 (2.x) and 48080 (3.x) respectively!
 
-### Getting Started with OpenWebUI (Docker Option)
-1. Access http://localhost:3002/
-2. Log in with admin account
-3. Go to "Settings" → "Tools" from the top menu
-4. Add Tool URL: `http://localhost:8002/airflow-api`
-5. Configure your LLM provider (Ollama, OpenAI, etc.)
+### Method 3: Development Installation
+```bash
+git clone https://github.com/call518/MCP-Airflow-API.git
+cd MCP-Airflow-API
+pip install -e .
+
+# Run in stdio mode
+python -m mcp_airflow_api
+```
 
 ---
 

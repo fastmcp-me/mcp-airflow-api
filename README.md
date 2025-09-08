@@ -77,14 +77,14 @@ docker-compose up -d
 
 ---
 
-## 📦 Installation Methods
+## 📦 MCP Server Installation Methods
 
 ### Method 1: Direct Installation from PyPI
 ```bash
 uvx --python 3.11 mcp-airflow-api
 ```
 
-### Method 2: MCP Client Integration (e.g. Claude-Desktop)
+### Method 2: Claude-Desktop MCP Client Integration
 
 **Local Access (stdio mode)**
 

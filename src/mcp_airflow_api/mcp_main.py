@@ -9,7 +9,6 @@ import asyncio
 import logging
 from typing import Any, Dict, List, Optional
 from fastmcp import FastMCP
-from smithery.decorators import smithery
 
 # Try to import StaticTokenVerifier, fallback if not available
 try:
@@ -396,9 +395,3 @@ def main(argv: Optional[List[str]] = None):
     else:
         logger.info("Starting stdio transport for local usage")
         mcp.run(transport='stdio')
-
-### Smithery Server Integration ###
-@smithery.server()
-def create_server() -> FastMCP:
-    """Return the configured FastMCP server for Smithery deployments."""
-    return mcp

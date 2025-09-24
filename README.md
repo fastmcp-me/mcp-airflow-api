@@ -88,7 +88,7 @@ docker-compose up -d
 
 ### Method 1: Direct Installation from PyPI
 ```bash
-uvx --python 3.11 mcp-airflow-api
+uvx --python 3.12 mcp-airflow-api
 ```
 
 ### Method 2: Claude-Desktop MCP Client Integration
@@ -100,7 +100,7 @@ uvx --python 3.11 mcp-airflow-api
   "mcpServers": {
     "airflow-api": {
       "command": "uvx",
-      "args": ["--python", "3.11", "mcp-airflow-api"],
+      "args": ["--python", "3.12", "mcp-airflow-api"],
       "env": {
         "AIRFLOW_API_VERSION": "v2",
         "AIRFLOW_API_BASE_URL": "http://localhost:8080/api",
@@ -148,7 +148,7 @@ uvx --python 3.11 mcp-airflow-api
   "mcpServers": {
     "airflow-2x-cluster": {
       "command": "uvx",
-      "args": ["--python", "3.11", "mcp-airflow-api"],
+      "args": ["--python", "3.12", "mcp-airflow-api"],
       "env": {
         "AIRFLOW_API_VERSION": "v1",
         "AIRFLOW_API_BASE_URL": "http://localhost:38080/api",
@@ -158,7 +158,7 @@ uvx --python 3.11 mcp-airflow-api
     },
     "airflow-3x-cluster": {
       "command": "uvx",
-      "args": ["--python", "3.11", "mcp-airflow-api"],
+      "args": ["--python", "3.12", "mcp-airflow-api"],
       "env": {
         "AIRFLOW_API_VERSION": "v2",
         "AIRFLOW_API_BASE_URL": "http://localhost:48080/api",

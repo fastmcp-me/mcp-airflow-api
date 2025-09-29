@@ -32,8 +32,8 @@ This MCP server provides natural language tools for managing Apache Airflow clus
 ## 3. Available MCP Tools
 
 **Tool Count by API Version**:
-- **API v1** (Airflow 2.x): 43 MCP Tools - [Documentation](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
-- **API v2** (Airflow 3.0+): 45 MCP Tools - [Documentation](https://airflow.apache.org/docs/apache-airflow/stable/stable-rest-api-ref.html)
+- **API v1** (Airflow 2.x): 56 MCP Tools (43 common + 13 management tools) - [Documentation](https://airflow.apache.org/docs/apache-airflow/2.11.0/stable-rest-api-ref.html)
+- **API v2** (Airflow 3.0+): 49 MCP Tools (43 common + 2 assets + 4 management tools) - [Documentation](https://airflow.apache.org/docs/apache-airflow/stable/stable-rest-api-ref.html)
 
 **Complete Airflow API coverage with async performance optimization and dynamic version selection.**
 
@@ -268,6 +268,25 @@ list_assets(limit=50, uri_pattern="s3://")
 list_asset_events(source_dag_id="data_pipeline", limit=30)
 ```
 
+### User & Permissions Management (v1 API only)
+- `list_users(limit=20, offset=0)`: List all users in the Airflow system (Airflow 2.x only).
+- `get_user(username)`: Get detailed information about a specific user (Airflow 2.x only).
+- `list_permissions()`: List all permissions available in the Airflow system (Airflow 2.x only).
+- `list_roles(limit=20, offset=0)`: List all roles in the Airflow system (Airflow 2.x only).
+
+### Plugin & Provider Management (Both APIs)
+- `list_plugins()`: List all installed plugins in the Airflow system.
+- `list_providers()`: List all provider packages installed in the Airflow system.
+- `get_provider(provider_name)`: Get detailed information about a specific provider package.
+
+### Dataset Management (v1 API only - use Assets for v2)
+- `list_datasets(limit=20, offset=0, uri_pattern=None)`: List all datasets in the system (Airflow 2.x only).
+- `get_dataset(dataset_uri)`: Get detailed information about a specific dataset (Airflow 2.x only).
+- `list_dataset_events(limit=20, offset=0, dataset_uri=None, source_dag_id=None)`: List dataset events for data lineage tracking (Airflow 2.x only).
+- `get_dataset_events(dataset_uri, limit=20, offset=0)`: Get events for a specific dataset (Airflow 2.x only).
+
+**Note**: For Airflow 3.x (v2 API), use `list_assets()` and `list_asset_events()` instead of dataset functions.
+
 ### Combined Monitoring
 ```
 # Check cluster health and recent failures
@@ -277,6 +296,19 @@ failed_dags()
 # Monitor specific DAG performance
 dag_run_duration("my_dag", limit=20)
 dag_task_duration("my_dag", "latest_run_id")
+
+# Check user and permission setup
+list_users()
+list_roles()
+list_permissions()
+
+# Monitor provider and plugin status
+list_providers()
+list_plugins()
+
+# Track data lineage with datasets
+list_datasets()
+list_dataset_events()
 ```
 
 ## 9. Logging & Environment

@@ -100,4 +100,4 @@ def register_tools(mcp):
             "feature": "asset_events"
         }
 
-    logger.info("Registered all Airflow API v2 tools (43 common + 2 v2-exclusive = 45 tools)")
+    logger.info("Registered all Airflow API v2 tools (43 common + 2 assets + 4 management = 49 tools)")

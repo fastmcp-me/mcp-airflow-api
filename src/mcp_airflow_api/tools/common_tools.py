@@ -868,4 +868,204 @@ def register_common_tools(mcp):
         resp.raise_for_status()
         return {"message": f"Connection {connection_id} deleted successfully"}
 
-    logger.info("Registered all common tools (43 tools)")
+    # User & Permissions Management (4 tools) - v1 API only
+    @mcp.tool()
+    async def list_users(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
+        """[Tool Role]: Lists all users in the Airflow system (v1 API only)."""
+        from ..functions import get_api_version
+        
+        api_version = get_api_version()
+        if api_version == "v2":
+            return {"error": "User management is not available in Airflow 3.x (API v2)", "available_in": "v1 only"}
+        
+        params = []
+        params.append(f"limit={limit}")
+        if offset > 0:
+            params.append(f"offset={offset}")
+        
+        query_string = "&".join(params) if params else ""
+        endpoint = f"/users?{query_string}" if query_string else "/users"
+        
+        resp = await airflow_request("GET", endpoint)
+        resp.raise_for_status()
+        return resp.json()
+
+    @mcp.tool()
+    async def get_user(username: str) -> Dict[str, Any]:
+        """[Tool Role]: Gets details of a specific user (v1 API only)."""
+        from ..functions import get_api_version
+        
+        api_version = get_api_version()
+        if api_version == "v2":
+            return {"error": "User management is not available in Airflow 3.x (API v2)", "available_in": "v1 only"}
+        
+        resp = await airflow_request("GET", f"/users/{username}")
+        resp.raise_for_status()
+        return resp.json()
+
+    @mcp.tool()
+    async def list_permissions() -> Dict[str, Any]:
+        """[Tool Role]: Lists all permissions available in the Airflow system (v1 API only)."""
+        from ..functions import get_api_version
+        
+        api_version = get_api_version()
+        if api_version == "v2":
+            return {"error": "Permission management is not available in Airflow 3.x (API v2)", "available_in": "v1 only"}
+        
+        resp = await airflow_request("GET", "/permissions")
+        resp.raise_for_status()
+        return resp.json()
+
+    @mcp.tool()
+    async def list_roles(limit: int = 20, offset: int = 0) -> Dict[str, Any]:
+        """[Tool Role]: Lists all roles in the Airflow system (v1 API only)."""
+        from ..functions import get_api_version
+        
+        api_version = get_api_version()
+        if api_version == "v2":
+            return {"error": "Role management is not available in Airflow 3.x (API v2)", "available_in": "v1 only"}
+        
+        params = []
+        params.append(f"limit={limit}")
+        if offset > 0:
+            params.append(f"offset={offset}")
+        
+        query_string = "&".join(params) if params else ""
+        endpoint = f"/roles?{query_string}" if query_string else "/roles"
+        
+        resp = await airflow_request("GET", endpoint)
+        resp.raise_for_status()
+        return resp.json()
+
+    # Plugin Management (1 tool)
+    @mcp.tool()
+    async def list_plugins() -> Dict[str, Any]:
+        """[Tool Role]: Lists all installed plugins in the Airflow system."""
+        resp = await airflow_request("GET", "/plugins")
+        resp.raise_for_status()
+        return resp.json()
+
+    # Provider Management (2 tools)
+    @mcp.tool()
+    async def list_providers() -> Dict[str, Any]:
+        """[Tool Role]: Lists all provider packages installed in the Airflow system."""
+        resp = await airflow_request("GET", "/providers")
+        resp.raise_for_status()
+        return resp.json()
+
+    @mcp.tool()
+    async def get_provider(provider_name: str) -> Dict[str, Any]:
+        """[Tool Role]: Gets details of a specific provider package."""
+        resp = await airflow_request("GET", f"/providers/{provider_name}")
+        resp.raise_for_status()
+        return resp.json()
+
+    # Dataset Management (4 tools) - v1 API only (v2 uses Assets instead)
+    @mcp.tool()
+    async def list_datasets(limit: int = 20, offset: int = 0, uri_pattern: Optional[str] = None) -> Dict[str, Any]:
+        """[Tool Role]: Lists all datasets in the Airflow system (v1 API only - v2 uses Assets)."""
+        from ..functions import get_api_version
+        
+        api_version = get_api_version()
+        if api_version == "v2":
+            return {
+                "error": "Dataset API is not available in Airflow 3.x (API v2)", 
+                "available_in": "v1 only",
+                "v2_alternative": "Use list_assets() for Airflow 3.x data-aware scheduling"
+            }
+        
+        params = []
+        params.append(f"limit={limit}")
+        if offset > 0:
+            params.append(f"offset={offset}")
+        if uri_pattern:
+            params.append(f"uri_pattern={uri_pattern}")
+        
+        query_string = "&".join(params) if params else ""
+        endpoint = f"/datasets?{query_string}" if query_string else "/datasets"
+        
+        resp = await airflow_request("GET", endpoint)
+        resp.raise_for_status()
+        return resp.json()
+
+    @mcp.tool()
+    async def get_dataset(dataset_uri: str) -> Dict[str, Any]:
+        """[Tool Role]: Gets details of a specific dataset (v1 API only - v2 uses Assets)."""
+        from ..functions import get_api_version
+        
+        api_version = get_api_version()
+        if api_version == "v2":
+            return {
+                "error": "Dataset API is not available in Airflow 3.x (API v2)", 
+                "available_in": "v1 only",
+                "v2_alternative": "Use Assets API for Airflow 3.x data-aware scheduling"
+            }
+        
+        # URL encode the URI to handle special characters
+        import urllib.parse
+        encoded_uri = urllib.parse.quote(dataset_uri, safe='')
+        
+        resp = await airflow_request("GET", f"/datasets/{encoded_uri}")
+        resp.raise_for_status()
+        return resp.json()
+
+    @mcp.tool()
+    async def list_dataset_events(limit: int = 20, offset: int = 0, 
+                                 dataset_uri: Optional[str] = None,
+                                 source_dag_id: Optional[str] = None) -> Dict[str, Any]:
+        """[Tool Role]: Lists dataset events for data lineage tracking (v1 API only - v2 uses Assets)."""
+        from ..functions import get_api_version
+        
+        api_version = get_api_version()
+        if api_version == "v2":
+            return {
+                "error": "Dataset events API is not available in Airflow 3.x (API v2)", 
+                "available_in": "v1 only",
+                "v2_alternative": "Use list_asset_events() for Airflow 3.x data lineage tracking"
+            }
+        
+        params = []
+        params.append(f"limit={limit}")
+        if offset > 0:
+            params.append(f"offset={offset}")
+        if dataset_uri:
+            params.append(f"dataset_uri={dataset_uri}")
+        if source_dag_id:
+            params.append(f"source_dag_id={source_dag_id}")
+        
+        query_string = "&".join(params) if params else ""
+        endpoint = f"/datasets/events?{query_string}" if query_string else "/datasets/events"
+        
+        resp = await airflow_request("GET", endpoint)
+        resp.raise_for_status()
+        return resp.json()
+
+    @mcp.tool()
+    async def get_dataset_events(dataset_uri: str, limit: int = 20, offset: int = 0) -> Dict[str, Any]:
+        """[Tool Role]: Gets events for a specific dataset (v1 API only - v2 uses Assets)."""
+        from ..functions import get_api_version
+        
+        api_version = get_api_version()
+        if api_version == "v2":
+            return {
+                "error": "Dataset events API is not available in Airflow 3.x (API v2)", 
+                "available_in": "v1 only",
+                "v2_alternative": "Use list_asset_events() for Airflow 3.x data lineage tracking"
+            }
+        
+        import urllib.parse
+        encoded_uri = urllib.parse.quote(dataset_uri, safe='')
+        
+        params = []
+        params.append(f"limit={limit}")
+        if offset > 0:
+            params.append(f"offset={offset}")
+        
+        query_string = "&".join(params) if params else ""
+        endpoint = f"/datasets/{encoded_uri}/events?{query_string}" if query_string else f"/datasets/{encoded_uri}/events"
+        
+        resp = await airflow_request("GET", endpoint)
+        resp.raise_for_status()
+        return resp.json()
+
+    logger.info("Registered all common tools (56 tools total: 43 original + 13 new management tools)")

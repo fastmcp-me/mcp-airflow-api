@@ -563,7 +563,18 @@ def register_common_tools(mcp):
     @mcp.tool()
     async def get_health() -> Dict[str, Any]:
         """[Tool Role]: Checks Airflow cluster health status."""
-        resp = await airflow_request("GET", "/health")
+        # Import here to avoid circular imports
+        from ..functions import get_api_version
+        
+        api_version = get_api_version()
+        
+        if api_version == "v2":
+            # v2 API: Use /monitor/health endpoint (Airflow 3.x)
+            resp = await airflow_request("GET", "/monitor/health")
+        else:
+            # v1 API: Use /health endpoint (Airflow 2.x)
+            resp = await airflow_request("GET", "/health")
+        
         resp.raise_for_status()
         return resp.json()
 

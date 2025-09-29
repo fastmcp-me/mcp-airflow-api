@@ -36,8 +36,8 @@ MCP-Airflow-API is an MCP server that leverages the **Model Context Protocol (MC
 
 **Now supports both Airflow API v1 (2.x) and v2 (3.0+)** with dynamic version selection via environment variable:
 
-- **API v1**: Full compatibility with Airflow 2.x clusters (43 tools) - [Documentation](https://airflow.apache.org/docs/apache-airflow/2.0.0/stable-rest-api-ref.html)
-- **API v2**: Enhanced features for Airflow 3.0+ including asset management for data-aware scheduling (45 tools) - [Documentation](https://airflow.apache.org/docs/apache-airflow/stable/stable-rest-api-ref.html)
+- **API v1**: Full compatibility with Airflow 2.x clusters (43 tools) - [Documentation](https://airflow.apache.org/docs/apache-airflow/2.11.0/stable-rest-api-ref.html)
+- **API v2**: Enhanced features for Airflow 3.0+ including asset management for data-aware scheduling (45 tools) - [Documentation](https://airflow.apache.org/docs/apache-airflow/3.1.0/stable-rest-api-ref.html)
 
 **Key Architecture**: Single MCP server with shared common tools (43) plus v2-exclusive asset tools (2) - dynamically loads appropriate toolset based on `AIRFLOW_API_VERSION` environment variable!
 

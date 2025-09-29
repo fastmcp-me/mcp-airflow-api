@@ -16,3 +16,4 @@ wheels/
 
 # Environment files
 .env
+api_coverage_analysis.md

@@ -102,7 +102,7 @@ uvx --python 3.12 mcp-airflow-api
 ```json
 {
   "mcpServers": {
-    "airflow-api": {
+    "mcp-airflow-api": {
       "command": "uvx",
       "args": ["--python", "3.12", "mcp-airflow-api"],
       "env": {
@@ -121,7 +121,7 @@ uvx --python 3.12 mcp-airflow-api
 ```json
 {
   "mcpServers": {
-    "airflow-api": {
+    "mcp-airflow-api": {
       "type": "streamable-http",
       "url": "http://localhost:8000/mcp"
     }
@@ -134,7 +134,7 @@ uvx --python 3.12 mcp-airflow-api
 ```json
 {
   "mcpServers": {
-    "airflow-api": {
+    "mcp-airflow-api": {
       "type": "streamable-http",
       "url": "http://localhost:8000/mcp",
       "headers": {
@@ -383,7 +383,7 @@ When authentication is enabled, MCP clients must include the Bearer token in the
 ```json
 {
   "mcpServers": {
-    "airflow-api": {
+    "mcp-airflow-api": {
       "type": "streamable-http",
       "url": "http://your-server:8000/mcp",
       "headers": {

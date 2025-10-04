@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "airflow-api": {
+    "mcp-airflow-api": {
       "command": "python",
       "args": ["-m", "mcp_airflow_api"],
       "env": {

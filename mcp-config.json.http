@@ -1,6 +1,6 @@
 {
   "mcpServers": {
-    "airflow-api": {
+    "mcp-airflow-api": {
       "type": "streamable-http",
       "url": "http://host.docker.internal:18002/mcp",
       "headers": {
